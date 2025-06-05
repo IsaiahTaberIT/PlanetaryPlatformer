@@ -1,0 +1,54 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+#include "MyHelpers.hlsl"
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+bool DoRotLerp;
+float2 Dims;
+float2 Slope;
+float GradientBlendMode;
+float BlendMode;
+float Distortion;
+
+float BlendPower;
+float4 Color1;
+float4 Color2;
+
+RWTexture2D<float4> Result;
+
+void directionalGradient(uint2 pos)
+{
+    Slope = normalize(Slope);
+    float2 sqrPos = Dims / 2 * Slope;
+
+    float2 offset = -Dims / 2;
+    
+    float2 noiseoffsetpos = pos.xy;
+
+    float t = (((noiseoffsetpos.x + offset.x + sqrPos.x) / Dims.x * Slope.x + (noiseoffsetpos.y + offset.y + sqrPos.y) / Dims.y * Slope.y));
+    float4 newcolor;
+
+    newcolor = Blend(Color1, Color2, t, GradientBlendMode);
+
+    newcolor = pow(abs(newcolor), 1 / BlendPower);
+    
+    float4 color = Blend(Result[pos.xy], newcolor, newcolor.w, BlendMode);
+    
+    Result[pos.xy] = color;
+}
+
+
+[numthreads(8,8,1)]
+
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+
+    
+    directionalGradient(id.xy);
+    
+    
+    
+
+    
+}
