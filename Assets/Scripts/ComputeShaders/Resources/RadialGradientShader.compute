@@ -1,0 +1,33 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+#include "MyHelpers.hlsl"
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+float2 Dims;
+float2 Squish;
+float2 Center;
+float Radius;
+float4 Color1;
+float4 Color2;
+int BlendMode;
+int GradientBlendMode;
+float BlendPower;
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+    Radius /= 100.0;
+    Center *= Dims;
+    Radius *= min(Dims.x, Dims.y);
+    Squish *= Radius;
+    
+    float t = length((id.xy - Center) / Squish);
+    
+    float4 newcolor = Blend(Color1, Color2, t, GradientBlendMode);
+    
+    Result[id.xy] = Blend(Result[id.xy], newcolor, newcolor.w, BlendMode);
+
+}

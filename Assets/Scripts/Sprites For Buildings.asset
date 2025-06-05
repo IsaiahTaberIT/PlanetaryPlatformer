@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13092fbff8bfd284b840529169e12170, type: 3}
+  m_Name: Sprites For Buildings
+  m_EditorClassIdentifier: 
+  _ObjectAtIndex: {fileID: 0}
+  ViewableGameobjects:
+  - {fileID: 3380857761068653281, guid: 41b5f476d1e99c54a92ed48942be8249, type: 3}
+  - {fileID: 5234348658039577759, guid: 45371b7b610faa2448ff450dbca3fd7c, type: 3}
+  - {fileID: 5941927034876997240, guid: 62ec361a490e17f46bbc48f5887fb8a5, type: 3}
+  _Index: 0
+  _OldIndex: 0
+  ChangeAmount: 3

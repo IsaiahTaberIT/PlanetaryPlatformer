@@ -1,0 +1,54 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+#include "MyHelpers.hlsl"
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+
+int BlendMode;
+bool DoRotLerp;
+float2 Dims;
+float Offset;
+float4 Color1;
+float4 Color2;
+float Spacing;
+float2 Slope;
+float DistortionFactor;
+RWTexture2D<float4> Result;
+RWTexture2D<float4> DistortionTex;
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    
+    // TODO: insert actual code here!
+    DistortionTex[id.xy] *= DistortionFactor;
+    
+    if (length(DistortionTex[id.xy]) <= 0.1)
+    {
+        DistortionTex[id.xy] = float4(1, 1, 1, 1) * 0.01;
+        
+
+    }
+    
+    DistortionTex[id.xy] *= DistortionTex[id.xy].w;
+
+
+
+    
+    
+    float mod = (((id.x + DistortionTex[id.xy].x) - Dims.x / 2.0) * Slope.x + ((id.y + DistortionTex[id.xy].y) - Dims.y / 2.0) * Slope.y + length(Dims) * 10.0 + Offset) % Spacing;
+   // bool useRotLerp = true;
+    
+    if (mod >= Spacing / 2.0)
+    {
+        Result[id.xy] = Blend(Result[id.xy], Color1, Color1.w, BlendMode);
+    }
+    else
+    {
+        Result[id.xy] = Blend(Result[id.xy], Color2, Color2.w, BlendMode);
+    }
+        
+    
+  
+  
+    
+}
