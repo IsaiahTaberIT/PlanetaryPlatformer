@@ -1,0 +1,112 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+#include "MyHelpers.hlsl"
+
+
+float2 Center;
+
+float4 Color1;
+float4 Color2;
+int ArrayLength;
+float Radius;
+
+StructuredBuffer<float> Rates;
+StructuredBuffer<float> Amplitudes;
+StructuredBuffer<float> Powers;
+StructuredBuffer<float> Offsets;
+StructuredBuffer<float> Constants;
+StructuredBuffer<bool> UseAbsbools;
+
+
+
+RWTexture2D<float4> Result;
+
+float4 BumpyCircle(float angle, uint2 pos, float4 startColor, float4 endColor)
+{
+    float t = distance(pos.xy, uint2(Center.x, Center.y));
+    float height = 0;
+    float Runningheight = 0;
+
+    
+    for (int i = 0; i < ArrayLength; i++)
+    {
+        height = sin(angle * round(Rates[i]) + Offsets[i]);
+        
+        float angleSign = 1;
+
+        height += Constants[i];
+    
+        if (!UseAbsbools[i])
+        {
+            angleSign = sign(height);
+        }
+    
+        height = pow(abs(height), Powers[i]) * angleSign;
+        
+        height *= Amplitudes[i];
+        
+        Runningheight += height;
+
+    }
+        
+   
+    Runningheight /= 1;
+    
+ 
+   
+    
+    if ((t - Runningheight) < Radius)
+    {
+        return RotLerp(Result[pos.xy], startColor, startColor.w);
+    }
+    else
+    {
+        return RotLerp(Result[pos.xy], endColor, endColor.w);
+    }
+    
+   
+    
+}
+
+
+
+
+
+[numthreads(8, 8, 1)]
+
+
+
+
+
+
+
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+ 
+    float4 BaseColor = float4(0.0, 0.5, 1.0, 1.0);
+    float4 startColor = float4(0.0, 0.0, 0.0, 1.0);
+    float4 nothing = float4(0.0, 0.0, 0.0, 0.0);
+    float4 endColor = float4(0.5, 1.0, 1.0, 1.0);
+    float angle = degrees(SignedAngle2D(id.xy - float2(Center.x, Center.y), float2(0.0, 1.0))) + 180;
+    angle /= 360;
+    angle *= (2 * PI);
+    
+   
+
+
+
+    
+    
+ 
+    float4 endColor2 = float4(1.0, 0.5, 0.5, 1.0);
+    
+  //  Result[id.xy] += DiagonalGradient(id, startColor, BaseColor) / 2;
+    
+    Result[id.xy] = BumpyCircle(angle, id.xy, Color1, Color2);
+    //Result[id.xy] /= 1;
+
+    
+   
+}
+
