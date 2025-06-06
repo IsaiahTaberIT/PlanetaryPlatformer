@@ -5,8 +5,10 @@
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
 RWTexture2D<float4> Result;
+float Angle;
 float2 Dims;
 float2 Squish;
+float SquishPower;
 float2 Center;
 float Radius;
 float4 Color1;
@@ -22,12 +24,24 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     Radius /= 100.0;
     Center *= Dims;
     Radius *= min(Dims.x, Dims.y);
-    Squish *= Radius;
     
-    float t = length((id.xy - Center) / Squish);
+    float t = length(id.xy - Center) / Radius;
+   // t += (sin(2.0 * SignedAngle2D(normalize(id.xy - Center), normalize(Squish)))) * SquishPower;
+
+    float4 newcolor;
+
+    if (t < 1.0)
+    {
+        newcolor = Blend(Color1, Color2, t, GradientBlendMode);
+    }
+    else
+    {
+        newcolor = float4(0, 0, 0, 0);
+
+    }
     
-    float4 newcolor = Blend(Color1, Color2, t, GradientBlendMode);
-    
+    newcolor = pow(abs(newcolor), 1.0 / BlendPower);
+
     Result[id.xy] = Blend(Result[id.xy], newcolor, newcolor.w, BlendMode);
 
 }
