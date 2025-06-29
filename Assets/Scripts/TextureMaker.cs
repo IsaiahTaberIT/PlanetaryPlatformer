@@ -4,8 +4,6 @@ using System.Linq;
 using static TextureMaker.LayerManager;
 using static UnityEngine.Mathf;
 using static TextureMaker.LayerManager.TextureLayer;
-using System.Linq.Expressions;
-using static TextureMaker.LayerManager.SaturationFilterGpu;
 
 
 
@@ -155,9 +153,9 @@ public class TextureMaker : MonoBehaviour
 
         public class HueShiftFilterGpu : Filter
         {
+     
             public float Shift = 0;
             public BlendModes BlendMode;
-            [Range(0, 1f)] public float Saturation = 0;
 
             public HueShiftFilterGpu()
             {
@@ -168,8 +166,8 @@ public class TextureMaker : MonoBehaviour
             public override void PassValuesToShader(RenderTexture rt, int kernel)
             {
                 base.PassValuesToShader(rt, kernel);
-
-                computeshader.SetFloat("Shift", Shift / 10f);
+           
+                computeshader.SetFloat("Shift", Abs(Shift) / 10f + 1);
                 computeshader.SetInt("BlendMode", (int)BlendMode);
             }
 
@@ -254,7 +252,6 @@ public class TextureMaker : MonoBehaviour
         public class SolidGpu : TextureLayer
         {
             public BlendModes BlendMode;
-
             public Color Color;
 
             public SolidGpu()
@@ -360,7 +357,11 @@ public class TextureMaker : MonoBehaviour
                 }
                 else
                 {
-                    Maker = DistortionTextureMaker.GetComponent<TextureMaker>();
+                    if (DistortionTextureMaker != null)
+                    {
+                        DistortionTextureMaker.TryGetComponent(out Maker);
+
+                    }
                 }
 
 
@@ -385,6 +386,56 @@ public class TextureMaker : MonoBehaviour
         }
 
         [System.Serializable]
+        public class NoiseGpu : TextureLayer
+        {
+            public BlendModes BlendMode;
+            [Range(0f,1f)] public float Alpha;
+            [Min (1f)] public float Scale;
+
+            [Min(0f)] public int Seed;
+
+            public NoiseGpu()
+            {
+                Seed = 1;
+                BlendMode = (BlendModes)1;
+                Type = TextureLayerType.noise;
+                LastType = Type;
+
+
+
+            }
+
+            public override void PassValuesToShader(RenderTexture Mainrt, int kernel)
+            {
+                base.PassValuesToShader(Mainrt, kernel);
+                computeshader.SetVector("Dims", new Vector2(tex.width, tex.height));
+                computeshader.SetFloat("Scale", Scale);
+                computeshader.SetFloat("Alpha", Alpha);
+
+                computeshader.SetFloat("Seed",  ((float)Seed / 1000000f)) ;
+
+                computeshader.SetInt("BlendMode", (int)BlendMode);
+
+            }
+            public override RenderTexture Generate()
+            {
+                if (computeshader == null)
+                {
+                    computeshader = Resources.Load<ComputeShader>("NoiseShader");
+                }
+
+                RenderTexture rt = tex;
+                rt.Create();
+                ApplyShaderToRT(rt);
+                return tex;
+
+            }
+
+
+
+        }
+
+            [System.Serializable]
         public class CompositeGpu : TextureLayer
         {
             public bool PassInBackgound = false;
@@ -783,6 +834,7 @@ public class TextureMaker : MonoBehaviour
                 bumpyCircle = 4,
                 filter = 5,
                 radialGradient = 6,
+                noise = 7,
 
 
             }
@@ -870,7 +922,8 @@ public class TextureMaker : MonoBehaviour
                     return new SaturationFilterGpu();
                 case TextureLayer.TextureLayerType.radialGradient:
                     return new RadialGradientGpu();
-
+                case TextureLayer.TextureLayerType.noise:
+                    return new NoiseGpu();
                 default:
                     return new SimpleGradientGpu();
             }

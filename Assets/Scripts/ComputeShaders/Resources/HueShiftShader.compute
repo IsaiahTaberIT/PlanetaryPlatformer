@@ -4,34 +4,108 @@
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
 RWTexture2D<float4> Result;
+int BlendMode;
 float Shift;
+
+
+/*
+
+float3 abswave(float3 initoffset)
+{
+    float3 wave1 = -1.0 * fmod(abs(Shift + initoffset), 2.0) + 2 - 4.0 / 3.0;
+    float3 wave2 = fmod(abs(Shift + initoffset), 2.0) - 4.0 / 3.0;
+    float3 output = max(wave1, wave2);
+    return output;  
+
+}
+
+float abswave(float initoffset)
+{
+    float wave1 = -1.0 * fmod(abs(Shift + initoffset), 2.0) + 2 - 4.0 / 3.0;
+    float wave2 = fmod(abs(Shift + initoffset), 2.0) - 4.0 / 3.0;
+    float output = max(wave1, wave2);
+    return output;
+
+}
+
+
+float coloroffset(float3 RGB)
+{
+   float f1 = -1.0 * abswave(RGB.r) + 1.0 / 3.0;
+   float f2 = -1.0 * abswave(RGB.g) + 1.0 / 3.0;
+   float f3 = -1.0 * abswave(RGB.b) + 1.0 / 3.0;
+    
+    
+    
+    return (f1 + f2 + f3) / 3.0;
+
+}
+
+*/
+
+/*
+    float multiplier = 1.0;
+    float3 q1 = multiplier * (cos(Shift) + sin(Shift)) * (float3(1.0 * ShiftedHue.r, 1.0 * ShiftedHue.g, 1.0 * ShiftedHue.b));
+    float3 q2 = multiplier * (cos(-Shift) + sin(-Shift)) * (float3(1.0 * ShiftedHue.r, 1.0 * ShiftedHue.g, 1.0 * ShiftedHue.b));
+    
+    float3 RGB = pow(((ShiftedHue.rgb) * q1) * q2 + 0.5,2.0);
+   
+    ShiftedHue.rbg = normalize(RGB) * magnitude;
+*/
+    
+    
 
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    // TODO: insert actual code here!
-    // wierd git copilot code, cool but not what I want 
-   // float4 ShiftedHue = fmod(Result[id.xy] + Shift, 1.0);
-    
-    float4 ShiftedHue;
-    
-    ShiftedHue = Result[id.xy];
-    
-    
-    float hueMagnitude = length(Result[id.xy].rgb);
-    float3 OColor = Result[id.xy].rgb;
-    OColor *= 1.0;
-    float3 SinedHue = sin(float3(Shift + OColor.r, OColor.g + Shift + PI * 2.0 / 3.0, OColor.b + Shift + PI * 4.0 / 3.0));
-    //float3 SinedHue = sin(float3(Shift,+ Shift + PI * 2.0 / 3.0,+ Shift + PI * 4.0 / 3.0));
 
-  //  SinedHue += 1;
-  ////  SinedHue /= 2;
-    SinedHue = saturate(SinedHue); 
-    //SinedHue = pow(SinedHue, 4); 
-    SinedHue += Result[id.xy].rgb * 2;
-    SinedHue = normalize(SinedHue) * hueMagnitude;
-    ShiftedHue.rgb = SinedHue;
-    ShiftedHue.w = Result[id.xy].w; // Preserve alpha channel
-  
+    
+
+    // for any and all naysayers who think i didn't write this code in the age of chat-gpt, i did, trust me, it took me a combined 6-8 hours
+    // to come up with this, in hindsight very simple solution. sometimes i wish i wasn't too stubborn to just google the solution
+    // but i wanted to solve it myself, and if i just copy and pasted everything it would be difficult to learn to code;
+    
+    // ... i learned how to rotate a vector using quaternions for this and only after did i realize it would never work
+    // ... im leaving all the scrap code i didnt delete yet as evidence of the horrors
+    
+    // ... my original solution would have been a severe pain to implement, i was shifting the individual color channels
+    // using the sin function and an offset, which works fine with solid colors, but it is extremely difficult to offset
+    // an existing color, this is because just passing the original color through the sin function, isnt what you need to do
+    // you would first need to convert your existing color to a single float value that when passed into the hueshift function
+    // produces the original color (basically making an inverse function), then pass that float into each color channel
+    // along with the hueshift offset 
+    // this would have resulted in a properly shifted color, and i may have some idea of how to make such an inverse function
+    // but i dont see it being lossless because the original color uses all three color channels to represent itself
+    // but the shifted color only uses two channels at a time meaning you lose some information namely "lightness"
+    
+    float4 ShiftedHue = Result[id.xy];
+
+    float4 EndRSpace = ShiftedHue;
+    float4 EndGSpace = float4(EndRSpace.b, EndRSpace.r, EndRSpace.g, ShiftedHue.a);
+    float4 EndBSpace = float4(EndGSpace.b, EndGSpace.r, EndGSpace.g, ShiftedHue.a);;
+    
+    float selector = fmod(Shift, 3);
+    float t = fmod(Shift, 1);
+    
+    if (selector < 1)
+    {
+        
+        ShiftedHue = Blend(EndBSpace, EndRSpace, t, BlendMode);
+
+    }
+    else if (selector < 2 && selector >= 1)
+    {
+       
+        ShiftedHue = Blend(EndRSpace, EndGSpace, t, BlendMode);
+
+    }
+    else if (selector >= 2)
+    {
+        
+        ShiftedHue = Blend(EndGSpace, EndBSpace, t, BlendMode);
+    }
+
+
     Result[id.xy] = ShiftedHue;
+   
 }
