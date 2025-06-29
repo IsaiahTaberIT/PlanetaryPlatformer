@@ -25,6 +25,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     outcolor.rgb = applycontrast(id.xy);
     //outcolor.rgb = pow(abs(Result[id.xy].rgb), Contrast);
     outcolor.w = Result[id.xy].w;
+    outcolor = saturate(outcolor);
     Result[id.xy] = outcolor;
 
 }
