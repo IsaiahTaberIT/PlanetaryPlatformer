@@ -1,0 +1,21 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+#include "MyHelpers.hlsl"
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+float Opacity;
+int BlendMode;
+
+RWTexture2D<float4> InputTex;
+RWTexture2D<float4> Result;
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+    float4 color1 = InputTex[id.xy];
+    float4 color2 = Result[id.xy];
+
+    Result[id.xy] = Blend(color1, color2, Opacity * color2.w, BlendMode);
+
+}

@@ -1,0 +1,31 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+float Contrast;
+
+float3 applycontrast(uint2 pos)
+{
+    float3 colorspaceDirection;
+    colorspaceDirection = normalize(Result[pos.xy].rgb);
+    float rescaledMagnitude = pow(abs(length(Result[pos.xy].rgb)), Contrast);
+    return colorspaceDirection * rescaledMagnitude;
+}
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+  
+   
+    
+    float4 outcolor;
+    outcolor.rgb = applycontrast(id.xy);
+    //outcolor.rgb = pow(abs(Result[id.xy].rgb), Contrast);
+    outcolor.w = Result[id.xy].w;
+    outcolor = saturate(outcolor);
+    Result[id.xy] = outcolor;
+
+}

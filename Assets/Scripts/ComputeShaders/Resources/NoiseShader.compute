@@ -1,0 +1,101 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+#include "MyHelpers.hlsl"
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+int BlendMode;
+float2 Dims;
+float Seed;
+float Scale;
+float Alpha;
+
+float4 WhiteNoise(uint2 id)
+{
+    
+   
+    float value = id.y * Dims.x + id.x;
+    value *= Seed;
+    value += Seed;
+    value /= 100.1;
+    value = (sin(value * 153.7342 + 57.2) + 1) * 99.76;
+    value += 57.31;
+    value *= 19.37;
+    value = (cos(value * 314.1592) + 1) * 31.7;
+    value += 69.31;
+    value *= 15.92;
+    value = (sin(value * 1589.2415) + 1) * 103.7;
+    
+    value %= 1.0;
+    return float4(1.0, 1.0, 1.0, 1.0) * value;
+    
+     
+    
+}
+
+float4 CoherentNoise(uint2 id)
+{
+    float value = 0;
+    float totalmag = 0;
+    float mag;
+    float distortion1 = 0;
+    float distortion2 = 0;
+  //  Seed *= 10000;
+    
+    /*
+    for (int i = 0; i < 200; i++)
+    {
+        mag = (sin((i + 1) * Seed * 4563.141592) + 1.0) * 100.0;
+        totalmag += mag;
+        distortion1 = sin((i + 1) * Seed * 8553.141592 + 2.231 * 6.8754) * 2;
+        distortion2 = sin((i + 1) * Seed * 3452.141592 + 4.231 * 1.8754) * 2;
+
+        
+        value += (sin((id.y * distortion2 + id.x * distortion1) * (1 / Scale)) + 1.0) * mag;
+        
+    }
+*/
+       
+    for (int i = 0; i < 10; i++)
+    {
+        mag = (sin((i + 1) * Seed * 4563.141592) + 1.0) * 100.0;
+        totalmag += mag;
+        distortion1 = sin((i + 1) * Seed * 8553.141592 + 2.231 * 6.8754) * 20;
+        distortion2 = sin((i + 1) * Seed * 3452.141592 + 4.231 * 1.8754) * 20;
+       
+        
+        value += ((sin(id.x * (1 / (distortion1 * Scale))) + 1) / 2.0 + (sin(id.y * (1 / (distortion2 * Scale))) + 1.0)) * mag;
+        
+    }
+
+    
+    
+    
+
+    
+   
+    value /= totalmag;
+    value /= 2.0;
+
+    
+    return float4(1.0, 1.0, 1.0, 1.0) * value;
+    
+}
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    
+    // TODO: insert actual code here!
+    uint2 quantizedpos = floor(id.xy / Scale) * Scale;
+    
+    float4 color = WhiteNoise(quantizedpos);
+   // float4 color = WhiteNoise(id.xy);
+
+    
+   
+    color.a = Alpha;
+
+    Result[id.xy] = Blend(Result[id.xy], color, Alpha, BlendMode);
+}

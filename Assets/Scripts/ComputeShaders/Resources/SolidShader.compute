@@ -1,0 +1,25 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+#include "MyHelpers.hlsl"
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+int BlendMode;
+float4 Color;
+
+[numthreads(8,8,1)]
+
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+ 
+  //  Result[id.xy] = UndoGamma(Result[id.xy]);
+
+
+
+    Result[id.xy] = Blend(Result[id.xy], Color, Color.w, BlendMode);
+    
+
+
+}
