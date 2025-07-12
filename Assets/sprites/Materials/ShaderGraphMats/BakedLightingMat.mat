@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: BakedLightingMat
-  m_Shader: {fileID: -6465566751694194690, guid: 47da2fc1ac235b341a9038ea25b7d781, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: 3ce741a11cfd0014faeb1d8e33b84db5, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -16,7 +16,7 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 1000
   stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
@@ -63,17 +63,17 @@ Material:
     m_Floats:
     - _Dither: -2.24
     - _EnableExternalAlpha: 0
-    - _Falloff: 4.05
-    - _Intensity: 500
+    - _Falloff: 30.64
+    - _Intensity: 9.83
     - _Intensity2: 319.65
     - _MinBrightness: 1
-    - _Pow: 0.103
+    - _Pow: 0.614
     - _ZWrite: 0
     - _falloff: 55.2
     - _innerRadius: 1.8
     - _intensity: 63.7
     m_Colors:
-    - _Color: {r: 1, g: 0.8624214, b: 0.6367924, a: 1}
+    - _Color: {r: 1, g: 0, b: 0, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

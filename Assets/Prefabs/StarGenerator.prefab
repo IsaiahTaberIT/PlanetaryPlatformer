@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7189450418389799292}
-  - component: {fileID: 1496426570524215646}
+  - component: {fileID: 8012082536469691700}
   m_Layer: 0
   m_Name: StarGenerator
   m_TagString: SGen
@@ -32,7 +32,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1496426570524215646
+--- !u!114 &8012082536469691700
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -41,13 +41,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 9043503833957856945}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0603fbc92bbce0f478928c40e081d6af, type: 3}
+  m_Script: {fileID: 11500000, guid: e013fee7a6dbc33478ff2640daaddff3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   GalaxyOdds: 100
   Galaxy: {fileID: 6298955586189217913, guid: 50c33a6190e38c045bbaba6a0c8170b4, type: 3}
-  Star: {fileID: 2228184863819669041, guid: c475bf0511339f9478a0390ec25c13c6, type: 3}
-  Range: {x: 0, y: 0, z: 1200}
-  MinimumDepth: 100
-  Density: 20
-  MaxObjects: 100000
+  Brightness: 1
+  Star: {fileID: 2228184863819669041, guid: 949c385fd59b9e74ab58c69db7c5255a, type: 3}
+  Range: {x: 0, y: 0, z: 0}
+  MinimumDepth: 0
+  Density: 0
+  MaxObjects: 0

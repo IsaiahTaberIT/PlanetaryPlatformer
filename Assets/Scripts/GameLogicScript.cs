@@ -325,7 +325,7 @@ public class GameLogicScript : MonoBehaviour
             GodMode = !GodMode;
         }
 
-        shaderMaterial.SetFloat("_Smoothness", testfloat);
+     //   shaderMaterial.SetFloat("_Smoothness", testfloat);
 
         if (Input.GetKeyDown(KeyCode.K))
         {

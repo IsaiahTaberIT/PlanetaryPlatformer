@@ -121,7 +121,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3818987002864540040}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: GameLogicScript, Assembly-CSharp
         m_MethodName: GameOver
         m_Mode: 1
@@ -781,8 +781,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9146818650085750585}
-  - component: {fileID: 3818987002864540040}
   - component: {fileID: 406732632283365406}
+  - component: {fileID: 898461339408203376}
   m_Layer: 0
   m_Name: Logic
   m_TagString: Logic
@@ -798,7 +798,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7696139001860167822}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -37.995728, y: 46.69503, z: 0.047100298}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -807,45 +807,6 @@ Transform:
   - {fileID: 4603117295901651991}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3818987002864540040
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7696139001860167822}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a49e4d547677bdc42832919a3cbaedd9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  MinBrightness: 1
-  MyScreen: {fileID: 0}
-  LightsCamera: {fileID: 0}
-  texture: {fileID: 0}
-  GodMode: 0
-  Checkpoints: []
-  GlobalVolumeObj: {fileID: 6582505750397312928}
-  GlobalVolume: {fileID: 0}
-  MyActivatedCheckpoints: {fileID: 11400000, guid: ecea5d2a89e0c42468dd52f740556d17, type: 2}
-  RequireNewGame: 0
-  ActiveMenu: 1
-  MainCamera: {fileID: 0}
-  Canvas: {fileID: 0}
-  NormalGravity: 0
-  IsGameOver: 0
-  IsLevelCompleted: 0
-  IsPaused: 0
-  CanMove: 1
-  RunGame: 1
-  shaderMaterial: {fileID: -876546973899608171, guid: 25d81bf4b2af2cf44a26765817071c25, type: 3}
-  testfloat: 2
-  EscapeCountdown: {fileID: 3510726094823890308}
-  EscapeUI: {fileID: 5254767765991379311}
-  MyLineRenderer: {fileID: 406732632283365406}
-  FireShader: {fileID: 0}
-  ShaderAnimations: 0
-  NormalLighting: 1
 --- !u!120 &406732632283365406
 LineRenderer:
   serializedVersion: 2
@@ -953,3 +914,42 @@ LineRenderer:
   m_UseWorldSpace: 1
   m_Loop: 0
   m_ApplyActiveColorSpace: 1
+--- !u!114 &898461339408203376
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7696139001860167822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b2d606977b5c3c4ab3dda46cda7122d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MinBrightness: 0.1
+  MyScreen: {fileID: 0}
+  LightsCamera: {fileID: 0}
+  texture: {fileID: 8400000, guid: 8108c2e319a5e6e46b0def3aede1f217, type: 2}
+  GodMode: 0
+  Checkpoints: []
+  GlobalVolumeObj: {fileID: 6582505750397312928}
+  GlobalVolume: {fileID: 0}
+  MyActivatedCheckpoints: {fileID: 0}
+  RequireNewGame: 0
+  ActiveMenu: 1
+  MainCamera: {fileID: 0}
+  Canvas: {fileID: 0}
+  NormalGravity: 85
+  IsGameOver: 0
+  IsLevelCompleted: 0
+  IsPaused: 0
+  CanMove: 1
+  RunGame: 1
+  shaderMaterial: {fileID: -876546973899608171, guid: 3349a5421dc2d4c4c81fe683ec0ccfaf, type: 3}
+  testfloat: 1.14
+  EscapeCountdown: {fileID: 0}
+  EscapeUI: {fileID: 0}
+  MyLineRenderer: {fileID: 0}
+  FireShader: {fileID: 0}
+  ShaderAnimations: 0
+  NormalLighting: 1

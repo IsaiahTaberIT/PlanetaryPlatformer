@@ -4,6 +4,8 @@ using System.Linq;
 using static TextureMaker.LayerManager;
 using static UnityEngine.Mathf;
 using static TextureMaker.LayerManager.TextureLayer;
+using static TextureMaker.LayerManager.NoiseGpu;
+using UnityEngine.Rendering;
 
 
 
@@ -388,15 +390,34 @@ public class TextureMaker : MonoBehaviour
         [System.Serializable]
         public class NoiseGpu : TextureLayer
         {
+
+            public bool CoherentNoise = false;
             public BlendModes BlendMode;
-            [Range(0f,1f)] public float Alpha;
-            [Min (1f)] public float Scale;
+            [Range(0f, 1f)] public float Alpha = 1f;
+            [Min(1f)] public float Scale = 1;
+            [Range(1, 3)] public int NoiseDimensions = 1;
+            public Color BaseColor = Color.white;
+            [Min(0f)] public int Seed = 100;
+            [Min(1f)] public float testscale = 4f;
+            [Min(0.01f)] public float Power = 1f;
 
-            [Min(0f)] public int Seed;
+            public NoiseGpu(int seed)
+            {
+                Color BaseColor = Color.red;
+                CoherentNoise = false;
+                NoiseDimensions = 2;
+                Seed = seed;
+                Scale = 1;
+                Alpha = 1f;
+                BlendMode = (BlendModes)1;
+                Type = TextureLayerType.noise;
+                LastType = Type;
+                Power = 3;
 
+            }
             public NoiseGpu()
             {
-                Seed = 1;
+                // Seed = 1;
                 BlendMode = (BlendModes)1;
                 Type = TextureLayerType.noise;
                 LastType = Type;
@@ -405,16 +426,51 @@ public class TextureMaker : MonoBehaviour
 
             }
 
+
+
             public override void PassValuesToShader(RenderTexture Mainrt, int kernel)
             {
-                base.PassValuesToShader(Mainrt, kernel);
+
+                Vector2 SeednoiseDims = new Vector2(tex.width, tex.height);
+                RenderTexture inputTexture = new RenderTexture(tex.width, tex.height, 0, RenderTextureFormat.ARGBFloat);
+                inputTexture.enableRandomWrite = true;
+                inputTexture.Create();
+
+                if (CoherentNoise)
+                {
+                    NoiseGpu SeedNoise = new(Seed);
+                    SeedNoise.tex = inputTexture;
+                    SeedNoise.Generate();
+
+
+
+                }
+                else
+                {
+
+                    Graphics.Blit(tex, inputTexture);
+
+                }
+
+                computeshader.SetTexture(kernel, "Noise", inputTexture);
                 computeshader.SetVector("Dims", new Vector2(tex.width, tex.height));
-                computeshader.SetFloat("Scale", Scale);
+                computeshader.SetVector("BaseColor", BaseColor);
+                computeshader.SetFloat("NoiseDimensions", NoiseDimensions);
+                computeshader.SetFloat("Power", Power);
+                computeshader.SetInt("UseCoherentNoise", Logic.BoolToInt(CoherentNoise));
+
+                computeshader.SetFloat("Scale", Floor(Scale));
+
+
                 computeshader.SetFloat("Alpha", Alpha);
 
-                computeshader.SetFloat("Seed",  ((float)Seed / 1000000f)) ;
+                // im offseting by 5000 because if the input value is too small the result is too 
+                //regular, horizontal banding and such, no need to make the randomizer more random 
+                computeshader.SetFloat("Seed", ((Seed + 5000) / 1000000f));
 
                 computeshader.SetInt("BlendMode", (int)BlendMode);
+                base.PassValuesToShader(Mainrt, kernel);
+
 
             }
             public override RenderTexture Generate()
@@ -426,15 +482,13 @@ public class TextureMaker : MonoBehaviour
 
                 RenderTexture rt = tex;
                 rt.Create();
+
                 ApplyShaderToRT(rt);
                 return tex;
 
             }
 
-
-
         }
-
             [System.Serializable]
         public class CompositeGpu : TextureLayer
         {

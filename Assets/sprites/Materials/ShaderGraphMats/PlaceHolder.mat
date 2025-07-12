@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: PlaceHolder
-  m_Shader: {fileID: -6465566751694194690, guid: a6c63c0dfeeabbe4ea1a58fe3e1d2c51, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: 8c7e1964d93f1f244b4ae468922f0792, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -67,13 +67,13 @@ Material:
     m_Ints: []
     m_Floats:
     - _EnableExternalAlpha: 0
-    - _Stripyness: 3
+    - _Stripyness: 1.04
     - _ZWrite: 0
     - _test: 21.66
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _Color1: {r: 0.6096738, g: 0.5707547, b: 1, a: 0}
-    - _Color2: {r: 1, g: 0.8053965, b: 0.5613208, a: 0}
+    - _Color1: {r: 0.60967374, g: 0.57075465, b: 1, a: 1}
+    - _Color2: {r: 1, g: 0.8053965, b: 0.5613207, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

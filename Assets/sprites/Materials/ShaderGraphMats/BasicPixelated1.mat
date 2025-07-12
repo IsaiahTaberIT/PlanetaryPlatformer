@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: BasicPixelated1
-  m_Shader: {fileID: -6465566751694194690, guid: 8d4f8496f35f144439ee1beacb1b186c, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: 4e0bcea4622cd9a41bbef0d0c7c4add8, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []

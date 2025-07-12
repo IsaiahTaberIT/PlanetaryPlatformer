@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: FillDisplayMat1
-  m_Shader: {fileID: -6465566751694194690, guid: 6c1fa6ec189296e42b7284a46dc27c9f, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: a8076ab527a8c4f498d88bdb1dc23b46, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -28,7 +28,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 13bd0551343d7084997a3bcfe7fab02b, type: 3}
+        m_Texture: {fileID: 2800000, guid: c86264c75ac7051498eee3d1327f6363, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MaskTex:
@@ -37,6 +37,10 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
         m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Texture2:
+        m_Texture: {fileID: 2800000, guid: e058b596057b30544ab6cabfb9b37fe9, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _erfafsfe:
@@ -59,11 +63,19 @@ Material:
     m_Floats:
     - _ColorMix: 1
     - _EnableExternalAlpha: 0
+    - _NoiseShift1: 0.48
+    - _NoiseShift2: -0.15
+    - _NormalMapStrength: 1.37
     - _OverWrite: 0.76
     - _Overlay: 0.76
+    - _PixelScale: 512
     - _Ratio: 2
+    - _ScaleDifference: 2
+    - _ScaleDifferenceTex2: 2.5
+    - _Tile: 509.48
     - _ZWrite: 0
     m_Colors:
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _Correction: {r: 0, g: 0, b: 0, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}

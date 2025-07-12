@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 587744611831736818}
   - component: {fileID: 2711318090019716333}
   - component: {fileID: 4927878147958900886}
-  - component: {fileID: 2939421050312587903}
   m_Layer: 6
   m_Name: BlockingOutPlatformSticker
   m_TagString: Untagged
@@ -80,7 +79,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.27069238, g: 0.7305894, b: 0.745283, a: 1}
+  m_Color: {r: 0, g: 0.96694183, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -136,19 +135,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.88102317, y: 0.8098859}
   m_EdgeRadius: 1
---- !u!114 &2939421050312587903
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8427055226879979318}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9101670a8b9e5b0469563391e5a7dc29, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  MyCollider: {fileID: 4927878147958900886}
 --- !u!1001 &3132164251086654838
 PrefabInstance:
   m_ObjectHideFlags: 0

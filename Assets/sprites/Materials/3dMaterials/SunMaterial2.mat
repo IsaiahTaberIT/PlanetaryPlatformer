@@ -67,7 +67,7 @@ Material:
     - _Cull: 2
     - _DstBlend: 0
     - _EnableExternalAlpha: 0
-    - _NoiseOffset: 22.45746
+    - _NoiseOffset: 1.4080677
     - _NoiseStrength: 1
     - _QueueControl: 0
     - _QueueOffset: 0

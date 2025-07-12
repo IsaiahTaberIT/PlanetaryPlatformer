@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: WoodPixelated
-  m_Shader: {fileID: -6465566751694194690, guid: 827e430bd7174a149ba5eadb3919e508, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: f1c1bc5632513e441998af53150f83c7, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []

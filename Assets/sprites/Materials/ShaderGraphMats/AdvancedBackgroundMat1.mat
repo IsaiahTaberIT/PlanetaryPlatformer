@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: AdvancedBackgroundMat1
-  m_Shader: {fileID: -6465566751694194690, guid: 1fbac6f9b36359e41a28db0403ef861a, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: a8076ab527a8c4f498d88bdb1dc23b46, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []

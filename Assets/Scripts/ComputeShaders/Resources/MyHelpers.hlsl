@@ -4,6 +4,59 @@ static const float Sqrt2 = 1.41421356237;
 
 static const float Sqrt3 = 1.7320508076;
 
+float absPow(float x, float y)
+{
+    return pow(abs(x), y);
+}
+
+
+
+float EaseIn(float t, float power)
+{
+    return absPow(t, power);
+}
+
+float EaseOut(float t, float power)
+{
+    return absPow(t, 1 / power);
+}
+
+
+float EaseInOut(float t, float power)
+{
+    return lerp(EaseIn(t, power), EaseOut(t, power), t);
+}
+
+  
+
+
+
+
+
+float RandomValue(float xdim, uint2 id, float localSeed)
+{
+    
+   
+    float value = id.y * xdim + id.x;
+    value *= localSeed;
+    value += localSeed;
+    value /= 100.1;
+    value = (sin(value * 153.7342 + 57.2) + 1) * 99.76;
+    value += 57.31;
+    value *= 19.37;
+    value = (cos(value * 314.1592) + 1) * 31.7;
+    value += 69.31;
+    value *= 15.92;
+    value = (sin(value * 1589.2415) + 1) * 103.7;
+    
+    value %= 1.0;
+    return value;
+    
+     
+    
+}
+
+
 
 float3 UndoGamma(float3 val)
 {

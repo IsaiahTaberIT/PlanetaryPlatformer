@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: REnderTextuemat
-  m_Shader: {fileID: -6465566751694194690, guid: 84a59249d34948448ba7273e4e9437a6, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: 696b82a86282ea64fbe7ae35916031b9, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -37,6 +37,10 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
         m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Texture2DAsset_23c8b300eab845e0b054ea6900b80db6_Out_0_Texture2D:
+        m_Texture: {fileID: 2800000, guid: e058b596057b30544ab6cabfb9b37fe9, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []

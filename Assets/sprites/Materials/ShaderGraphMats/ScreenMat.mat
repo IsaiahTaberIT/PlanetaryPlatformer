@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: ScreenMat
-  m_Shader: {fileID: -6465566751694194690, guid: 47da2fc1ac235b341a9038ea25b7d781, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: 3ce741a11cfd0014faeb1d8e33b84db5, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -63,7 +63,8 @@ Material:
     m_Floats:
     - _EnableExternalAlpha: 0
     - _Float: 400
-    - _Intensity: 9
+    - _Intensity: 150
+    - _MinBrightness: 1
     - _OverWrite: 0.76
     - _Overlay: 0.855
     - _ZWrite: 0

@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 4332546053823455681}
   - component: {fileID: 2603186054424174091}
   - component: {fileID: 2627652301570675326}
-  - component: {fileID: 730259503313642543}
   - component: {fileID: 3607061200596026749}
   - component: {fileID: 3380866757980057510}
+  - component: {fileID: 7002001753095048226}
   m_Layer: 9
   m_Name: Enemy
   m_TagString: Basic Enemy
@@ -118,82 +118,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 4
---- !u!114 &730259503313642543
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5968717067729411868}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: daba0ee9a3980294288642dbda92ff91, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GroundLayer:
-    serializedVersion: 2
-    m_Bits: 576
-  MyGamelogicScript: {fileID: 0}
-  GravityDown: {x: 0, y: 0, z: 0}
-  MaxVelocity: 20
-  isGrounded: 0
-  JumpHeight: 50
-  LookRotation: 0
-  InAirAccelReduction: 2
-  IsFlingered: 0
-  _SafeToJump: 0
-  _Acceleration: 0.1
-  _TargetVelocity: 0
-  _GroundCheckDistance: 0.15
-  _Body: {fileID: 0}
-  Velocity: {x: 0, y: 0, z: 0}
-  AiMovementState: 0
-  AiPhase: 0
-  myTarget: 0
-  Player: {fileID: 0}
-  MyPlayerScript: {fileID: 0}
-  PlayerTransform: {fileID: 0}
-  Reactivate: 0
-  WhatIHit: {fileID: 0}
-  _WaitBeforeTryingAgain: 0
-  _PredictionHitEnd: 0
-  _HitRayAngle: 0
-  _RayAngle: 0
-  _InterestCooldown: 3
-  _InterestTime: 0
-  _RayHitPlayer: 0
-  _PlayerisAbove: 0
-  _TryJump: 0
-  _Suspicion: 0
-  _SuspicionThreshold: 5
-  _LayersToIgnore:
-    serializedVersion: 2
-    m_Bits: 896
-  _ChaseMouse: 0
-  MousePos: {x: 0, y: 0}
-  _SeekDuration: 0
-  FloorCheckDistance: 0
-  FloorCheckDistanceFar: 0
-  DecisionTime: 0.5
-  DecisionTimer: 0
-  FlingerStunTime: 1
-  FlingerStunTimer: 1
-  _CheckedLastPosition: 1
-  LastSafePosition: {x: 0, y: 0, z: 0}
-  LastKnownPositionOfPlayer: {x: 0, y: 0, z: 0}
-  _SearchPrecision: 5
-  TargetPosition: {x: 0, y: 0, z: 0}
-  TargetID: 0
-  TargetPriority: 0
-  CheckFrequency: 0
-  initialInvertedGravityPower: 1
-  invertedGravityPower: 13
-  initialSteps: 3
-  Steps: 4
-  Divisor: 8
-  MaxDecisionTIme: 2
-  HasRenderedRays: 0
-  RayCount: 0
 --- !u!58 &3607061200596026749
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -276,3 +200,87 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &7002001753095048226
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5968717067729411868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73fb29f71a58eba4f9144bcd6b4e45e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Mult: 1
+  GroundCheckDistance: 0.1
+  GroundBodyVelocity: {x: 0, y: 0, z: 0}
+  GravityDownMagnitude: 0
+  GroundLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  MyGamelogicScript: {fileID: 0}
+  GravityDown: {x: 0, y: 0, z: 0}
+  MaxVelocity: 20
+  IsGrounded: 0
+  JumpHeight: 10
+  LookRotation: 0
+  InAirAccelReduction: 2
+  InAirMaxSpeedRatio: 2
+  IsGameRunning: 0
+  PrePauseVelocity: {x: 0, y: 0}
+  IsFlingered: 0
+  Velocity: {x: 0, y: 0, z: 0}
+  GroundDrag: 1
+  Acceleration: 0.1
+  Body: {fileID: 0}
+  _SafeToJump: 0
+  _Acceleration: 0.1
+  _TargetVelocity: 0
+  _GroundCheckDistance: 0
+  _Body: {fileID: 0}
+  AiMovementState: 0
+  AiPhase: 0
+  myTarget: 0
+  Player: {fileID: 0}
+  MyPlayerScript: {fileID: 0}
+  PlayerTransform: {fileID: 0}
+  Reactivate: 0
+  WhatIHit: {fileID: 0}
+  _WaitBeforeTryingAgain: 0
+  _PredictionHitEnd: 0
+  _HitRayAngle: 0
+  _RayAngle: 0
+  _InterestCooldown: 0
+  _InterestTime: 0
+  _PlayerisAbove: 0
+  _TryJump: 0
+  _Suspicion: 0
+  _SuspicionThreshold: 0
+  _LayersToIgnore:
+    serializedVersion: 2
+    m_Bits: 0
+  _ChaseMouse: 0
+  MousePos: {x: 0, y: 0}
+  _SeekDuration: 0
+  FloorCheckDistance: 0
+  FloorCheckDistanceFar: 0
+  DecisionTime: 0
+  DecisionTimer: 0
+  FlingerStunTime: 0
+  FlingerStunTimer: 0
+  _CheckedLastPosition: 1
+  LastSafePosition: {x: 0, y: 0, z: 0}
+  LastKnownPositionOfPlayer: {x: 0, y: 0, z: 0}
+  _SearchPrecision: 5
+  TargetPosition: {x: 0, y: 0, z: 0}
+  TargetID: 0
+  TargetPriority: 0
+  CheckFrequency: 0
+  initialInvertedGravityPower: 13
+  invertedGravityPower: 13
+  initialSteps: 4
+  Steps: 4
+  Divisor: 2
+  MaxDecisionTIme: 2
+  RayCount: 0

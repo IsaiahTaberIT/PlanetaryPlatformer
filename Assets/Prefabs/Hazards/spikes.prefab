@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 5681325771031249227}
   - component: {fileID: 2942483176454538406}
   - component: {fileID: 7244431211207043918}
-  - component: {fileID: 5299071511149276949}
-  - component: {fileID: 1930185505670842545}
   - component: {fileID: 3541757169941971223}
+  - component: {fileID: 7783730261778532846}
+  - component: {fileID: 8147317752905498942}
   m_Layer: 0
   m_Name: spikes
   m_TagString: Untagged
@@ -137,50 +137,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
---- !u!114 &5299071511149276949
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7190865782144221279}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9d013331be714c54d98e832414c23184, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &1930185505670842545
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7190865782144221279}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a4ded0ce124456748a00417848f78742, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  AlignToRadius: 1
-  Radius: 0
-  RadiusSnapSize: 1
-  SnapAngle: 0
-  AngleSnapSize: 1
-  FixedRadius: 0
-  AlignToTarget: 1
-  AlignToSurface: 1
-  AutoGenerateAlignmentTarget: 0
-  SurfaceCheckDistance: 7.04
-  VerticalOffset: 2
-  _CurrentRadius: 0
-  SurfaceLayer:
-    serializedVersion: 2
-    m_Bits: 64
-  BoundsCalculationTarget: {fileID: 0}
-  AlignmentTarget: {fileID: 0}
-  Angle: 0
-  Size: {x: 28, y: 8, z: 0}
-  _Planets: []
 --- !u!114 &3541757169941971223
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -197,3 +153,47 @@ MonoBehaviour:
   CheckLength: 44.33
   MyTransform: {fileID: 5681325771031249227}
   MyCollider: {fileID: 7244431211207043918}
+--- !u!114 &7783730261778532846
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7190865782144221279}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 375fc8843e6618c4cb707d82b3324841, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &8147317752905498942
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7190865782144221279}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a5df1db608ff142a565ec356eba709, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  AlignToRadius: 0
+  Radius: 0
+  RadiusSnapSize: 1
+  SnapAngle: 0
+  AngleSnapSize: 1
+  FixedRadius: 0
+  AlignToTarget: 1
+  AlignToSurface: 1
+  AutoGenerateAlignmentTarget: 0
+  SurfaceCheckDistance: 0.5
+  VerticalOffset: 0.5
+  _CurrentRadius: 0
+  SurfaceLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  BoundsCalculationTarget: {fileID: 0}
+  AlignmentTarget: {fileID: 0}
+  Angle: 0
+  Size: {x: 0, y: 0, z: 0}
+  _Planets: []

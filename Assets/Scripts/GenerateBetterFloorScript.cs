@@ -4,7 +4,7 @@ using UnityEngine;
 
 
 
-[RequireComponent(typeof(MeshFilter))]
+//[RequireComponent(typeof(MeshFilter))]
 
 public class GenerateBetterFloorScript : MonoBehaviour
 {

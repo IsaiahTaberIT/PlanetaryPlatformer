@@ -77,7 +77,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
-  m_Color: {r: 1, g: 0.6901961, b: 0, a: 0.39215687}
+  m_Color: {r: 0.74509805, g: 1, b: 0, a: 0.08235294}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -185,7 +185,7 @@ GameObject:
   - component: {fileID: 5448002669989883629}
   - component: {fileID: 3221175669556684666}
   - component: {fileID: 7280930514886152944}
-  - component: {fileID: 2145682974907154169}
+  - component: {fileID: 811002887653599632}
   m_Layer: 0
   m_Name: Flinger
   m_TagString: Flinger
@@ -255,7 +255,7 @@ SpriteRenderer:
   m_SortingLayer: 1
   m_SortingOrder: -1
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
-  m_Color: {r: 1, g: 0.6901961, b: 0, a: 0.627451}
+  m_Color: {r: 0.74509805, g: 1, b: 0, a: 0.08627451}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -301,7 +301,7 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 0.5
---- !u!114 &2145682974907154169
+--- !u!114 &811002887653599632
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -310,12 +310,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 5937646632887717606}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c0cd694a856d1fa45983fe45ff11b56e, type: 3}
+  m_Script: {fileID: 11500000, guid: b9f310858964e39499c2bbbd3b4bcc5a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   Direction: {x: 0.99999994, y: 0.000000059604645, z: 0}
-  _FlingerForce: 200
-  _Acceleration: 13.16
+  _FlingerForce: 100
+  _Acceleration: 1
   test: 0
   Angle: -90
   body: {fileID: 0}

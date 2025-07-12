@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: FireMat1
-  m_Shader: {fileID: -6465566751694194690, guid: 2e3eb360f471ca846b479b54edd0ab4f, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: 9b26ab98d47fd4849b649b4567360edb, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []

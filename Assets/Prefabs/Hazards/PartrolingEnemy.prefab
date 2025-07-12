@@ -10,8 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 7539897488533999524}
   - component: {fileID: 7181993285484969257}
-  - component: {fileID: 1191066286657894689}
   - component: {fileID: 1710798154145047856}
+  - component: {fileID: 7333989905772698347}
   m_Layer: 0
   m_Name: PartrolingEnemy
   m_TagString: Untagged
@@ -90,72 +90,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &1191066286657894689
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3081559494801771456}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: df45295cb3ce4ed478fdc0f76b830b1c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GroundCheckDistance: 0.1
-  GravityDownMagnitude: 0
-  GroundLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  MyGamelogicScript: {fileID: 0}
-  GravityDown: {x: 0, y: 0, z: 0}
-  MaxVelocity: 20
-  IsGrounded: 0
-  JumpHeight: 10
-  LookRotation: 0
-  InAirAccelReduction: 2
-  InAirMaxSpeedRatio: 2
-  IsGameRunning: 0
-  PrePauseVelocity: {x: 0, y: 0}
-  IsFlingered: 0
-  Velocity: {x: 0, y: 0, z: 0}
-  GroundDrag: 1
-  Acceleration: 0.1
-  Body: {fileID: 0}
-  MovementDirection: {x: 1, y: 0}
-  CanSeePlayer: 0
-  TargetPlayer: {fileID: 0}
-  DirectionToPlayer: {x: 0, y: 0, z: 0}
-  LayersToIgnore:
-    serializedVersion: 2
-    m_Bits: 0
-  translation:
-    spline:
-      m_IsOpenEnded: 0
-      m_ControlPoints: []
-    Easing: 0
-    Speed: 40
-    direction: 1
-    edgeBehavior: 1
-    WaitAtStart:
-      Clamp: 1
-      EndTime: 1
-      Time: 1
-    WaitAtTarget:
-      Clamp: 1
-      EndTime: 1
-      Time: 1
-    TranslationTimer:
-      Clamp: 1
-      EndTime: 1
-      Time: 1
-    Mypath: {fileID: 3359926463247727263}
-    Targets:
-    - {x: 10, y: 0, z: 0}
-    - {x: 10, y: 10, z: 0}
-    - {x: 0, y: 0, z: 0}
-    TargetIndex: 0
-    DistToNextTarget: 0
 --- !u!61 &1710798154145047856
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -202,6 +136,68 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &7333989905772698347
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3081559494801771456}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5b75c990c412c14e8acb7d64629d026, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Mult: 1
+  GroundCheckDistance: 0.1
+  GroundBodyVelocity: {x: 0, y: 0, z: 0}
+  GravityDownMagnitude: 0
+  GroundLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  MyGamelogicScript: {fileID: 0}
+  GravityDown: {x: 0, y: 0, z: 0}
+  MaxVelocity: 20
+  IsGrounded: 0
+  JumpHeight: 10
+  LookRotation: 0
+  InAirAccelReduction: 2
+  InAirMaxSpeedRatio: 2
+  IsGameRunning: 0
+  PrePauseVelocity: {x: 0, y: 0}
+  IsFlingered: 0
+  Velocity: {x: 0, y: 0, z: 0}
+  GroundDrag: 1
+  Acceleration: 0.1
+  Body: {fileID: 0}
+  MovementDirection: {x: 1, y: 0}
+  CanSeePlayer: 0
+  TargetPlayer: {fileID: 0}
+  DirectionToPlayer: {x: 0, y: 0, z: 0}
+  LayersToIgnore:
+    serializedVersion: 2
+    m_Bits: 0
+  translation:
+    Easing: 0
+    Speed: 0
+    direction: 0
+    edgeBehavior: 0
+    WaitAtStart:
+      Clamp: 0
+      EndTime: 0
+      Time: 0
+    WaitAtTarget:
+      Clamp: 0
+      EndTime: 0
+      Time: 0
+    TranslationTimer:
+      Clamp: 0
+      EndTime: 0
+      Time: 0
+    Mypath: {fileID: 0}
+    Targets: []
+    TargetIndex: 0
+    DistToNextTarget: 0
 --- !u!1 &5241444051219924831
 GameObject:
   m_ObjectHideFlags: 0
@@ -212,7 +208,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7423926994990146481}
   - component: {fileID: 865217152180442634}
-  - component: {fileID: 3359926463247727263}
+  - component: {fileID: 239451388268841439}
   m_Layer: 0
   m_Name: path
   m_TagString: Untagged
@@ -290,7 +286,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &3359926463247727263
+--- !u!114 &239451388268841439
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -299,7 +295,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5241444051219924831}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e090fd91a16948e4e8377c6e8faf5f25, type: 3}
+  m_Script: {fileID: 11500000, guid: 540f95a5e76baa14fa9e418cd2cf66df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   LockParentPos: 1

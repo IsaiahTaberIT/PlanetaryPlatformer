@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5007181305471906607}
   - component: {fileID: 1497435857916836016}
   - component: {fileID: 893563926840205632}
-  - component: {fileID: 1200961309543978095}
+  - component: {fileID: 5894121236193302526}
   m_Layer: 6
   m_Name: Planet
   m_TagString: Untagged
@@ -52,6 +52,9 @@ SpriteRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -89,7 +92,7 @@ SpriteRenderer:
   m_SpriteSortPoint: 0
 --- !u!50 &1497435857916836016
 Rigidbody2D:
-  serializedVersion: 4
+  serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -100,8 +103,8 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDrag: 0
-  m_AngularDrag: 0.05
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
   m_GravityScale: 1
   m_Material: {fileID: 6200000, guid: 102b5a45619f723499c2f7e5fb104d9f, type: 2}
   m_IncludeLayers:
@@ -122,6 +125,7 @@ CircleCollider2D:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5417465985800157398}
   m_Enabled: 1
+  serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -145,11 +149,11 @@ CircleCollider2D:
     m_Bits: 4294967295
   m_IsTrigger: 0
   m_UsedByEffector: 0
-  m_UsedByComposite: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  serializedVersion: 2
   m_Radius: 0.5
---- !u!114 &1200961309543978095
+--- !u!114 &5894121236193302526
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -158,9 +162,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 5417465985800157398}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f2c151bfcf913b0438718f37d93c2b52, type: 3}
+  m_Script: {fileID: 11500000, guid: 2dc60c5109204eb41b55e2afd57a9cfc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   GameLogicScript: {fileID: 0}
-  PlanetGravity: 150
-  _FalloffPower: 0
+  PlanetGravity: 100000
+  _FalloffPower: 2

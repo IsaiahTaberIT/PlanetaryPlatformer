@@ -8,6 +8,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 374946185556369920, guid: ca5957d48b97e3449adbc0b2768f20eb, type: 3}
+      propertyPath: m_SortingOrder
+      value: 1000
+      objectReference: {fileID: 0}
     - target: {fileID: 3627187298108589024, guid: ca5957d48b97e3449adbc0b2768f20eb, type: 3}
       propertyPath: Intensity
       value: 10
@@ -68,6 +72,18 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 18471720c4cdda043ada767e5d31a3f0, type: 2}
+    - target: {fileID: 8211558268486233866, guid: ca5957d48b97e3449adbc0b2768f20eb, type: 3}
+      propertyPath: LightColor.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8211558268486233866, guid: ca5957d48b97e3449adbc0b2768f20eb, type: 3}
+      propertyPath: LightColor.g
+      value: 0.52851844
+      objectReference: {fileID: 0}
+    - target: {fileID: 8211558268486233866, guid: ca5957d48b97e3449adbc0b2768f20eb, type: 3}
+      propertyPath: LightColor.r
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8384526739314993263, guid: ca5957d48b97e3449adbc0b2768f20eb, type: 3}
       propertyPath: m_LocalPosition.x
       value: 22.5

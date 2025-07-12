@@ -12,10 +12,10 @@ GameObject:
   - component: {fileID: 7125074535469838857}
   - component: {fileID: 2134531526854882114}
   - component: {fileID: 2651386805152709866}
-  - component: {fileID: 989084476121602369}
   - component: {fileID: 5536463386635035329}
   - component: {fileID: 2474139256962540369}
-  - component: {fileID: 5925466489900168312}
+  - component: {fileID: 8756175756687574245}
+  - component: {fileID: 4726271736378828209}
   m_Layer: 6
   m_Name: Black Hole
   m_TagString: Untagged
@@ -156,21 +156,6 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 0.5
---- !u!114 &989084476121602369
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2161216553969982491}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f2c151bfcf913b0438718f37d93c2b52, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GameLogicScript: {fileID: 0}
-  PlanetGravity: 50000
-  _FalloffPower: 2
 --- !u!198 &5536463386635035329
 ParticleSystem:
   m_ObjectHideFlags: 0
@@ -4982,7 +4967,7 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
---- !u!114 &5925466489900168312
+--- !u!114 &8756175756687574245
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4991,18 +4976,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 2161216553969982491}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9d013331be714c54d98e832414c23184, type: 3}
+  m_Script: {fileID: 11500000, guid: 2dc60c5109204eb41b55e2afd57a9cfc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GroundLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  MyGamelogicScript: {fileID: 0}
-  GravityDown: {x: 0, y: 0, z: 0}
-  MaxVelocity: 20
-  isGrounded: 0
-  JumpHeight: 10
-  LookRotation: 0
-  InAirAccelReduction: 2
-  IsGameRunning: 0
-  PrePauseVelocity: {x: 0, y: 0}
+  GameLogicScript: {fileID: 0}
+  PlanetGravity: 100000
+  _FalloffPower: 2
+--- !u!114 &4726271736378828209
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2161216553969982491}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 375fc8843e6618c4cb707d82b3324841, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
