@@ -170,7 +170,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     color.rgb = saturate(color.rgb);
     color.a = Alpha;
     
-    Result[id.xy] = Blend(Result[id.xy], color, Alpha, BlendMode);
+    Result[id.xy] = saturate(Blend(Result[id.xy], color, Alpha, BlendMode));
     //Result[id.xy] = Blend(Result[id.xy], color, Alpha, BlendMode);
 }
 

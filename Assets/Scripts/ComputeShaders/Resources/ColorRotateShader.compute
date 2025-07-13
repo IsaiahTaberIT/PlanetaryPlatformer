@@ -1,0 +1,33 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+#include "MyHelpers.hlsl"
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+float Shift;
+float3 Axis;
+float3 Pivot;
+
+[numthreads(8, 8, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+
+    float3 ShiftedHue = Result[id.xy].rgb;
+    float cosAngle = cos(Shift);
+    float3 q = Axis * sin(Shift);
+
+    ShiftedHue -= Pivot;
+    ShiftedHue.xyz = cosAngle * ShiftedHue + cross(q, ShiftedHue);
+    
+    float Dot = -dot(q, ShiftedHue);
+   
+    ShiftedHue.xyz = float3(Dot * -q + cosAngle * ShiftedHue + cross(ShiftedHue, -q));
+    
+    ShiftedHue += Pivot;
+    
+    ShiftedHue = saturate(ShiftedHue);
+    
+    float4 outputcolor = float4(ShiftedHue, Result[id.xy].a);
+    Result[id.xy] = saturate(outputcolor);
+}

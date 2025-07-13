@@ -1,11 +1,12 @@
-using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
-using static TextureMaker.LayerManager;
-using static UnityEngine.Mathf;
-using static TextureMaker.LayerManager.TextureLayer;
-using static TextureMaker.LayerManager.NoiseGpu;
+using Unity.Mathematics;
+using UnityEngine;
 using UnityEngine.Rendering;
+using static TextureMaker.LayerManager;
+using static TextureMaker.LayerManager.NoiseGpu;
+using static TextureMaker.LayerManager.TextureLayer;
+using static UnityEngine.Mathf;
 
 
 
@@ -240,7 +241,9 @@ public class TextureMaker : MonoBehaviour
                 saturation = 0,
                 contrast = 1,
                 transparency = 2,
-                hueshift = 3
+                hueshift = 3,
+                rotatecolor = 4,
+
             }
 
             public Filter()
@@ -371,6 +374,60 @@ public class TextureMaker : MonoBehaviour
                 if (computeshader == null)
                 {
                     computeshader = Resources.Load<ComputeShader>("StripesShader");
+                }
+
+
+                RenderTexture rt = tex;
+
+                ApplyShaderToRT(rt);
+
+                return tex;
+
+
+            }
+
+
+
+        }
+
+
+        [System.Serializable]
+        public class ColorRotateGpu : Filter
+        {
+
+
+  
+
+            public float Shift;
+            public Vector3 Axis = new Vector3(0, 0, 1);
+            public Vector3 Pivot = new Vector3(0.5f, 0.5f, 0.5f);
+
+
+
+            public ColorRotateGpu()
+            {
+                FilterType = FilterTypes.rotatecolor;
+                LastFilterType = FilterType;
+            }
+
+
+            public override void PassValuesToShader(RenderTexture rt, int kernel)
+            {
+                base.PassValuesToShader(rt, kernel);
+
+                computeshader.SetVector("Pivot", Pivot);
+                computeshader.SetVector("Axis", Axis);
+                computeshader.SetFloat("Shift", Shift);
+
+            }
+
+            public override RenderTexture Generate()
+            {
+              
+
+                if (computeshader == null)
+                {
+                    computeshader = Resources.Load<ComputeShader>("ColorRotateShader");
                 }
 
 
@@ -950,6 +1007,8 @@ public class TextureMaker : MonoBehaviour
                     return new HueShiftFilterGpu();
                 case Filter.FilterTypes.transparency:
                     return new TransparencyFilterGpu();
+                case Filter.FilterTypes.rotatecolor:
+                    return new ColorRotateGpu();
                 default:
                     return new SaturationFilterGpu();
             }

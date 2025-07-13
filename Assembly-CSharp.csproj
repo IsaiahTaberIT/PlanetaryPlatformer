@@ -162,6 +162,7 @@
     <None Include="Assets\TextMesh Pro\Examples &amp; Extras\Fonts\Roboto-Bold - License.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile-2-Pass.shader" />
     <None Include="Assets\Scripts\ComputeShaders\Resources\StripesShader.compute" />
+    <None Include="Assets\Scripts\ComputeShaders\Resources\ColorRotateShader.compute" />
     <None Include="Assets\TextMesh Pro\Examples &amp; Extras\Fonts\Unity - OFL.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
     <None Include="Assets\Scripts\ComputeShaders\Resources\TextureMakerComputeShader.compute" />
