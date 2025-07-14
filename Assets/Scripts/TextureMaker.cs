@@ -4,7 +4,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
 using static TextureMaker.LayerManager;
-using static TextureMaker.LayerManager.NoiseGpu;
+
 using static TextureMaker.LayerManager.TextureLayer;
 using static UnityEngine.Mathf;
 
@@ -303,9 +303,11 @@ public class TextureMaker : MonoBehaviour
         }
 
             [System.Serializable]
-        public class StripesGpu : DistortableLayer
+        public class StripesGpu : TextureLayer, ISubMaker
         {
+            public SubMaker distortion = new("Distortion Maker");
 
+            public SubMaker SM { get => distortion; set => distortion = value; }
 
             public BlendModes BlendMode;
 
@@ -318,7 +320,7 @@ public class TextureMaker : MonoBehaviour
 
             public StripesGpu(GameObject parent)
             {
-                Parent = parent;
+                distortion.Parent = parent;
                 Type = TextureLayerType.stripes;
                 LastType = Type;
             }
@@ -328,16 +330,11 @@ public class TextureMaker : MonoBehaviour
             {
                 base.PassValuesToShader(rt, kernel);
 
-                if (DistortionTex == null)
-                {
-                    DistortionTex  = new RenderTexture(tex.width, tex.height, 0, RenderTextureFormat.ARGBFloat);
-                    DistortionTex.enableRandomWrite = true;
-                    DistortionTex.Create();
-                }
-              
+                distortion.Dims = new(tex.width, tex.height);
 
-                computeshader.SetTexture(kernel, "DistortionTex", DistortionTex);
-                computeshader.SetFloat("DistortionFactor", DistortionFactor);
+
+                computeshader.SetTexture(kernel, "DistortionTex", distortion.Generate());
+                computeshader.SetFloat("DistortionFactor", distortion.DistortionFactor);
                 computeshader.SetFloat("Offset", Offset);
                 computeshader.SetVector("Dims", new Vector2(tex.width, tex.height));
                 computeshader.SetInt("BlendMode", (int)BlendMode);
@@ -349,25 +346,6 @@ public class TextureMaker : MonoBehaviour
 
             public override RenderTexture Generate()
             {
-                if (Maker != null)
-                {
-                    if(Maker.Manager.Parent == null)
-                    {
-                        Maker.Manager.Parent = Parent;
-                    }
-
-                    DistortionTex = base.Generate();
-                    Maker.Dimentions = new Vector2Int(tex.width, tex.height);
-                    Maker.GenerateAndApply();
-                }
-                else
-                {
-                    if (DistortionTextureMaker != null)
-                    {
-                        DistortionTextureMaker.TryGetComponent(out Maker);
-
-                    }
-                }
 
 
 
@@ -395,14 +373,9 @@ public class TextureMaker : MonoBehaviour
         public class ColorRotateGpu : Filter
         {
 
-
-  
-
-            public float Shift;
+            public float Degrees;
             public Vector3 Axis = new Vector3(0, 0, 1);
             public Vector3 Pivot = new Vector3(0.5f, 0.5f, 0.5f);
-
-
 
             public ColorRotateGpu()
             {
@@ -417,7 +390,7 @@ public class TextureMaker : MonoBehaviour
 
                 computeshader.SetVector("Pivot", Pivot);
                 computeshader.SetVector("Axis", Axis);
-                computeshader.SetFloat("Shift", Shift);
+                computeshader.SetFloat("Shift", Degrees * Deg2Rad);
 
             }
 
@@ -447,7 +420,7 @@ public class TextureMaker : MonoBehaviour
         [System.Serializable]
         public class NoiseGpu : TextureLayer
         {
-
+            public bool FeedInSeedNoise = false;
             public bool CoherentNoise = false;
             public BlendModes BlendMode;
             [Range(0f, 1f)] public float Alpha = 1f;
@@ -487,13 +460,30 @@ public class TextureMaker : MonoBehaviour
 
             public override void PassValuesToShader(RenderTexture Mainrt, int kernel)
             {
+                float floorscale = Floor(Scale);
 
-                Vector2 SeednoiseDims = new Vector2(tex.width, tex.height);
-                RenderTexture inputTexture = new RenderTexture(tex.width, tex.height, 0, RenderTextureFormat.ARGBFloat);
+                RenderTexture inputTexture;
+
+
+
+                if (FeedInSeedNoise)
+                {
+                    inputTexture = new RenderTexture(tex.width, tex.height, 0, RenderTextureFormat.ARGBFloat);
+
+                }
+                else
+                {
+                    Vector2Int SeednoiseDims = new Vector2Int((int)Floor(tex.width / floorscale), (int)Floor(tex.height / floorscale));
+                    SeednoiseDims += Vector2Int.one;
+                    inputTexture = new RenderTexture(SeednoiseDims.x, SeednoiseDims.y, 0, RenderTextureFormat.ARGBFloat);
+
+                }
+
+
                 inputTexture.enableRandomWrite = true;
                 inputTexture.Create();
 
-                if (CoherentNoise)
+                if (CoherentNoise && !FeedInSeedNoise)
                 {
                     NoiseGpu SeedNoise = new(Seed);
                     SeedNoise.tex = inputTexture;
@@ -516,7 +506,7 @@ public class TextureMaker : MonoBehaviour
                 computeshader.SetFloat("Power", Power);
                 computeshader.SetInt("UseCoherentNoise", Logic.BoolToInt(CoherentNoise));
 
-                computeshader.SetFloat("Scale", Floor(Scale));
+                computeshader.SetFloat("Scale", floorscale);
 
 
                 computeshader.SetFloat("Alpha", Alpha);
@@ -618,8 +608,13 @@ public class TextureMaker : MonoBehaviour
         }
 
         [System.Serializable]
-        public class RadialGradientGpu : TextureLayer
+        public class RadialGradientGpu : TextureLayer, ISubMaker
         {
+
+            public SubMaker distortion = new("Distortion Maker");
+
+            public SubMaker SM { get => distortion; set => distortion = value; }
+
             public BlendModes BlendMode;
             public BlendModes GradientBlendMode;
             public float Distortion;
@@ -643,7 +638,14 @@ public class TextureMaker : MonoBehaviour
             public override void PassValuesToShader(RenderTexture Mainrt, int kernel)
             {
                 base.PassValuesToShader(Mainrt, kernel);
-                computeshader.SetFloat("Distortion", Distortion * 10f);
+
+                distortion.Dims = new(tex.width, tex.height);
+
+                computeshader.SetTexture(kernel, "DistortionTex", distortion.Generate());
+
+                computeshader.SetFloat("DistortionFactor", distortion.DistortionFactor);
+
+
                 computeshader.SetVector("Dims", new Vector2(tex.width, tex.height));
                 computeshader.SetInt("GradientBlendMode", (int)GradientBlendMode);
                 computeshader.SetInt("BlendMode", (int)BlendMode);
@@ -659,6 +661,9 @@ public class TextureMaker : MonoBehaviour
             }
             public override RenderTexture Generate()
             {
+
+
+
                 if (computeshader == null)
                 {
                     computeshader = Resources.Load<ComputeShader>("RadialGradientShader");
@@ -876,43 +881,92 @@ public class TextureMaker : MonoBehaviour
             }
         }
 
-        [System.Serializable]
-        public class DistortableLayer : TextureLayer
+
+
+
+
+
+        public interface ISubMaker
         {
+            SubMaker SM { get; set; }
+        }
+
+
+
+
+
+
+
+        [System.Serializable]
+        public class SubMaker
+        {
+            public string Name;
+
+            public Vector2Int Dims = Vector2Int.one;
             [HideInInspector] public RenderTexture DistortionTex;
-            public GameObject DistortionTextureMaker;
+            public GameObject SubTextureMaker;
             public float DistortionFactor;
             [HideInInspector] public GameObject Parent;
             [HideInInspector] public TextureMaker Maker;
 
-            public DistortableLayer()
+            public SubMaker(string name)
             {
-                
+                Name = name;
             }
 
-            public override RenderTexture Generate()
+            public RenderTexture Generate()
             {
-                Maker.Manager.GenerateTexture(true);
 
-                if (DistortionTextureMaker == null)
+                DistortionTex = new RenderTexture(Dims.x, Dims.y, 0, RenderTextureFormat.ARGBFloat);
+                DistortionTex.enableRandomWrite = true;
+                DistortionTex.Create();
+
+                if (SubTextureMaker != null)
+                {
+                    SubTextureMaker.TryGetComponent(out Maker);
+
+                }
+
+                if (Maker != null)
+                {
+                    if (Maker.Manager.Parent == null)
+                    {
+                        Maker.Manager.Parent = Parent;
+                    }
+
+                    Maker.Dimentions = new Vector2Int(DistortionTex.width, DistortionTex.height);
+                    Maker.GenerateAndApply();
+                }
+               
+                if (Maker != null)
+                {
+                    Maker.Manager.GenerateTexture(true);
+                    DistortionTex = Maker.Manager.texture;
+                }
+
+                
+
+                if (SubTextureMaker == null)
                 {
                     DistortionFactor = 0;
                 }
 
-                return Maker.Manager.texture;
+          
+
+                return DistortionTex;
             }
-            public void CreateTextureMaker(string name)
+            public void CreateTextureMaker()
             {
-                if (DistortionTextureMaker == null)
+                if (SubTextureMaker == null)
                 {
                     if (Parent == null)
                     {
                         return;
                     }
 
-                    DistortionTextureMaker = new(name, new System.Type[] { typeof(SpriteRenderer), typeof(TextureMaker) });
-                    DistortionTextureMaker.transform.SetParent(Parent.transform);
-                    Maker = DistortionTextureMaker.GetComponent<TextureMaker>();
+                    SubTextureMaker = new(Name, new System.Type[] { typeof(SpriteRenderer), typeof(TextureMaker) });
+                    SubTextureMaker.transform.SetParent(Parent.transform);
+                    Maker = SubTextureMaker.GetComponent<TextureMaker>();
                 }
             }
         }
@@ -1068,11 +1122,11 @@ public class TextureMaker : MonoBehaviour
                     TextureLayers.RemoveAt(i);
                 }
 
-                if (TextureLayers[i] is DistortableLayer)
+                if (TextureLayers[i] is ISubMaker)
                 {
-                    if ((TextureLayers[i] as DistortableLayer).Parent == null)
+                    if ((TextureLayers[i] as ISubMaker).SM.Parent == null)
                     {
-                        (TextureLayers[i] as DistortableLayer).Parent = Parent;
+                        (TextureLayers[i] as ISubMaker).SM.Parent = Parent;
                     }
                    
                 }
@@ -1087,11 +1141,11 @@ public class TextureMaker : MonoBehaviour
                             GameObject.DestroyImmediate((TextureLayers[i] as CompositeGpu).MakerObject);
                         }
                     }
-                    else if (TextureLayers[i] is DistortableLayer && (TextureLayers[i] as DistortableLayer).DistortionTextureMaker != null)
+                    else if (TextureLayers[i] is ISubMaker && (TextureLayers[i] as ISubMaker).SM.SubTextureMaker != null)
                     {
-                        if ((TextureLayers[i] as DistortableLayer).DistortionTextureMaker.TryGetComponent(out TextureMaker _))
+                        if ((TextureLayers[i] as ISubMaker).SM.SubTextureMaker.TryGetComponent(out TextureMaker _))
                         {
-                            GameObject.DestroyImmediate((TextureLayers[i] as DistortableLayer).DistortionTextureMaker);
+                            GameObject.DestroyImmediate((TextureLayers[i] as ISubMaker).SM.SubTextureMaker);
                         }
                     }
 

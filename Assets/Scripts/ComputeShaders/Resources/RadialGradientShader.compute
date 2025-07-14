@@ -17,15 +17,24 @@ int BlendMode;
 int GradientBlendMode;
 float BlendPower;
 
+float DistortionFactor;
+RWTexture2D<float4> DistortionTex;
+
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
+    uint2 DistortedPosition = DistortPos(DistortionTex[id.xy], id.xy, DistortionFactor);
+    
+    
+    
+    
+    
     // TODO: insert actual code here!
     Radius /= 100.0;
     Center *= Dims;
     Radius *= min(Dims.x, Dims.y);
     
-    float t = length(id.xy - Center) / Radius;
+    float t = length(DistortedPosition - Center) / Radius;
    // t += (sin(2.0 * SignedAngle2D(normalize(id.xy - Center), normalize(Squish)))) * SquishPower;
 
     float4 newcolor;

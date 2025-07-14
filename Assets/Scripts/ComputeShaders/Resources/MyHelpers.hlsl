@@ -4,6 +4,26 @@ static const float Sqrt2 = 1.41421356237;
 
 static const float Sqrt3 = 1.7320508076;
 
+
+uint2 DistortPos(float4 DT, uint2 pos, float factor)
+{
+   // DT = saturate(DT);    
+    DT -= 0.5;
+    DT *= 2.0;
+    
+    DT *= factor;
+    DT *= DT.w;
+
+    if (length(DT) <= 0.01)
+    {
+        DT = float4(1, 1, 1, 1) * 0.01;
+    }
+    
+    return (DT.xy + pos);
+
+}
+
+
 float absPow(float x, float y)
 {
     return pow(abs(x), y);

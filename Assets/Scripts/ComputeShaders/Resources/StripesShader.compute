@@ -12,30 +12,25 @@ float4 Color1;
 float4 Color2;
 float Spacing;
 float2 Slope;
-float DistortionFactor;
+
 RWTexture2D<float4> Result;
+float DistortionFactor;
 RWTexture2D<float4> DistortionTex;
-[numthreads(8,8,1)]
+
+
+
+
+[numthreads(8, 8, 1)]
+
+
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    
-    // TODO: insert actual code here!
-    DistortionTex[id.xy] *= DistortionFactor;
-    
-    if (length(DistortionTex[id.xy]) <= 0.1)
-    {
-        DistortionTex[id.xy] = float4(1, 1, 1, 1) * 0.01;
+   
         
-
-    }
-    
-    DistortionTex[id.xy] *= DistortionTex[id.xy].w;
-
-
+    uint2 DistortedPosition = DistortPos((DistortionTex[id.xy] + 0.5) / 2.0, id.xy, DistortionFactor);
 
     
-    
-    float mod = (((id.x + DistortionTex[id.xy].x) - Dims.x / 2.0) * Slope.x + ((id.y + DistortionTex[id.xy].y) - Dims.y / 2.0) * Slope.y + length(Dims) * 10.0 + Offset) % Spacing;
+    float mod = (((DistortedPosition.x) - Dims.x / 2.0) * Slope.x + ((DistortedPosition.y) - Dims.y / 2.0) * Slope.y + length(Dims) * 10.0 + Offset) % Spacing;
    // bool useRotLerp = true;
     
     if (mod >= Spacing / 2.0)

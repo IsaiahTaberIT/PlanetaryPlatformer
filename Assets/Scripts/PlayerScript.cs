@@ -200,8 +200,6 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
     // Start is called before the first frame updater
     void Start()
     {
-
-
         if (MainCamera == null)
         {
             MainCamera = Camera.main.gameObject;

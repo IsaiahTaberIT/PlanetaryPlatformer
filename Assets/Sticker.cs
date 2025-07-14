@@ -37,6 +37,7 @@ public class Sticker : MonoBehaviour
           
             if (collision.TryGetComponent(out Sticker sticker))
             {
+               // Debug.Log("yes", sticker.gameObject);
                 if (sticker.SimpleCircle)
                 {
                     //  RaycastHit2D closestpoint = Physics2D.Raycast(transform.position, Direction, 5, GroundLayer);
@@ -73,14 +74,15 @@ public class Sticker : MonoBehaviour
                     Vector3 start = transform.position;
                     RaycastHit2D normalcheckCenter = Physics2D.Raycast(start, Direction, 5, GroundLayer);
 
-                    bool WallEvaluation = sticker.HandleWallIntersection ? true : (normalcheckCenter.collider.gameObject == sticker.Parentcollider.gameObject);
+                    bool WallEvaluation = sticker.HandleWallIntersection ? true : (normalcheckCenter.collider == sticker.Parentcollider);
 
                     if (normalcheckCenter && StickerInfo.StickerCooldown.GetRatio() >= 1 && WallEvaluation)
                     {
                         StickerInfo._Stickered = true;
 
+
                         // Body.AddForce(StickerInfo.StickerPull);
-                        //  Debug.Log(sticker._ParentCanMove);
+                         Debug.Log(sticker._ParentCanMove);
                         float movemetvelreduction = Vector3.Dot(-StickerInfo.StickerPull.normalized, MovementVel);
                         // Debug.Log(movemetvelreduction);
 
@@ -193,21 +195,15 @@ public class Sticker : MonoBehaviour
     {
 
 
-
-
-
-        try
-        {
-            if (transform.parent.gameObject == null)
-            {
-                return;
-            }
-        }
-        catch
+        if (transform.parent == null)
         {
             return;
-
         }
+
+
+
+
+
         GameObject parent = transform.parent.gameObject;
         Parentcollider = parent.GetComponent<Collider2D>();
         MyCollider = GetComponent<Collider2D>();

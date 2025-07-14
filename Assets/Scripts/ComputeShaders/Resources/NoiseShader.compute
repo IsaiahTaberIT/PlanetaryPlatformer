@@ -27,7 +27,6 @@ float PerlinNoiseFromTex(uint2 id)
 {
         
     uint localScale = Scale;
-   // uint2 quantizedPos = uint2(floor(float2((id.xy) / (float) localScale) * (float) localScale));
     uint2 quantizedPos = (id.xy / localScale) * localScale;
     
     
@@ -37,11 +36,7 @@ float PerlinNoiseFromTex(uint2 id)
     uint2 gridPos2 = floor(id.xy / Scale) + uint2(1, 1) + offset;
     uint2 gridPos3 = floor(id.xy / Scale) + uint2(1, 0) + offset;
     uint2 gridPos4 = floor(id.xy / Scale) + uint2(0, 1) + offset;
-    
-   // gridPos1 = ClampToBounds(gridPos1, Dims);
-   // gridPos2 = ClampToBounds(gridPos2, Dims);
-  //  gridPos3 = ClampToBounds(gridPos3, Dims);
-   // gridPos4 = ClampToBounds(gridPos4, Dims);
+   
 
     float2 cornerVectorDL = (Noise[gridPos1].rg * 2.0 - 1.0);
     float2 cornerVectorUR = (Noise[gridPos2].rg * 2.0 - 1.0);
@@ -63,7 +58,6 @@ float PerlinNoiseFromTex(uint2 id)
     float y1 = lerp(x1, x2, EaseInOut(posInGridDL.y, Power));
     
 
-   // return cornerDotDL;
     return y1 + 0.5;
 }
 
@@ -132,16 +126,14 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 
     float4 color = float4(0, 0, 0, 0);
  
-    
-   // float4 color = WhiteNoise(id.xy);
+  
     
     int index = (int) floor((id.x - Scale / 2) / Scale + (id.y * Dims.x) / Scale);
     
     if (UseCoherentNoise == true)
     {
       
-       // Result[id.xy] = Noise[id.xy];
-        //return;
+      
         color = BaseColor * PerlinNoiseFromTex(id.xy);
     }
     else
@@ -166,12 +158,10 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     
     
  
-   // color = BaseColor * ValueGrid[index];
     color.rgb = saturate(color.rgb);
     color.a = Alpha;
     
     Result[id.xy] = saturate(Blend(Result[id.xy], color, Alpha, BlendMode));
-    //Result[id.xy] = Blend(Result[id.xy], color, Alpha, BlendMode);
 }
 
 

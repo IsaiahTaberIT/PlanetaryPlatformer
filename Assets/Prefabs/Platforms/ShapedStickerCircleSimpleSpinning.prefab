@@ -171,9 +171,9 @@ MonoBehaviour:
   SpinInEditor: 1
   DisplayFunctions: 0
   RevolutionTimer:
-    Clamp: 1
+    Clamp: 0
     EndTime: 1
-    Time: 1
+    Time: 0.5442881
   Spin: 1
   Translate: 0
   Movementcontroller:
