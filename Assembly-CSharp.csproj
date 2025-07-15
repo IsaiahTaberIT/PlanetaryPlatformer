@@ -78,6 +78,7 @@
     <Compile Include="Assets\Scripts\AudioEvent.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\ChatController.cs" />
     <Compile Include="Assets\Scripts\CheckpointScript.cs" />
+    <Compile Include="Assets\Scripts\ShapeGenerator.cs" />
     <Compile Include="Assets\Scripts\PatrolingEnemy.cs" />
     <Compile Include="Assets\Scripts\StarGenData.cs" />
     <Compile Include="Assets\Scripts\DisableOnEnter.cs" />
@@ -102,7 +103,6 @@
     <Compile Include="Assets\Sticker.cs" />
     <Compile Include="Assets\SpinScript.cs" />
     <Compile Include="Assets\Scripts\LevelGraphics.cs" />
-    <Compile Include="Assets\Scripts\Shapes.cs" />
     <Compile Include="Assets\BackgroundScript.cs" />
     <Compile Include="Assets\Scripts\BuildingSprites.cs" />
     <Compile Include="Assets\Scripts\SimpleEnemy.cs" />
@@ -175,6 +175,7 @@
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
     <None Include="Assets\Scripts\ComputeShaders\Resources\SimpleBlendShader.compute" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
+    <None Include="Assets\Scripts\ComputeShaders\Resources\PolygonShader.compute" />
     <None Include="Assets\Scripts\ComputeShaders\Resources\MyHelpers.hlsl" />
     <None Include="Assets\TextMesh Pro\Shaders\SDFFunctions.hlsl" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />

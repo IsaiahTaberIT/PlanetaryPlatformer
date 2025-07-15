@@ -27,6 +27,18 @@ public static class Logic
         }
     }
 
+
+    public static Vector2[] ToVector2(this Vector3[] points, Vector2 Offset = default)
+    {
+        Vector2[] outpoints = new Vector2[points.Length];
+
+        for (int i = 0; i < points.Length; i++)
+        {
+            outpoints[i] = points[i] + (Vector3)Offset;
+        }
+
+        return outpoints;
+    }
     public static GameObject GetRootParent(this Transform obj)
     {
         if (obj.parent == null)

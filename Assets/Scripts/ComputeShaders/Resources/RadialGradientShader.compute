@@ -5,10 +5,7 @@
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
 RWTexture2D<float4> Result;
-float Angle;
 float2 Dims;
-float2 Squish;
-float SquishPower;
 float2 Center;
 float Radius;
 float4 Color1;
@@ -35,7 +32,6 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     Radius *= min(Dims.x, Dims.y);
     
     float t = length(DistortedPosition - Center) / Radius;
-   // t += (sin(2.0 * SignedAngle2D(normalize(id.xy - Center), normalize(Squish)))) * SquishPower;
 
     float4 newcolor;
 

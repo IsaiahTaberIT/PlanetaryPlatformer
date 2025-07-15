@@ -18,13 +18,20 @@ StructuredBuffer<float> Constants;
 StructuredBuffer<bool> UseAbsbools;
 
 RWTexture2D<float4> Result;
+float DistortionFactor;
+RWTexture2D<float4> DistortionTex;
 
 
 
 float4 BumpyCircle(float angle, uint2 pos, float4 startColor, float4 endColor)
-{
-  
-    float t = distance(pos.xy, uint2(Center.x, Center.y));
+{    
+    
+    
+    
+    
+    uint2 DistortedPosition = DistortPos((DistortionTex[pos]), pos, DistortionFactor);
+
+    float t = distance(DistortedPosition.xy, uint2(Center.x, Center.y));
     float height = 0;
     float Runningheight = 0;
 

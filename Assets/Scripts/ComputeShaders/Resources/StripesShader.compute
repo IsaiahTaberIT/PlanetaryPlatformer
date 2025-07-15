@@ -27,7 +27,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 {
    
         
-    uint2 DistortedPosition = DistortPos((DistortionTex[id.xy] + 0.5) / 2.0, id.xy, DistortionFactor);
+    uint2 DistortedPosition = DistortPos((DistortionTex[id.xy] + 0.5) / 4.0, id.xy, DistortionFactor);
 
     
     float mod = (((DistortedPosition.x) - Dims.x / 2.0) * Slope.x + ((DistortedPosition.y) - Dims.y / 2.0) * Slope.y + length(Dims) * 10.0 + Offset) % Spacing;

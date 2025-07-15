@@ -33,7 +33,6 @@ public class PlanetAlignmentScript : MonoBehaviour, Logic.IAngle
     public float Angle;
     public float FloatValue => Angle;
     public Vector3 Size;
-    private Vector3 _Lastpos;
     public Gravity[] _Planets;
     private Logic.RayRenderer Rayrenderer;
     [ContextMenu("Refresh Planet Array")]
@@ -119,19 +118,18 @@ public class PlanetAlignmentScript : MonoBehaviour, Logic.IAngle
         {
             _CurrentRadius = Vector2.Distance(transform.position, AlignmentTarget.transform.position);
 
-            if (transform.position != _Lastpos)
-            {
-                //  Radius = _CurrentRadius;
-                if (SnapAngle)
-                {
-                    Angle = Mathf.RoundToInt(Angle / (AngleSnapSize / Radius)) * (AngleSnapSize / Radius);
-                }
-                else
-                {
-                    Angle = -Vector2.SignedAngle(AlignmentTarget.transform.position - transform.position, Vector2.down);
 
-                }
+            //  Radius = _CurrentRadius;
+            if (SnapAngle)
+            {
+                Angle = Mathf.RoundToInt(Angle / (AngleSnapSize / Radius)) * (AngleSnapSize / Radius);
             }
+            else
+            {
+                Angle = -Vector2.SignedAngle(AlignmentTarget.transform.position - transform.position, Vector2.down);
+
+            }
+
 
             if (FixedRadius)
             {

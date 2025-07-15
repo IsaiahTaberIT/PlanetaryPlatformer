@@ -1,0 +1,111 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+#include "MyHelpers.hlsl"
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+
+int BlendMode;
+float2 Dims;
+float4 Color1;
+float4 Color2;
+RWTexture2D<float4> Result;
+
+
+//float DistortionFactor;
+//RWTexture2D<float4> DistortionTex;
+
+float inverseLerp(float start, float end, float value)
+{
+    return (value - start) / (end - start);
+}
+
+
+
+StructuredBuffer<float2> Verts;
+int VertCount;
+
+
+float4 OutputColor(float2 pos)
+{
+    uint count = 0;
+    
+    for (int i = 0; i < VertCount; i++)
+    {
+        int index2 = i + 1;
+        index2 = (index2 >= VertCount) ? 0 : index2;
+        
+        if (pos.x < max(Verts[i].x,Verts[index2].x))
+        {
+            if (pos.y < max(Verts[i].y, Verts[index2].y))
+            {
+                if (pos.y >= min(Verts[i].y, Verts[index2].y))
+                {
+               
+                    
+                    float yintersect = lerp(Verts[i].x, Verts[index2].x, inverseLerp(Verts[i].y, Verts[index2].y, pos.y));
+
+               
+                    if (pos.x <= yintersect)
+                    {
+                        count++;
+
+                    }
+                    
+                    
+                    
+                    
+                }
+
+            }
+
+        }
+        
+        
+            
+        
+
+    
+     
+
+        
+        
+    }
+    
+    
+    if (count % 2 == 1)
+    {
+        return Color1;
+    }
+    else
+    {
+        return Color2;
+    }
+    
+ 
+}
+
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+
+
+
+    
+    
+    
+    // TODO: insert actual code here!
+
+    float2 pos = (float2) id.xy;
+    pos = float2(pos.x / Dims.x, pos.y / Dims.x);
+    
+    float4 OutColor = OutputColor(pos);
+    
+    Result[id.xy] = Blend(Result[pos.xy], OutColor, OutColor.w, BlendMode);
+    
+    
+    
+    
+}
