@@ -116,6 +116,51 @@ public class TextureMaker : MonoBehaviour
 
         }
 
+        public class QuantizationFilterGpu : Filter
+        {
+            public bool QuantizeByValue = true;
+
+            [Min(1)] public float QuantizeFactor = 256;
+
+
+
+
+
+            public QuantizationFilterGpu()
+            {
+                FilterType = FilterTypes.quantization;
+                LastFilterType = FilterType;
+            }
+
+            public override void PassValuesToShader(RenderTexture rt, int kernel)
+            {
+                base.PassValuesToShader(rt, kernel);
+                computeshader.SetFloat("Scale", QuantizeFactor);
+                computeshader.SetInt("QuantizeByValue", Logic.BoolToInt(QuantizeByValue));
+
+
+
+            }
+            public override RenderTexture Generate()
+            {
+
+                if (computeshader == null)
+                {
+                    computeshader = Resources.Load<ComputeShader>("QuantizationShader");
+                }
+
+
+                RenderTexture rt = tex;
+
+
+                ApplyShaderToRT(rt);
+
+                return tex;
+            }
+
+
+        }
+
         public class TransparencyFilterGpu : Filter
         {
             public BlendModes BlendMode;
@@ -244,6 +289,8 @@ public class TextureMaker : MonoBehaviour
                 transparency = 2,
                 hueshift = 3,
                 rotatecolor = 4,
+                quantization = 5,
+
 
             }
 
@@ -305,8 +352,13 @@ public class TextureMaker : MonoBehaviour
 
 
         [System.Serializable]
-        public class PolygonGpu : TextureLayer
+        public class PolygonGpu : TextureLayer , IDistorionSubMaker
         {
+
+            public SubMaker distortion = new("Distortion Maker");
+
+            public SubMaker DistortionSM { get => distortion; set => distortion = value; }
+
             public ShapeGenerator.Shapes shape;
             public Vector2 Offset = new Vector2(0.5f,0.5f);
             ComputeBuffer VertsBuffer;
@@ -325,6 +377,10 @@ public class TextureMaker : MonoBehaviour
 
             public override void PassValuesToShader(RenderTexture rt, int kernel)
             {
+                distortion.Dims = new(tex.width, tex.height);
+                computeshader.SetTexture(kernel, "DistortionTex", distortion.Generate());
+
+                computeshader.SetFloat("DistortionFactor", distortion.Influence);
                 base.PassValuesToShader(rt, kernel);
                 shape.GenerateCirclePoints();
                 Verts = shape.Verts.ToVector2(Offset);
@@ -370,11 +426,11 @@ public class TextureMaker : MonoBehaviour
         }
 
         [System.Serializable]
-        public class StripesGpu : TextureLayer, ISubMaker
+        public class StripesGpu : TextureLayer, IDistorionSubMaker
         {
             public SubMaker distortion = new("Distortion Maker");
 
-            public SubMaker SM { get => distortion; set => distortion = value; }
+            public SubMaker DistortionSM { get => distortion; set => distortion = value; }
 
             public BlendModes BlendMode;
 
@@ -570,10 +626,7 @@ public class TextureMaker : MonoBehaviour
                 computeshader.SetFloat("NoiseDimensions", NoiseDimensions);
                 computeshader.SetFloat("Power", SmoothingPower);
                 computeshader.SetInt("UseCoherentNoise", Logic.BoolToInt(CoherentNoise));
-
                 computeshader.SetFloat("Scale", floorscale);
-
-
                 computeshader.SetFloat("Alpha", Alpha);
 
                 // im offseting by 5000 because if the input value is too small the result is too 
@@ -673,12 +726,12 @@ public class TextureMaker : MonoBehaviour
         }
 
         [System.Serializable]
-        public class RadialGradientGpu : TextureLayer, ISubMaker
+        public class RadialGradientGpu : TextureLayer, IDistorionSubMaker
         {
 
             public SubMaker distortion = new("Distortion Maker");
 
-            public SubMaker SM { get => distortion; set => distortion = value; }
+            public SubMaker DistortionSM { get => distortion; set => distortion = value; }
 
             public BlendModes BlendMode = BlendModes.RotLerp;
             public BlendModes GradientBlendMode = BlendModes.RotLerp;
@@ -790,10 +843,10 @@ public class TextureMaker : MonoBehaviour
         }
 
         [System.Serializable]
-        public class BumpyCircleGpu : TextureLayer ,ISubMaker
+        public class BumpyCircleGpu : TextureLayer ,IDistorionSubMaker
         {
             public SubMaker distortion = new("Distortion Maker");
-            public SubMaker SM { get => distortion; set => distortion = value; }
+            public SubMaker DistortionSM { get => distortion; set => distortion = value; }
 
             public BlendModes BlendMode;
 
@@ -956,15 +1009,17 @@ public class TextureMaker : MonoBehaviour
 
 
 
+     
 
-
-
-        public interface ISubMaker
+        public interface IDistorionSubMaker
         {
-            SubMaker SM { get; set; }
+            SubMaker DistortionSM { get; set; }
         }
 
-
+        public interface IMaskSubMaker
+        {
+            SubMaker MaskSM { get; set; }
+        }
 
 
 
@@ -1137,6 +1192,8 @@ public class TextureMaker : MonoBehaviour
                     return new TransparencyFilterGpu();
                 case Filter.FilterTypes.rotatecolor:
                     return new ColorRotateGpu();
+                case Filter.FilterTypes.quantization:
+                    return new QuantizationFilterGpu();
                 default:
                     return new SaturationFilterGpu();
             }
@@ -1198,15 +1255,17 @@ public class TextureMaker : MonoBehaviour
                     TextureLayers.RemoveAt(i);
                 }
 
-                if (TextureLayers[i] is ISubMaker)
+                if (TextureLayers[i] is IDistorionSubMaker)
                 {
-                    if ((TextureLayers[i] as ISubMaker).SM.Parent == null)
+                    if ((TextureLayers[i] as IDistorionSubMaker).DistortionSM.Parent == null)
                     {
-                        (TextureLayers[i] as ISubMaker).SM.Parent = Parent;
+                        (TextureLayers[i] as IDistorionSubMaker).DistortionSM.Parent = Parent;
                     }
                    
                 }
 
+
+                
 
                 if (TextureLayers[i].Type != TextureLayers[i].LastType)
                 {
@@ -1217,6 +1276,10 @@ public class TextureMaker : MonoBehaviour
                             GameObject.DestroyImmediate((TextureLayers[i] as CompositeGpu).MakerObject);
                         }
                     }
+                }
+
+                /*
+
                     else if (TextureLayers[i] is ISubMaker && (TextureLayers[i] as ISubMaker).SM.SubTextureMaker != null)
                     {
                         if ((TextureLayers[i] as ISubMaker).SM.SubTextureMaker.TryGetComponent(out TextureMaker _))
@@ -1227,6 +1290,8 @@ public class TextureMaker : MonoBehaviour
 
                     TextureLayers[i] = ReplaceLayer(TextureLayers[i].Type);
                 }
+
+                */
 
                 if (TextureLayers[i] is Filter)
                 {

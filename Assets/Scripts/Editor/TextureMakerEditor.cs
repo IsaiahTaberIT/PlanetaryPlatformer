@@ -155,9 +155,9 @@ public class TextureMakerEditor : Editor
              
         var layer = maker.Manager.TextureLayers[textureLayerList.index];
 
-        if (layer is ISubMaker)
+        if (layer is IDistorionSubMaker)
         {
-            menu.AddItem(new GUIContent("hi!"), false, () => (layer as ISubMaker).SM.CreateTextureMaker());
+            menu.AddItem(new GUIContent("Create Distortion Maker"), false, () => (layer as IDistorionSubMaker).DistortionSM.CreateTextureMaker());
         }
         menu.ShowAsContext();
     }

@@ -1,0 +1,52 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+
+
+bool QuantizeByValue;
+RWTexture2D<float4> Result;
+float Scale;
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+    
+    
+    float basecolors = 128;
+
+    
+    
+    float4 outputcolor = float4(0,0,0,0);
+    
+    if (QuantizeByValue)
+    {
+        float3 QuantizedValue = Result[id.xy].rgb;
+        float mag = length(QuantizedValue) * basecolors;
+        mag = (floor(mag / Scale) * Scale) / basecolors;
+        QuantizedValue = normalize(QuantizedValue) * mag;
+
+        outputcolor = float4(QuantizedValue, Result[id.xy].w);
+        
+        
+        
+    }
+    else
+    {
+        
+        
+        float3 QuantizedColor = Result[id.xy].rgb * basecolors;
+        QuantizedColor = (floor(QuantizedColor / Scale) * Scale) / basecolors;
+        
+        outputcolor = float4(QuantizedColor, Result[id.xy].w);
+      
+
+    }
+    
+    
+    Result[id.xy] = outputcolor;
+
+
+    //Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
+}

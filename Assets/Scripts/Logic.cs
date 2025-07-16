@@ -458,7 +458,7 @@ public static class Logic
     {
         if (snap > 0.01f)
         {
-            return Mathf.RoundToInt(value / snap) * snap;
+            return Mathf.Floor(value / snap) * snap;
         }
         else
         {

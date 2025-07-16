@@ -11,6 +11,8 @@ float2 Dims;
 float4 Color1;
 float4 Color2;
 RWTexture2D<float4> Result;
+float DistortionFactor;
+RWTexture2D<float4> DistortionTex;
 
 
 //float DistortionFactor;
@@ -98,12 +100,17 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     
     // TODO: insert actual code here!
 
-    float2 pos = (float2) id.xy;
+    uint2 DistortedPosition = DistortPos((DistortionTex[id.xy]), id.xy, DistortionFactor);
+    
+    float2 pos = (float2)DistortedPosition;
     pos = float2(pos.x / Dims.x, pos.y / Dims.x);
+    
+   
+
     
     float4 OutColor = OutputColor(pos);
     
-    Result[id.xy] = Blend(Result[pos.xy], OutColor, OutColor.w, BlendMode);
+    Result[id.xy] = Blend(Result[id.xy], OutColor, OutColor.w, BlendMode);
     
     
     

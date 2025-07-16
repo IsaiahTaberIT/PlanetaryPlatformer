@@ -23,8 +23,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
    
 
-    float Value = length(Gamma(initRGB)) / Sqrt3;
-    DeSat.rgb = float(1.0) * Value;
+    float Value = length((initRGB));
+    DeSat.rgb = normalize(float3(1, 1, 1)) * Value;
     DeSat.w = Result[id.xy].w;
     
     Result[id.xy] = Blend(Result[id.xy], DeSat, 1.0 - Saturation, BlendMode);

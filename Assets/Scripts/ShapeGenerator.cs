@@ -24,24 +24,29 @@ public class ShapeGenerator : MonoBehaviour
     [System.Serializable]
     public class Shapes
     {
+       // [Min(3)] public float ScaleRate = 1.0f;
+        public float AngleOffset = 0;
+        [Range(1, 360f)] public float MaxAngle = 360f;
+        public float Radius;
+        [Min(3)] public int Points = 3;
+        public ShapeType Type = 0;
+        public Vector3[] Verts;
+        public bool Index0AtCenter;
+
         public Shapes()
         {
            
         }
+
         public Shapes(bool IndexAtcenter) 
         {
             Index0AtCenter = IndexAtcenter;
         }
         public enum ShapeType
         {
-            Circle = 0,
+            RegularNGon = 0,
         }
-        [Range(1, 360f)] public float MaxAngle = 360f;
-        public float Radius;
-        [Min(3)]public int Points = 3;
-        public ShapeType Type = 0;
-        public Vector3[] Verts;
-        public bool Index0AtCenter;
+
 
         public void GenerateCirclePoints()
         {
@@ -80,13 +85,13 @@ public class ShapeGenerator : MonoBehaviour
           //  float startignrot = transform.eulerAngles.z * Mathf.Deg2Rad;
 
 
-
+            float angleoffsetRadians = AngleOffset * Mathf.Deg2Rad;
 
             for (int i = 0; i < Points; i++)
             {
                 float arcLength = i * segmentArcLength;
 
-                Vector3 direction = (new Vector2(Mathf.Sin(arcLength), Mathf.Cos(arcLength)).normalized);
+                Vector3 direction = (new Vector2(Mathf.Sin(arcLength + angleoffsetRadians), Mathf.Cos(arcLength + angleoffsetRadians)).normalized);
                 Vector3 pointPosition = Vector3.zero;
 
                 pointPosition = direction * Radius;
