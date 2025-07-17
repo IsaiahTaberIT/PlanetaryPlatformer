@@ -5,7 +5,13 @@
 // with cs.SetTexture
 
 
+
+int QuantizationMode;
+
 bool QuantizeByValue;
+bool QuantizeByPosition;
+
+float2 Dims;
 RWTexture2D<float4> Result;
 float Scale;
 [numthreads(8,8,1)]
@@ -20,27 +26,43 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     
     float4 outputcolor = float4(0,0,0,0);
     
-    if (QuantizeByValue)
+    if (QuantizationMode == 0)
     {
+        float3 QuantizedColor = Result[id.xy].rgb * basecolors;
+        QuantizedColor = (floor(QuantizedColor / Scale) * Scale) / basecolors;
+        
+        outputcolor = float4(QuantizedColor, Result[id.xy].w);
+        
+        
+        
+  
+        
+        
+        
+    }
+    else if (QuantizationMode == 1 )
+    {
+        
         float3 QuantizedValue = Result[id.xy].rgb;
         float mag = length(QuantizedValue) * basecolors;
         mag = (floor(mag / Scale) * Scale) / basecolors;
         QuantizedValue = normalize(QuantizedValue) * mag;
 
         outputcolor = float4(QuantizedValue, Result[id.xy].w);
-        
-        
-        
+      
+      
+
     }
     else
     {
         
-        
-        float3 QuantizedColor = Result[id.xy].rgb * basecolors;
-        QuantizedColor = (floor(QuantizedColor / Scale) * Scale) / basecolors;
-        
-        outputcolor = float4(QuantizedColor, Result[id.xy].w);
+        int intscale = (int) Scale;
+        uint2 quantizedpos = floor(id.xy / intscale) * intscale;
+
+     
       
+        
+            outputcolor = Result[quantizedpos];
 
     }
     

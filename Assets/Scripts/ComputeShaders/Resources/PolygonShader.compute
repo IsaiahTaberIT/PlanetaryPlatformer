@@ -8,15 +8,20 @@
 
 int BlendMode;
 float2 Dims;
-float4 Color1;
-float4 Color2;
+float4 PrimaryColor;
+float4 SecondaryColor;
 RWTexture2D<float4> Result;
 float DistortionFactor;
 RWTexture2D<float4> DistortionTex;
+RWTexture2D<float4> SecondaryInputTexture; // SIT
+bool OverrideWithMask; // OWM
+bool OverridePrimaryColor; // OPC
 
 
-//float DistortionFactor;
-//RWTexture2D<float4> DistortionTex;
+
+
+
+
 
 float inverseLerp(float start, float end, float value)
 {
@@ -78,22 +83,30 @@ float4 OutputColor(float2 pos)
     
     if (count % 2 == 1)
     {
-        return Color1;
+        return PrimaryColor;
     }
     else
     {
-        return Color2;
+        return SecondaryColor;
     }
     
  
 }
 
 
+
+
+
+
+
+
+
+
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
 
-
+    HandleMasking(OverrideWithMask, OverridePrimaryColor, PrimaryColor, SecondaryColor, SecondaryInputTexture[id.xy]);
 
     
     

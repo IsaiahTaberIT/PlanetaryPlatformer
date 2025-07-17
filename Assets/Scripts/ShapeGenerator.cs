@@ -27,10 +27,13 @@ public class ShapeGenerator : MonoBehaviour
        // [Min(3)] public float ScaleRate = 1.0f;
         public float AngleOffset = 0;
         [Range(1, 360f)] public float MaxAngle = 360f;
-        public float Radius;
+        public float Radius = 0.5f;
         [Min(3)] public int Points = 3;
         public ShapeType Type = 0;
-        public Vector3[] Verts;
+        public Vector3[] Verts = new Vector3[] 
+        {
+            Vector3.zero, Vector3.zero,     
+        };
         public bool Index0AtCenter;
 
         public Shapes()

@@ -8,8 +8,8 @@ RWTexture2D<float4> Result;
 float2 Squish;
 float2 Center;
 float Radius;
-float4 Color1;
-float4 Color2;
+float4 PrimaryColor;
+float4 SecondaryColor;
 int BlendMode;
 int GradientBlendMode;
 float BlendPower;
@@ -22,7 +22,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     Squish *= Radius;
     float t = length(id.xy - Center / Squish);
     
-    float4 newcolor = Blend(Color1, Color2, t, GradientBlendMode);
+    float4 newcolor = Blend(PrimaryColor, SecondaryColor, t, GradientBlendMode);
     
     newcolor = pow(abs(newcolor), 1 / BlendPower);
     

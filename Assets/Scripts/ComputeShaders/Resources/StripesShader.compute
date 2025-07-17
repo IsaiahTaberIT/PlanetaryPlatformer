@@ -8,8 +8,8 @@ int BlendMode;
 bool DoRotLerp;
 float2 Dims;
 float Offset;
-float4 Color1;
-float4 Color2;
+float4 PrimaryColor;
+float4 SecondaryColor;
 float Spacing;
 float2 Slope;
 
@@ -17,7 +17,9 @@ RWTexture2D<float4> Result;
 float DistortionFactor;
 RWTexture2D<float4> DistortionTex;
 
-
+RWTexture2D<float4> SecondaryInputTexture; // SIT
+bool OverrideWithMask; // OWM
+bool OverridePrimaryColor; // OPC
 
 
 [numthreads(8, 8, 1)]
@@ -25,7 +27,8 @@ RWTexture2D<float4> DistortionTex;
 
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-   
+    HandleMasking(OverrideWithMask, OverridePrimaryColor, PrimaryColor, SecondaryColor, SecondaryInputTexture[id.xy]);
+
         
     uint2 DistortedPosition = DistortPos((DistortionTex[id.xy] + 0.5) / 4.0, id.xy, DistortionFactor);
 
@@ -35,11 +38,11 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     
     if (mod >= Spacing / 2.0)
     {
-        Result[id.xy] = Blend(Result[id.xy], Color1, Color1.w, BlendMode);
+        Result[id.xy] = Blend(Result[id.xy], PrimaryColor, PrimaryColor.w, BlendMode);
     }
     else
     {
-        Result[id.xy] = Blend(Result[id.xy], Color2, Color2.w, BlendMode);
+        Result[id.xy] = Blend(Result[id.xy], SecondaryColor, SecondaryColor.w, BlendMode);
     }
         
     

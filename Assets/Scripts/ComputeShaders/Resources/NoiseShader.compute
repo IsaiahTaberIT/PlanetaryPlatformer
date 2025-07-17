@@ -6,22 +6,20 @@
 RWTexture2D<float4> Result;
 RWTexture2D<float4> Noise;
 int BlendMode;
+int NoiseBlendMode;
+
 float2 Dims;
 float Seed;
 float Scale;
 float Alpha;
-float4 BaseColor;
+float4 PrimaryColor;
+float4 SecondaryColor;
+
 int NoiseDimensions;
 float Power;
 bool UseCoherentNoise;
 
 
-float InverseLerp(float a, float b, float t)
-{
-    return (t - a) / (b - a);
-    // (value - start) / (end - start)
-}
-   
 
 float PerlinNoiseFromTex(uint2 id)
 {
@@ -132,26 +130,24 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     
     if (UseCoherentNoise == true)
     {
-      
-      
-        color = BaseColor * PerlinNoiseFromTex(id.xy);
+        color = Blend(PrimaryColor, SecondaryColor, PerlinNoiseFromTex(id.xy), NoiseBlendMode);
     }
     else
     {
         uint2 quantizedpos = floor(id.xy / Scale) * Scale;
         if (NoiseDimensions == 1)
         {
-            color = BaseColor * RandomValue(Dims.x, quantizedpos, Seed);
+            color = SecondaryColor * RandomValue(Dims, quantizedpos, Seed);
         
         }
         else if (NoiseDimensions == 2)
         {
-            color = float4(BaseColor.r * RandomValue(Dims.x, quantizedpos, Seed), BaseColor.g * RandomValue(Dims.x, quantizedpos, Seed + 0.1), 0, 0);
+            color = float4(SecondaryColor.r * RandomValue(Dims, quantizedpos, Seed), SecondaryColor.g * RandomValue(Dims, quantizedpos, Seed + 1), 0, 0);
         
         }
         else if (NoiseDimensions == 3)
         {
-            color = float4(BaseColor.r * RandomValue(Dims.x, quantizedpos, Seed), BaseColor.g * RandomValue(Dims.x, quantizedpos, Seed + 0.1), BaseColor.b * RandomValue(Dims.x, quantizedpos, Seed + 0.2), 0);
+            color = float4(SecondaryColor.r * RandomValue(Dims, quantizedpos, Seed), SecondaryColor.g * RandomValue(Dims, quantizedpos, Seed + 1), SecondaryColor.b * RandomValue(Dims, quantizedpos, Seed + 2), 0);
         
         }
     }
@@ -159,7 +155,8 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     
  
     color.rgb = saturate(color.rgb);
-    color.a = Alpha;
+    
+    color.a = PrimaryColor.w;
     
     Result[id.xy] = saturate(Blend(Result[id.xy], color, Alpha, BlendMode));
 }

@@ -5,8 +5,8 @@
 
 float2 Center;
 int BlendMode;
-float4 Color1;
-float4 Color2;
+float4 PrimaryColor;
+float4 SecondaryColor;
 int ArrayLength;
 float Radius;
 
@@ -107,7 +107,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     
   //  Result[id.xy] += DiagonalGradient(id, startColor, BaseColor) / 2;
     
-    Result[id.xy] = BumpyCircle(angle, id.xy, Color1, Color2);
+    Result[id.xy] = BumpyCircle(angle, id.xy, PrimaryColor, SecondaryColor);
 
     //Result[id.xy] /= 1;
 

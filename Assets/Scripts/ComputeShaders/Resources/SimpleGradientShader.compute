@@ -11,8 +11,8 @@ float BlendMode;
 float Distortion;
 
 float BlendPower;
-float4 Color1;
-float4 Color2;
+float4 PrimaryColor;
+float4 SecondaryColor;
 
 RWTexture2D<float4> Result;
 
@@ -28,7 +28,7 @@ void directionalGradient(uint2 pos)
     float t = (((noiseoffsetpos.x + offset.x + sqrPos.x) / Dims.x * Slope.x + (noiseoffsetpos.y + offset.y + sqrPos.y) / Dims.y * Slope.y));
     float4 newcolor;
 
-    newcolor = Blend(Color1, Color2, t, GradientBlendMode);
+    newcolor = Blend(PrimaryColor, SecondaryColor, t, GradientBlendMode);
 
     newcolor = pow(abs(newcolor), 1 / BlendPower);
     

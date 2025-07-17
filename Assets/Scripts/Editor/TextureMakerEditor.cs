@@ -159,6 +159,12 @@ public class TextureMakerEditor : Editor
         {
             menu.AddItem(new GUIContent("Create Distortion Maker"), false, () => (layer as IDistorionSubMaker).DistortionSM.CreateTextureMaker());
         }
+
+        if (layer is IMaskSubMaker)
+        {
+            menu.AddItem(new GUIContent("Create Secondary Maker"), false, () => (layer as IMaskSubMaker).MaskSM.CreateTextureMaker());
+        }
+
         menu.ShowAsContext();
     }
     ReorderableList CreateFromLayers(SerializedProperty layersProp)

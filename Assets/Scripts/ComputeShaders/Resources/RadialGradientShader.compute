@@ -8,8 +8,8 @@ RWTexture2D<float4> Result;
 float2 Dims;
 float2 Center;
 float Radius;
-float4 Color1;
-float4 Color2;
+float4 PrimaryColor;
+float4 SecondaryColor;
 int BlendMode;
 int GradientBlendMode;
 float BlendPower;
@@ -37,7 +37,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
     if (t < 1.0)
     {
-        newcolor = Blend(Color1, Color2, t, GradientBlendMode);
+        newcolor = Blend(PrimaryColor, SecondaryColor, t, GradientBlendMode);
     }
     else
     {

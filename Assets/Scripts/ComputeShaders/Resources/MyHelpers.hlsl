@@ -4,6 +4,37 @@ static const float Sqrt2 = 1.41421356237;
 
 static const float Sqrt3 = 1.7320508076;
 
+static const uint uintmax = 4294967295;
+
+float InverseLerp(float a, float b, float t)
+{
+    return (t - a) / (b - a);
+    // (value - start) / (end - start)
+}
+   
+
+
+void HandleMasking(bool OWM, bool OPC, inout float4 c1, inout float4 c2, float4 SITColor)
+{
+    if (OWM)
+    {
+        if (OPC)
+        {
+            c1 = SITColor;
+            
+        }
+        else
+        {
+            c2 = SITColor;
+        }
+        
+    }
+    
+}
+
+
+
+
 
 uint2 DistortPos(float4 DT, uint2 pos, float factor)
 {
@@ -48,15 +79,9 @@ float EaseInOut(float t, float power)
 }
 
   
-
-
-
-
-
-float RandomValue(float xdim, uint2 id, float localSeed)
+float FloatBasedRandomValue(float xdim, uint2 id, float localSeed)
 {
     
-   
     float value = id.y * xdim + id.x;
     value *= localSeed;
     value += localSeed;
@@ -64,13 +89,53 @@ float RandomValue(float xdim, uint2 id, float localSeed)
     value = (sin(value * 153.7342 + 57.2) + 1) * 99.76;
     value += 57.31;
     value *= 19.37;
+    float Floor1 = floor(value);
+    float Decimal1 = value % 1.0;
     value = (cos(value * 314.1592) + 1) * 31.7;
     value += 69.31;
     value *= 15.92;
     value = (sin(value * 1589.2415) + 1) * 103.7;
-    
+    value += 1.231;
+    float Floor2 = floor(value);
+    float Decimal2 = value % 1.0;
+    value = abs(dot(float2(Floor1, Decimal2 * 13211.232), float2(Decimal1 * 12312.931, Floor2 + 1.2134)));
+    value /= 123.2145;
+    value = abs(value);
+    value = (sin(value * 200) + 1.0) * 115.1;
+
     value %= 1.0;
     return value;
+    
+     
+    
+}
+
+
+
+
+float RandomValue(uint2 dims, uint2 id, uint localSeed)
+{
+    uint Uintvalue = id.y * dims.x + id.x;
+    Uintvalue *= localSeed;
+    Uintvalue = Uintvalue ^ 1123123123;
+    Uintvalue *= 3;
+    Uintvalue = Uintvalue ^ 2313123631;
+    Uintvalue *= 7;
+    Uintvalue = Uintvalue ^ 2098984732;
+    Uintvalue *= 11;
+    Uintvalue = Uintvalue ^ 3969759556;
+    Uintvalue *= 17;
+    Uintvalue = Uintvalue ^ 1653786262;
+    Uintvalue *= 31;
+    Uintvalue = Uintvalue ^ 3109876532;
+    Uintvalue *= id.y + dims.y * id.x;
+    
+  
+    
+    float OutValue = (float)Uintvalue / uintmax;
+
+    
+    return OutValue;
     
      
     
