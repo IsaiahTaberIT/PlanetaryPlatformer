@@ -37,6 +37,22 @@ int VertCount;
 float4 OutputColor(float2 pos)
 {
     uint count = 0;
+    float shortest = -1;
+    // calculating shortest distance to edge
+    for (int j = 0; j < VertCount; j++)
+    {
+        int index2 = j + 1;
+        index2 = (index2 >= VertCount) ? 0 : index2;
+        
+        float currentdist = DistanceToLine(pos, Verts[j], Verts[index2]);
+       
+        
+        if (shortest < 0 || shortest > currentdist)
+        {
+            shortest = currentdist;
+        }
+    }
+
     
     for (int i = 0; i < VertCount; i++)
     {
@@ -69,15 +85,6 @@ float4 OutputColor(float2 pos)
 
         }
         
-        
-            
-        
-
-    
-     
-
-        
-        
     }
     
     
@@ -87,7 +94,8 @@ float4 OutputColor(float2 pos)
     }
     else
     {
-        return SecondaryColor;
+        return Blend(PrimaryColor, SecondaryColor, EaseInOut(saturate(shortest * 5.0),3), 1, false);
+;
     }
     
  
@@ -114,16 +122,19 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     // TODO: insert actual code here!
 
     uint2 DistortedPosition = DistortPos((DistortionTex[id.xy]), id.xy, DistortionFactor);
-    
+
     float2 pos = (float2)DistortedPosition;
-    pos = float2(pos.x / Dims.x, pos.y / Dims.x);
+    
+    uint minlength = max(Dims.x, Dims.y);
+    
+    pos /= minlength;
     
    
 
     
     float4 OutColor = OutputColor(pos);
     
-    Result[id.xy] = Blend(Result[id.xy], OutColor, OutColor.w, BlendMode);
+    Result[id.xy] = Blend(Result[id.xy], OutColor, OutColor.w, BlendMode, true);
     
     
     

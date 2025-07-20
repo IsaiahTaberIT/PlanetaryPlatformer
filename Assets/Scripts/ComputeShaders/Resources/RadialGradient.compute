@@ -22,10 +22,10 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     Squish *= Radius;
     float t = length(id.xy - Center / Squish);
     
-    float4 newcolor = Blend(PrimaryColor, SecondaryColor, t, GradientBlendMode);
+    float4 newcolor = Blend(PrimaryColor, SecondaryColor, t, GradientBlendMode, false);
     
     newcolor = pow(abs(newcolor), 1 / BlendPower);
     
-    Result[id.xy] = Blend(Result[id.xy], newcolor, t, BlendMode);
+    Result[id.xy] = Blend(Result[id.xy], newcolor, t, BlendMode, true);
 
 }

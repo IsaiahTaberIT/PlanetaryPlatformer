@@ -6,6 +6,13 @@ static const float Sqrt3 = 1.7320508076;
 
 static const uint uintmax = 4294967295;
 
+
+
+
+
+
+
+
 float InverseLerp(float a, float b, float t)
 {
     return (t - a) / (b - a);
@@ -176,14 +183,18 @@ float4 RotLerp(float4 v1, float4 v2, float t)
     float3 dir = normalize(lerp(v1.rgb, v2.rgb, t));
     
     float4 output;
-    output.rgb = dir * rgbMag;
+    
+    if (rgbMag < 0.0001)
+    {
+        output.rgb = 0;
+    }
+    else
+    {
+        output.rgb = dir * rgbMag;
+    }
+    
     output.w = alpha;
     return output;
-    
-    
-    
-    
-    
 }
 
 float SignedAngle2D(float2 from, float2 to)
@@ -294,50 +305,75 @@ float lerpMinMax(float a, float b,float t,bool invert)
 }
 
 
-float4 Blend(float4 c1, float4 c2, float t, int type)
+float4 Blend(float4 c1, float4 c2, float t, int type, bool oldAlpha)
 {
     float4 output = float4(1.0, 1.0, 1.0, 1.0);
     float alpha;
     switch (type)
     {
-
- 
         case 0:
         // lerp
             output = lerp(c1, c2, t);
+            if (oldAlpha)
+            {
+                output.w = max(c1.w, c2.w);
+
+            }
+
             break;
         case 1:
         // rotlerp
             output = RotLerp(c1, c2, t);
+            if (oldAlpha)
+            {
+                output.w = max(c1.w, c2.w);
+
+            }
             break;
         case  2:
         // multiply
-            alpha = c1.w;
-        
-        
             output = c1 * (c2 * (t) + (1 - t));
-            output.w = alpha;
+            if (oldAlpha)
+            {
+                output.w = max(c1.w, c2.w);
+
+            }
             break;
         case 3:
         // darken only 
             output = float4(lerpMinMax(c1.x, c2.x, t, false), lerpMinMax(c1.y, c2.y, t, false), lerpMinMax(c1.z, c2.z, t, false), lerpMinMax(c1.w, c2.w, t, false));
+            if (oldAlpha)
+            {
+                output.w = max(c1.w, c2.w);
+
+            }
             break;
         case 4:
         // lighten only
             output = float4(lerpMinMax(c1.x, c2.x, t, true), lerpMinMax(c1.y, c2.y, t, true), lerpMinMax(c1.z, c2.z, t, true), lerpMinMax(c1.w, c2.w, t, true));
+            if (oldAlpha)
+            {
+                output.w = max(c1.w, c2.w);
+
+            }
             break;
         
         case  5:
         // addition
             output = c1 + c2 * t;
+            if (oldAlpha)
+            {
+                output.w = max(c1.w, c2.w);
+
+            }
             break;
         case 6:
         // subtract
-           
-       // float3 rgbcolor =
-
-        
-            output = float4(c1.rgb - c2.rgb * t, c1.w);
+    
+            output = c1 - c2 * t;
+         
+            output.w = c1.w;
+            
             break;
         case 7:
             output = c2;
@@ -352,4 +388,42 @@ float4 Blend(float4 c1, float4 c2, float t, int type)
     }
         
     return output;
+}
+
+
+float DistanceToLine(float2 p, float2 v1, float2 v2)
+{
+    
+    //float slope = (v1.y - v2.y) / (v1.x - v2.x);
+    
+ //   p *= 2;
+    
+    float2 a = v1 - v2;
+    float2 b = v1 - p;
+    
+    // project
+    
+    float abDot = dot(a, b);
+    
+    float sqrlength = (a.x * a.x) + (a.y * a.y);
+    
+    
+    float t = abDot / sqrlength;
+    
+    if (t > 1)
+    {
+        return distance(p, v2);
+
+    }
+    
+    if (t < 0)
+    {
+        return distance(p, v1);
+    }
+    
+    float2 projectedpoint = lerp(v1, v2, t);
+    
+    return distance(projectedpoint, p);
+    
+   
 }

@@ -16,6 +16,6 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float4 color1 = InputTex[id.xy];
     float4 color2 = Result[id.xy];
 
-    Result[id.xy] = Blend(color1, color2, Opacity * color2.w, BlendMode);
+    Result[id.xy] = Blend(color1, color2, Opacity * color2.w, BlendMode, true);
 
 }

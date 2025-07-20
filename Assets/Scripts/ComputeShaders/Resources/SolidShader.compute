@@ -18,7 +18,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
 
 
-    Result[id.xy] = Blend(Result[id.xy], Color, Color.w, BlendMode);
+    Result[id.xy] = Blend(Result[id.xy], Color, Color.w, BlendMode,true);
     
 
 

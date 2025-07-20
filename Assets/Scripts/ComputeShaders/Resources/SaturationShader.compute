@@ -27,7 +27,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     DeSat.rgb = normalize(float3(1, 1, 1)) * Value;
     DeSat.w = Result[id.xy].w;
     
-    Result[id.xy] = Blend(Result[id.xy], DeSat, 1.0 - Saturation, BlendMode);
+    Result[id.xy] = Blend(Result[id.xy], DeSat, 1.0 - Saturation, BlendMode, true);
     
    
 }

@@ -31,9 +31,15 @@ public class TextureMakerEditor : Editor
 
     public override void OnInspectorGUI()
     {
+      //  maker.SetFront();
+
+
+
         EditorGUI.BeginChangeCheck();
 
         serializedObject.Update();
+
+
 
         List<SerializedProperty> properties = new List<SerializedProperty>();
         SerializedProperty property = serializedObject.GetIterator();
@@ -155,15 +161,27 @@ public class TextureMakerEditor : Editor
              
         var layer = maker.Manager.TextureLayers[textureLayerList.index];
 
-        if (layer is IDistorionSubMaker)
+        if (layer is IDistortionSubMaker disSM)
         {
-            menu.AddItem(new GUIContent("Create Distortion Maker"), false, () => (layer as IDistorionSubMaker).DistortionSM.CreateTextureMaker());
+            menu.AddItem(new GUIContent("Create Distortion Maker"), false, () => disSM.DistortionSM.CreateTextureMaker());
         }
 
-        if (layer is IMaskSubMaker)
+        if (layer is IReplaceColorSubMaker rcSM)
         {
-            menu.AddItem(new GUIContent("Create Secondary Maker"), false, () => (layer as IMaskSubMaker).MaskSM.CreateTextureMaker());
+            menu.AddItem(new GUIContent("Create Secondary Maker"), false, () =>  rcSM.ReplaceColorSM.CreateTextureMaker());
         }
+
+        if (layer is IMaskSubMaker maskSM)
+        {
+            menu.AddItem(new GUIContent("Create Mask Maker"), false, () => maskSM.MaskSM.CreateTextureMaker());
+        }
+
+        if (layer is ISecondarySubMaker secSM)
+        {
+            menu.AddItem(new GUIContent("Create Secondary Maker"), false, () => secSM.SecondarySM.CreateTextureMaker());
+        }
+
+
 
         menu.ShowAsContext();
     }

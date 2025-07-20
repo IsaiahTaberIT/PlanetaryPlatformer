@@ -27,9 +27,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     
     
     // TODO: insert actual code here!
-    Radius /= 100.0;
+   // Radius /= 100.0;
     Center *= Dims;
-    Radius *= min(Dims.x, Dims.y);
     
     float t = length(DistortedPosition - Center) / Radius;
 
@@ -37,7 +36,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
     if (t < 1.0)
     {
-        newcolor = Blend(PrimaryColor, SecondaryColor, t, GradientBlendMode);
+        newcolor = Blend(PrimaryColor, SecondaryColor, t, GradientBlendMode, false);
     }
     else
     {
@@ -47,6 +46,6 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     
     newcolor = pow(abs(newcolor), 1.0 / BlendPower);
 
-    Result[id.xy] = Blend(Result[id.xy], newcolor, newcolor.w, BlendMode);
+    Result[id.xy] = Blend(Result[id.xy], newcolor, newcolor.w, BlendMode, true);
 
 }

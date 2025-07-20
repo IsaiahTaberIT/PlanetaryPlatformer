@@ -8,33 +8,42 @@ float2 Dims;
 float2 Slope;
 float GradientBlendMode;
 float BlendMode;
-float Distortion;
 
 float BlendPower;
 float4 PrimaryColor;
 float4 SecondaryColor;
+
+float DistortionFactor;
+RWTexture2D<float4> DistortionTex;
+
 
 RWTexture2D<float4> Result;
 
 void directionalGradient(uint2 pos)
 {
     Slope = normalize(Slope);
+    
+    uint2 DistortedPosition = DistortPos((DistortionTex[pos] + 0.5) / 4.0, pos, DistortionFactor);
+
+    
     float2 sqrPos = Dims / 2 * Slope;
 
+    
+    
     float2 offset = -Dims / 2;
     
-    float2 noiseoffsetpos = pos.xy;
+    float2 noiseoffsetpos = DistortedPosition;
 
     float t = (((noiseoffsetpos.x + offset.x + sqrPos.x) / Dims.x * Slope.x + (noiseoffsetpos.y + offset.y + sqrPos.y) / Dims.y * Slope.y));
     float4 newcolor;
 
-    newcolor = Blend(PrimaryColor, SecondaryColor, t, GradientBlendMode);
+    newcolor = Blend(PrimaryColor, SecondaryColor, t, GradientBlendMode, false);
 
     newcolor = pow(abs(newcolor), 1 / BlendPower);
     
-    float4 color = Blend(Result[pos.xy], newcolor, newcolor.w, BlendMode);
+    float4 color = Blend(Result[pos.xy], newcolor, newcolor.w, BlendMode, true);
     
-    Result[pos.xy] = color;
+    Result[pos.xy] = saturate(color);
 }
 
 

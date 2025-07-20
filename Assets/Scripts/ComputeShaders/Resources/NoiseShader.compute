@@ -130,7 +130,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     
     if (UseCoherentNoise == true)
     {
-        color = Blend(PrimaryColor, SecondaryColor, PerlinNoiseFromTex(id.xy), NoiseBlendMode);
+        color = Blend(PrimaryColor, SecondaryColor, PerlinNoiseFromTex(id.xy), NoiseBlendMode, false);
     }
     else
     {
@@ -158,7 +158,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     
     color.a = PrimaryColor.w;
     
-    Result[id.xy] = saturate(Blend(Result[id.xy], color, Alpha, BlendMode));
+    Result[id.xy] = saturate(Blend(Result[id.xy], color, Alpha, BlendMode, true));
 }
 
 

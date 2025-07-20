@@ -18,13 +18,19 @@ using static UnityEngine.Rendering.ProbeAdjustmentVolume;
 
 public class TextureMaker : MonoBehaviour
 {
-    public Vector2Int Dimentions = new Vector2Int(256,256);
+    public const int BaseSize = 256;
+    public Vector2Int Dimentions = new Vector2Int(BaseSize, BaseSize);
+    [Min(0.01f)] public float Ratio = 1;
+    private float _LastRatio;
+
+    public bool LockRatio = false;
+    private Vector2Int _OldDimentions = new Vector2Int(BaseSize, BaseSize);
     public Texture2D OutputTexture;
 
 
     public LayerManager Manager = new();
 
-
+    public int MaxResolution = 4096 * 4096;
     public static Color RandomColor()
     {
         System.Random rng = new ();
@@ -55,11 +61,70 @@ public class TextureMaker : MonoBehaviour
 
         if (TryGetComponent(out SpriteRenderer renderer))
         {
+            Ratio = Ratio > 100 ? 100 : Ratio;
+
+    
+
+            if (LockRatio)
+            {
+                if (_OldDimentions.x != Dimentions.x || Ratio != _LastRatio)
+                {
+               
+                    Dimentions.y = (int)(Ratio * Dimentions.x);
+             
+                }
+                else if (_OldDimentions.y != Dimentions.y)
+                {
+                   
+
+                     Dimentions.x = (int)(1.0f/ Ratio * Dimentions.y);
+
+                }
+
+            }
+            else
+            {
+                Ratio = (float)Dimentions.y / (float)Dimentions.x;
+            }
+
+
+
+            if (Dimentions.x < 4)
+            {
+                Dimentions.x = 4;
+
+            }
+
+            if (Dimentions.y < 4)
+            {
+                Dimentions.y = 4;
+
+            }
+
+
+            if (_OldDimentions.x * _OldDimentions.y > MaxResolution)
+            {
+                _OldDimentions = _OldDimentions / 2;
+
+            }
+
+            if (Dimentions.x * Dimentions.y > MaxResolution)
+            {
+                Dimentions = _OldDimentions;
+
+
+            }
+
+            _LastRatio = Ratio;
+            _OldDimentions = Dimentions;
+
+
             Manager.Dimentions = Dimentions;
             Manager.GenerateTexture(true);
 
             OutputTexture = new(Dimentions.x,Dimentions.y);
 
+            OutputTexture.filterMode = FilterMode.Point;
             RenderTexture.active = Manager.texture;
             OutputTexture.ReadPixels(new Rect(0, 0, OutputTexture.width, OutputTexture.height), 0, 0);
             OutputTexture.Apply();
@@ -73,6 +138,14 @@ public class TextureMaker : MonoBehaviour
             renderer.sprite = sprite;
         }
 
+
+        float ScaleRatio = transform.localScale.magnitude / transform.lossyScale.magnitude;
+      //  ScaleRatio -= 0.25f;
+
+
+        transform.localScale = Vector3.one / new Vector2(Manager.texture.width, Manager.texture.height).magnitude * (181.02f * 1f/0.75f) * ScaleRatio;
+
+
     }
 
 
@@ -83,11 +156,11 @@ public class TextureMaker : MonoBehaviour
     public class LayerManager
     {
         
-        public Vector2Int Dimentions = new Vector2Int(256, 256);
+        public Vector2Int Dimentions = new Vector2Int(BaseSize, BaseSize);
 
         [SerializeReference] public List<TextureLayer> TextureLayers = new();
         public RenderTexture texture;
-        public GameObject Parent;
+        [HideInInspector] public GameObject Parent;
         public void CreateNewLayer()
         {
             
@@ -131,7 +204,7 @@ public class TextureMaker : MonoBehaviour
         {
             public QuantizationModes QuantizationMode = 0;
 
-            [Min(1)] public float QuantizeFactor = 256;
+            [Min(1)] public float QuantizeFactor = 5;
 
             public enum QuantizationModes
             {
@@ -323,6 +396,95 @@ public class TextureMaker : MonoBehaviour
             }
         }
 
+
+        [System.Serializable]
+        public class CustomMaskGPU : TextureLayer , ISecondarySubMaker, IMaskSubMaker
+        {
+            public MaskModes MaskMode;
+            public bool Invert;
+
+            [Range(0f,1f)] public float Threshold = 0.5f;
+            [HideInInspector] public GameObject Parent;
+            public GameObject ParentSM { get => Parent; set => Parent = value; }
+
+            public SubMaker mask = new("Mask Maker");
+            public SubMaker MaskSM { get => mask; set => mask = value; }
+
+            public SubMaker secondary = new("Secondary Maker");
+            public SubMaker SecondarySM { get => secondary; set => secondary = value; }
+
+
+            public enum MaskModes 
+            {
+            
+                byValue = 0,
+                byValueThreshold = 1,
+                byColor = 2,
+                byHue = 3,
+
+
+
+
+
+
+            }
+
+            public BlendModes BlendMode = BlendModes.RotLerp;
+            public Color ComparisonColor = RandomColor();
+
+            public CustomMaskGPU()
+            {
+                Type = TextureLayerType.customMask;
+                LastType = Type;
+            }
+
+            public override void PassValuesToShader(RenderTexture rt, int kernel)
+            {
+                base.PassValuesToShader(rt, kernel);
+
+                computeshader.SetFloat("Threshold", Threshold);
+
+                computeshader.SetInt("Invert", Logic.BoolToInt(Invert));
+
+                computeshader.SetInt("MaskMode", (int)MaskMode);
+
+                computeshader.SetVector("ComparisonColor", ComparisonColor);
+
+
+                mask.Dims = new(tex.width, tex.height);
+                computeshader.SetTexture(kernel, "MaskTex", mask.Generate());
+
+                secondary.Dims = new(tex.width, tex.height);
+                computeshader.SetTexture(kernel, "SecondaryInputTexture", secondary.Generate());
+
+
+
+                computeshader.SetInt("BlendMode", (int)BlendMode);
+
+            }
+
+            public override RenderTexture Generate()
+            {
+                if (computeshader == null)
+                {
+                    computeshader = Resources.Load<ComputeShader>("CustomMaskShader");
+                }
+
+                RenderTexture rt = tex;
+
+                ApplyShaderToRT(rt);
+
+                return tex;
+
+            }
+        }
+
+
+
+
+
+
+
         [System.Serializable]
         public class SolidGpu : TextureLayer
         {
@@ -374,19 +536,19 @@ public class TextureMaker : MonoBehaviour
 
 
         [System.Serializable]
-        public class PolygonGpu : TextureLayer , IDistorionSubMaker, IMaskSubMaker
+        public class PolygonGpu : TextureLayer , IDistortionSubMaker, IReplaceColorSubMaker
         {
-            public GameObject Parent;
+            [HideInInspector] public GameObject Parent;
             public GameObject ParentSM { get => Parent; set => Parent = value; }
 
 
        
 
-            public SubMaker distortion = new("Distortion Maker");
-            public SubMaker DistortionSM { get => distortion; set => distortion = value; }
+            public DistortionMaker distortion = new("Distortion Maker");
+            public DistortionMaker DistortionSM { get => distortion; set => distortion = value; }
 
-            public MaskMaker secondary = new("Secondary Maker");
-            public MaskMaker MaskSM { get => secondary; set => secondary = value; }
+            public ReplaceColorSubMaker secondary = new("Secondary Maker");
+            public ReplaceColorSubMaker ReplaceColorSM { get => secondary; set => secondary = value; }
 
             public ShapeGenerator.Shapes shape = new();
             public Vector2 Offset = new Vector2(0.5f,0.5f);
@@ -419,13 +581,30 @@ public class TextureMaker : MonoBehaviour
                 computeshader.SetInt("OverrideWithMask", Logic.BoolToInt(secondary.OverrideWithMask));
                 computeshader.SetInt("OverridePrimaryColor", Logic.BoolToInt(secondary.OverridePrimaryColor));
 
-
-
-
-                computeshader.SetFloat("DistortionFactor", distortion.Influence);
+                Vector2 dims = new Vector2(tex.width, tex.height);
+                float rootmagnitude = Sqrt(dims.magnitude);
+                distortion.Influence = distortion.Maker == null ? 0 : distortion.Influence;
+                computeshader.SetFloat("DistortionFactor", distortion.Influence * rootmagnitude / BaseSize);
             
                 shape.GenerateCirclePoints();
-                Verts = shape.Verts.ToVector2(Offset);
+                float ratioY = (float)tex.height / (float)tex.width;
+                float ratioX = 1 / ratioY;
+
+                if (ratioY >= 1)
+                {
+                    ratioY = 1;
+                }
+
+                if (ratioX >= 1) 
+                {
+                    ratioX = 1;
+                }
+             
+
+
+                    Vector2 screenSpaceOffset = new Vector2(Offset.x * ratioX, ratioY * Offset.y);
+
+                Verts = shape.Verts.ToVector2(screenSpaceOffset);
 
 
 
@@ -472,25 +651,28 @@ public class TextureMaker : MonoBehaviour
         }
 
         [System.Serializable]
-        public class StripesGpu : TextureLayer, IDistorionSubMaker, IMaskSubMaker
+        public class StripesGpu : TextureLayer, IDistortionSubMaker, IReplaceColorSubMaker
         {
+            public bool Fuzzy;
+            [Min(0.01f)] public float BlendPower = 1;
 
-            public GameObject Parent;
+            [HideInInspector] public GameObject Parent;
             public GameObject ParentSM { get => Parent; set => Parent = value; }
 
          
 
-            public MaskMaker secondary = new("Secondary Maker");
-            public SubMaker DistortionSM { get => distortion; set => distortion = value; }
+            public ReplaceColorSubMaker secondary = new("Secondary Maker");
+            public DistortionMaker DistortionSM { get => distortion; set => distortion = value; }
 
-            public SubMaker distortion = new("Distortion Maker");
+            public DistortionMaker distortion = new("Distortion Maker");
 
-            public MaskMaker MaskSM { get => secondary; set => secondary = value; }
+            public ReplaceColorSubMaker ReplaceColorSM { get => secondary; set => secondary = value; }
 
             public BlendModes BlendMode = BlendModes.RotLerp;
+            public BlendModes GradientBlendMode = BlendModes.RotLerp;
 
             public float Angle;
-            public float Spacing = 128;
+            public float Spacing = 40;
             [Min(0f)] public float Offset;
             private Vector2 Slope => Quaternion.AngleAxis(-Angle, new Vector3(0, 0, 1)) * Vector2.up;
             public Color PrimaryColor = RandomColor();
@@ -508,13 +690,23 @@ public class TextureMaker : MonoBehaviour
             {
                 distortion.Parent = Parent;
                 distortion.Dims = new(tex.width, tex.height);
-                computeshader.SetTexture(kernel, "DistortionTex", distortion.Generate());
+
+                RenderTexture temp1 = distortion.Generate();
 
                 secondary.Parent = Parent;
                 secondary.Dims = new(tex.width, tex.height);
-                computeshader.SetTexture(kernel, "SecondaryInputTexture", secondary.Generate());
+                RenderTexture temp2 = secondary.Generate();
+
+
+                computeshader.SetTexture(kernel, "DistortionTex", temp1);
+                computeshader.SetTexture(kernel, "SecondaryInputTexture", temp2);
+
+
+                computeshader.SetInt("GradientBlendMode", (int)GradientBlendMode);
+                computeshader.SetInt("Fuzzy", Logic.BoolToInt(Fuzzy));
                 computeshader.SetInt("OverrideWithMask", Logic.BoolToInt(secondary.OverrideWithMask));
                 computeshader.SetInt("OverridePrimaryColor", Logic.BoolToInt(secondary.OverridePrimaryColor));
+                computeshader.SetFloat("BlendPower", BlendPower);
 
 
 
@@ -522,13 +714,16 @@ public class TextureMaker : MonoBehaviour
 
 
                 base.PassValuesToShader(rt, kernel);
-
-                computeshader.SetFloat("DistortionFactor", distortion.Influence);
-                computeshader.SetFloat("Offset", Offset);
-                computeshader.SetVector("Dims", new Vector2(tex.width, tex.height));
+                Vector2 dims = new Vector2(tex.width, tex.height);
+               // float min = Mathf.Min(dims.x, dims.y);
+                float rootmagnitude = Mathf.Sqrt(dims.magnitude);
+                distortion.Influence = distortion.Maker == null ? 0 : distortion.Influence;
+                computeshader.SetFloat("DistortionFactor", distortion.Influence * rootmagnitude / BaseSize);
+                computeshader.SetFloat("Offset", Offset * dims.magnitude / (BaseSize / 2));
+                computeshader.SetVector("Dims", dims);
                 computeshader.SetInt("BlendMode", (int)BlendMode);
                 computeshader.SetVector("Slope", Slope);
-                computeshader.SetFloat("Spacing", Spacing);
+                computeshader.SetFloat("Spacing", Spacing * Max(tex.width, tex.height) / BaseSize);
                 computeshader.SetVector("PrimaryColor", PrimaryColor);
                 computeshader.SetVector("SecondaryColor", SecondaryColor);
             }
@@ -564,7 +759,7 @@ public class TextureMaker : MonoBehaviour
 
             public float Degrees;
             public Vector3 Axis = new Vector3(0, 0, 1);
-            public Vector3 Pivot = new Vector3(0.5f, 0.5f, 0.5f);
+            public Vector3 Pivot = Vector3.zero;
 
             public ColorRotateGpu()
             {
@@ -615,7 +810,7 @@ public class TextureMaker : MonoBehaviour
             public BlendModes NoiseBlendMode = (BlendModes)1;
 
             [Range(0f, 1f)] public float Alpha = 1f;
-            [Min(1f)] public float Scale = 1;
+            [Min(0.01f)] public float Scale = 1;
             [Range(1, 3)] public int NoiseDimensions = 1;
             public Color PrimaryColor = Color.black;
             public Color SecondaryColor = Color.white;
@@ -652,8 +847,26 @@ public class TextureMaker : MonoBehaviour
 
             public override void PassValuesToShader(RenderTexture Mainrt, int kernel)
             {
-                float floorscale = Floor(Scale);
+                //   Scale = (CoherentNoise && Scale <= 2) ? 2 : Scale;
+                float floorscale = 0;
 
+                if (CoherentNoise)
+                {
+                    floorscale = Scale * Max(tex.width, tex.height) / 100;
+                    floorscale = Floor(floorscale);
+
+                    if (floorscale < 2f)
+                    {
+                      //  Scale = 2.0f / Min(tex.width, tex.height);
+                        floorscale = 2;
+                    }
+                }
+                else
+                {
+                    Scale = (Scale < 1) ? 1 : Scale;
+                    floorscale = Floor(Scale);
+
+                }
                 RenderTexture inputTexture;
 
 
@@ -740,7 +953,7 @@ public class TextureMaker : MonoBehaviour
         {
             public bool PassInBackgound = false;
             public BlendModes BlendMode = (BlendModes)1;
-            public GameObject Parent;
+            [HideInInspector] public GameObject Parent;
             public GameObject MakerObject;
             private TextureMaker Maker;
             [Range(0f,1f)]public float Opacity;
@@ -807,15 +1020,15 @@ public class TextureMaker : MonoBehaviour
         }
 
         [System.Serializable]
-        public class RadialGradientGpu : TextureLayer, IDistorionSubMaker
+        public class RadialGradientGpu : TextureLayer, IDistortionSubMaker
         {
 
-            public GameObject Parent;
+            [HideInInspector] public GameObject Parent;
             public GameObject ParentSM { get => Parent; set => Parent = value; }
 
-            public SubMaker distortion = new("Distortion Maker");
+            public DistortionMaker distortion = new("Distortion Maker");
 
-            public SubMaker DistortionSM { get => distortion; set => distortion = value; }
+            public DistortionMaker DistortionSM { get => distortion; set => distortion = value; }
 
             public BlendModes BlendMode = BlendModes.RotLerp;
             public BlendModes GradientBlendMode = BlendModes.RotLerp;
@@ -823,7 +1036,7 @@ public class TextureMaker : MonoBehaviour
             public Vector2 Center = Vector2.one/2f;
             public Color PrimaryColor = RandomColor();
             public Color SecondaryColor = RandomColor();
-            public float Radius;
+            public float Radius = 10;
 
             public RadialGradientGpu()
             {
@@ -845,13 +1058,19 @@ public class TextureMaker : MonoBehaviour
 
                 computeshader.SetTexture(kernel, "DistortionTex", distortion.SubTex);
 
-                computeshader.SetFloat("DistortionFactor", distortion.Influence);
+                Vector2 dims = new Vector2(tex.width, tex.height);
+                float rootmagnitude = Sqrt(dims.magnitude);
+                distortion.Influence = distortion.Maker == null ? 0 : distortion.Influence;
+
+                computeshader.SetFloat("DistortionFactor", distortion.Influence * rootmagnitude / BaseSize);
+
+                computeshader.SetFloat("Radius", Radius * dims.magnitude / BaseSize);
 
 
-                computeshader.SetVector("Dims", new Vector2(tex.width, tex.height));
+                computeshader.SetVector("Dims", dims);
                 computeshader.SetInt("GradientBlendMode", (int)GradientBlendMode);
                 computeshader.SetInt("BlendMode", (int)BlendMode);
-                computeshader.SetFloat("Radius", Radius);
+
                 computeshader.SetFloat("BlendPower", Sqrt(Blend));
 
                 computeshader.SetVector("Dims", new Vector2(tex.width, tex.height));
@@ -881,8 +1100,15 @@ public class TextureMaker : MonoBehaviour
 
 
         [System.Serializable]
-        public class SimpleGradientGpu : TextureLayer
+        public class SimpleGradientGpu : TextureLayer , IDistortionSubMaker
         {
+
+            [HideInInspector] public GameObject Parent;
+            public GameObject ParentSM { get => Parent; set => Parent = value; }
+
+            public DistortionMaker distortion = new("Distortion Maker");
+            public DistortionMaker DistortionSM { get => distortion; set => distortion = value; }
+
             public BlendModes BlendMode;
             public BlendModes GradientBlendMode;
             [Range(1f, 256f)] public float Blend;
@@ -902,7 +1128,18 @@ public class TextureMaker : MonoBehaviour
 
             public override void PassValuesToShader(RenderTexture Mainrt, int kernel)
             {
+                distortion.Parent = Parent;
+                distortion.Dims = new(tex.width, tex.height);
+                distortion.Generate();
+
                 base.PassValuesToShader(Mainrt, kernel);
+
+                Vector2 dims = new Vector2(tex.width, tex.height);
+                float rootmagnitude = Sqrt(dims.magnitude);
+                distortion.Influence = distortion.Maker == null ? 0 : distortion.Influence;
+                computeshader.SetFloat("DistortionFactor", distortion.Influence * rootmagnitude / BaseSize);
+                computeshader.SetTexture(kernel, "DistortionTex", distortion.SubTex);
+
                 computeshader.SetVector("Dims", new Vector2(tex.width, tex.height));
                 computeshader.SetInt("GradientBlendMode", (int)GradientBlendMode);
                 computeshader.SetInt("BlendMode", (int)BlendMode);
@@ -927,16 +1164,23 @@ public class TextureMaker : MonoBehaviour
         }
 
         [System.Serializable]
-        public class BumpyCircleGpu : TextureLayer ,IDistorionSubMaker
+        public class BumpyCircleGpu : TextureLayer ,IDistortionSubMaker
         {
 
-            public GameObject Parent;
+            [HideInInspector] public GameObject Parent;
             public GameObject ParentSM { get => Parent; set => Parent = value; }
 
-            public SubMaker distortion = new("Distortion Maker");
-            public SubMaker DistortionSM { get => distortion; set => distortion = value; }
+            public DistortionMaker distortion = new("Distortion Maker");
+            public DistortionMaker DistortionSM { get => distortion; set => distortion = value; }
 
             public BlendModes BlendMode = BlendModes.RotLerp;
+
+            public Color PrimaryColor = RandomColor();
+            public Color SecondaryColor = RandomColor();
+
+            public List<Octave> Octaves = new();
+            public Vector2 Center = Vector2.one / 2f;
+            public float Radius = 0.5f;
 
             static Octave Default = new(false, 0, 0, 10, 1, 6);
             public BumpyCircleGpu()
@@ -947,8 +1191,7 @@ public class TextureMaker : MonoBehaviour
 
             }
 
-            public Color PrimaryColor = RandomColor();
-            public Color SecondaryColor = RandomColor();
+        
             [System.Serializable]
             public struct Octave
             {
@@ -974,7 +1217,7 @@ public class TextureMaker : MonoBehaviour
 
             void ApplyOctavesAndGenerate()
             {
-                    distortion.Parent = Parent;
+                distortion.Parent = Parent;
                 distortion.Dims = new(tex.width, tex.height);
                 distortion.Generate();
 
@@ -983,8 +1226,8 @@ public class TextureMaker : MonoBehaviour
                     computeshader = Resources.Load<ComputeShader>("BumpyCircleShader");
                 }
 
-                int width = tex.width;
-                int height = tex.height;
+                Vector2 dims = new Vector2(tex.width, tex.height);
+
 
                 RenderTexture rt = tex;
                // Debug.Log(tex.IsCreated());
@@ -992,8 +1235,8 @@ public class TextureMaker : MonoBehaviour
                 int kernel = computeshader.FindKernel("CSMain");
                 computeshader.SetTexture(kernel, "Result", rt);
 
-                int threadGroupsX = CeilToInt(width / 8f);
-                int threadGroupsY = CeilToInt(height / 8f);
+                int threadGroupsX = CeilToInt(dims.x / 8f);
+                int threadGroupsY = CeilToInt(dims.y / 8f);
 
                 int[] abs = new int[20];
                 float[] offset = new float[20];
@@ -1012,7 +1255,7 @@ public class TextureMaker : MonoBehaviour
                     abs[i] = Logic.BoolToInt(Octaves[i].Abs);
                     offset[i] = Octaves[i].offset;
                     constant[i] = Octaves[i].constant;
-                    magnitude[i] = Octaves[i].magnitude;
+                    magnitude[i] = Octaves[i].magnitude * dims.magnitude / BaseSize;
                     power[i] = Octaves[i].power;
                     spacings[i] = Octaves[i].spacing;
                     //  Debug.Log(spacings[i]);
@@ -1020,9 +1263,11 @@ public class TextureMaker : MonoBehaviour
                 }
 
 
-            
 
-                computeshader.SetFloat("DistortionFactor", distortion.Influence);
+
+                float rootmagnitude = Sqrt(dims.magnitude);
+                distortion.Influence = distortion.Maker == null ? 0 : distortion.Influence;
+                computeshader.SetFloat("DistortionFactor", distortion.Influence * rootmagnitude / BaseSize);
                 computeshader.SetTexture(kernel, "DistortionTex", distortion.SubTex);
 
                 // Create and set ComputeBuffers
@@ -1059,13 +1304,13 @@ public class TextureMaker : MonoBehaviour
 
                 computeshader.SetInt("BlendMode", (int)BlendMode);
 
-                computeshader.SetVector("Center", new Vector4(Center.x * width, Center.y * height));
+                computeshader.SetVector("Center",Center * dims);
 
                 computeshader.SetVector("PrimaryColor", PrimaryColor);
                 computeshader.SetVector("SecondaryColor", SecondaryColor);
 
                 computeshader.SetInt("ArrayLength", Octaves.Count);
-                computeshader.SetFloat("Radius", Radius);
+                computeshader.SetFloat("Radius", Radius * dims.magnitude / BaseSize);
 
 
 
@@ -1084,9 +1329,7 @@ public class TextureMaker : MonoBehaviour
 
 
             }
-            public List<Octave> Octaves = new();
-            public Vector2 Center;
-            public float Radius;
+     
 
             public override RenderTexture Generate()
             {
@@ -1100,35 +1343,58 @@ public class TextureMaker : MonoBehaviour
         public interface ISubmaker
         {
             GameObject ParentSM { get; set; }
+
         }
 
-        public interface IDistorionSubMaker : ISubmaker
+        public interface IDistortionSubMaker : ISubmaker
         {
-            SubMaker DistortionSM { get; set; }
+            DistortionMaker DistortionSM { get; set; }
         }
 
         public interface IMaskSubMaker : ISubmaker
         {
-            MaskMaker MaskSM { get; set; }
+            SubMaker MaskSM { get; set; }
+        }
+
+        public interface IReplaceColorSubMaker : ISubmaker
+        {
+            ReplaceColorSubMaker ReplaceColorSM { get; set; }
         }
 
 
+        public interface ISecondarySubMaker : ISubmaker
+        {
+            SubMaker SecondarySM { get; set; }
+        }
+
+
+
         [System.Serializable]
-        public class MaskMaker : SubMaker
+        public class ReplaceColorSubMaker : SubMaker
         {
 
             public bool OverrideWithMask;
             public bool OverridePrimaryColor;
 
-            public MaskMaker(string name)
+            public ReplaceColorSubMaker(string name)
             {
                 Name = name;
             }
 
-
-
         }
 
+
+        [System.Serializable]
+        public class DistortionMaker : SubMaker
+        {
+            public float Influence;
+
+            public DistortionMaker(string name)
+            {
+                Name = name;
+            }
+
+        }
 
 
 
@@ -1137,10 +1403,9 @@ public class TextureMaker : MonoBehaviour
         {
             public string Name;
 
-            public Vector2Int Dims = Vector2Int.one;
+            [HideInInspector] public Vector2Int Dims = Vector2Int.one;
             [HideInInspector] public RenderTexture SubTex;
             public GameObject SubTextureMaker;
-            public float Influence;
 
             [HideInInspector] public GameObject Parent;
             [HideInInspector] public TextureMaker Maker;
@@ -1184,14 +1449,6 @@ public class TextureMaker : MonoBehaviour
                     SubTex = Maker.Manager.texture;
                 }
 
-                
-
-                if (SubTextureMaker == null)
-                {
-                    Influence = 0;
-                }
-
-          
 
                 return SubTex;
             }
@@ -1264,6 +1521,8 @@ public class TextureMaker : MonoBehaviour
                 radialGradient = 6,
                 noise = 7,
                 polygon = 8,
+                customMask = 9,
+
 
 
             }
@@ -1359,6 +1618,8 @@ public class TextureMaker : MonoBehaviour
                     return new NoiseGpu();
                 case TextureLayer.TextureLayerType.polygon:
                     return new PolygonGpu();
+                case TextureLayer.TextureLayerType.customMask:
+                    return new CustomMaskGPU();
                 default:
                     return new SimpleGradientGpu();
             }
@@ -1399,8 +1660,9 @@ public class TextureMaker : MonoBehaviour
                     {
                         sub.ParentSM = Parent;
                     }
+                    
 
-                    if (sub is IDistorionSubMaker subdis)
+                    if (sub is IDistortionSubMaker subdis)
                     {
                         if (subdis.DistortionSM.Parent == null)
                         {
@@ -1408,6 +1670,34 @@ public class TextureMaker : MonoBehaviour
                         }
 
                     }
+
+                    if (sub is IReplaceColorSubMaker subreplace)
+                    {
+                        if (subreplace.ReplaceColorSM.Parent == null)
+                        {
+                            (subreplace).ReplaceColorSM.Parent = Parent;
+                        }
+
+                    }
+
+                    if (sub is ISecondarySubMaker subsec)
+                    {
+                        if (subsec.SecondarySM.Parent == null)
+                        {
+                            (subsec).SecondarySM.Parent = Parent;
+                        }
+
+                    }
+
+                    if (sub is IMaskSubMaker submask)
+                    {
+                        if (submask.MaskSM.Parent == null)
+                        {
+                            (submask).MaskSM.Parent = Parent;
+                        }
+
+                    }
+
                 }
                 
 

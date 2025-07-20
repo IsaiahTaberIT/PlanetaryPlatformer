@@ -3,7 +3,7 @@
 #include "MyHelpers.hlsl"
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
-
+bool Fuzzy;
 int BlendMode;
 bool DoRotLerp;
 float2 Dims;
@@ -12,6 +12,8 @@ float4 PrimaryColor;
 float4 SecondaryColor;
 float Spacing;
 float2 Slope;
+float BlendPower;
+int GradientBlendMode;
 
 RWTexture2D<float4> Result;
 float DistortionFactor;
@@ -35,17 +37,38 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     
     float mod = (((DistortedPosition.x) - Dims.x / 2.0) * Slope.x + ((DistortedPosition.y) - Dims.y / 2.0) * Slope.y + length(Dims) * 10.0 + Offset) % Spacing;
    // bool useRotLerp = true;
-    
-    if (mod >= Spacing / 2.0)
+    float4 endcolor = float4(1, 1, 1, 1);
+    if (!Fuzzy)
     {
-        Result[id.xy] = Blend(Result[id.xy], PrimaryColor, PrimaryColor.w, BlendMode);
+        if (mod >= Spacing / 2.0)
+        {
+            endcolor = Blend(Result[id.xy], PrimaryColor, PrimaryColor.w, BlendMode, true);
+        }
+        else
+        {
+            endcolor = Blend(Result[id.xy], SecondaryColor, SecondaryColor.w, BlendMode, true);
+        }
+        
+        Result[id.xy] = endcolor;
     }
     else
     {
-        Result[id.xy] = Blend(Result[id.xy], SecondaryColor, SecondaryColor.w, BlendMode);
+        float shiftedmod = ((mod + (Spacing * 0.75))) % Spacing;
+        float t = abs((shiftedmod / (Spacing / 2.0)) - 1);
+        t = EaseInOut(t, BlendPower);
+        endcolor = Result[id.xy] = Blend(PrimaryColor, SecondaryColor, t, GradientBlendMode, false);
+        Result[id.xy] = Blend(Result[id.xy], endcolor, endcolor.w, BlendMode, true);
+
     }
+   
         
     
+    
+   
+    
+    
+    
+
   
   
     

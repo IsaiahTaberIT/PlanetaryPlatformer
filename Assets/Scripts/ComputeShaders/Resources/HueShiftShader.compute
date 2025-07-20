@@ -90,19 +90,19 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     if (selector < 1)
     {
         
-        ShiftedHue = Blend(EndBSpace, EndRSpace, t, BlendMode);
+        ShiftedHue = Blend(EndBSpace, EndRSpace, t, BlendMode, false);
 
     }
     else if (selector < 2 && selector >= 1)
     {
        
-        ShiftedHue = Blend(EndRSpace, EndGSpace, t, BlendMode);
+        ShiftedHue = Blend(EndRSpace, EndGSpace, t, BlendMode, false);
 
     }
     else if (selector >= 2)
     {
         
-        ShiftedHue = Blend(EndGSpace, EndBSpace, t, BlendMode);
+        ShiftedHue = Blend(EndGSpace, EndBSpace, t, BlendMode, false);
     }
 
 

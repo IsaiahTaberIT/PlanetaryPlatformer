@@ -188,6 +188,7 @@
     <None Include="Assets\Scripts\ComputeShaders\Resources\SaturationShader.compute" />
     <None Include="Assets\Scripts\ComputeShaders\Resources\HueShiftShader.compute" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Surface.cginc" />
+    <None Include="Assets\Scripts\ComputeShaders\Resources\CustomMaskShader.compute" />
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
     <None Include="Assets\Scripts\ComputeShaders\Resources\QuantizationShader.compute" />
     <None Include="Assets\Scripts\ComputeShaders\Resources\SimpleGradientShader.compute" />

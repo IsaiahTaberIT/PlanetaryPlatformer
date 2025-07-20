@@ -65,11 +65,11 @@ float4 BumpyCircle(float angle, uint2 pos, float4 startColor, float4 endColor)
     
     if ((t - Runningheight) < Radius)
     {
-        return Blend(Result[pos.xy], startColor, startColor.w, BlendMode);
+        return Blend(Result[pos.xy], startColor, startColor.w, BlendMode, true);
     }
     else
     {
-        return Blend(Result[pos.xy], endColor, endColor.w,BlendMode);
+        return Blend(Result[pos.xy], endColor, endColor.w, BlendMode, true);
     }
     
    
