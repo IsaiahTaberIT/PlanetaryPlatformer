@@ -17,19 +17,10 @@ public class MainMenuLogicScript : MonoBehaviour
     [Range(0f, 10f)] public float CameraLerpRate = 0.1f;
     public Vector3 WorldMousePos;
     public Image BackgroundImage;
-    
 
-
-    
     private void Update()
     {
-       
-
-
         WorldMousePos = new Vector3(Input.mousePosition.x / Screen.width - 0.5f, Input.mousePosition.y / Screen.height - 0.5f) * CameraRangeScale * 100;
-       // WorldMousePos = MainCamera.ScreenToViewportPoint(Input.mousePosition);
-      //  WorldMousePos = (WorldMousePos - Vector3.one * 0.5f) * 2f;
-     //   WorldMousePos.x *= MainCamera.aspect;
         WorldMousePos.z = MainCamera.transform.position.z;
         
         MainCamera.transform.position = Logic.LerpVector(MainCamera.transform.position, WorldMousePos, CameraLerpRate * Time.deltaTime);
@@ -87,14 +78,10 @@ public class MainMenuLogicScript : MonoBehaviour
     public void LoadLevelByIndex(int Index)
     {
         SceneManager.LoadScene(Index);
-        //SceneManager.SetActiveScene(scene);
-        //SceneManager.UnloadSceneAsync(SceneManager.GetActiveScene().name);
     }
     [ContextMenu("LoadLevelName")]
     public void LoadLevelByName(string sceneName)
     {
         SceneManager.LoadScene(sceneName);
-        //SceneManager.SetActiveScene(scene);
-        //SceneManager.UnloadSceneAsync(SceneManager.GetActiveScene().name);
     }
 }

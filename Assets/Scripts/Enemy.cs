@@ -11,14 +11,6 @@ public class Enemy : MovementScript
     public Vector3 DirectionToPlayer;
     public LayerMask LayersToIgnore;
 
-   
-
-    void TranslateToPosition()
-    {
-    }
-
-
-
     private void Awake()
     {
         TargetPlayer = GameObject.FindGameObjectWithTag("Player");

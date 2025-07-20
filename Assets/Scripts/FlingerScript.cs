@@ -1,7 +1,6 @@
 
 using UnityEngine;
 
-
 [ExecuteInEditMode]
 
 public class FlingerScript : MonoBehaviour
@@ -20,9 +19,6 @@ public class FlingerScript : MonoBehaviour
     [SerializeField] private bool _PreserveMomentum = true;
 
     public float OffsetAngle;
-    
-
-
     void OnTriggerStay2D(Collider2D collision)
     {
         if (collision.gameObject.TryGetComponent<MovementScript>(out MovementScript movementScript))
@@ -76,8 +72,6 @@ public class FlingerScript : MonoBehaviour
             referenceScript = align;
         }
     }
-    
-
 
         [OnEditorMoved]
     void CalculateState()
@@ -106,11 +100,6 @@ public class FlingerScript : MonoBehaviour
             Direction = Quaternion.AngleAxis(Angle, new Vector3(0, 0, 1)) * new Vector3(0, 1, 0);
         }
 
-
-
-
-
-
         SpriteRenderer spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
         SpriteRenderer circleSpriteRenderer = gameObject.transform.Find("Circle").GetComponent<SpriteRenderer>();
 
@@ -125,10 +114,6 @@ public class FlingerScript : MonoBehaviour
 
         gameObject.transform.Find("Arrow").GetComponent<Transform>().localEulerAngles = new Vector3(0, 0, Angle);
 
-
-
-
-
         _OldAngle = Angle;
         _OldDirection = Direction;
     }
@@ -136,10 +121,7 @@ public class FlingerScript : MonoBehaviour
     private void OnValidate()
     {
         CalculateState();
-
-
     }
-
 
 }
 

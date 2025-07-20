@@ -20,7 +20,6 @@ float Power;
 bool UseCoherentNoise;
 
 
-
 float PerlinNoiseFromTex(uint2 id)
 {
         
@@ -59,72 +58,12 @@ float PerlinNoiseFromTex(uint2 id)
     return y1 + 0.5;
 }
 
-
-
-
-
-
-
-    
-float interpolatedValue(uint2 id)
-{
-        
-        
-    float2 posUR = float2((id.x) / Scale, (id.y) / Scale);
-        
-    float2 posUL = float2((id.x) / Scale, (id.y) / Scale);
-        
-    float2 posDR = float2((id.x) / Scale, (id.y) / Scale);
-        
-    float2 posDL = (id.xy / Scale);
-
-        
-    int indexUR = (int) floor(posUR.x + 1 + (posUR.y + 1) * Dims.x);
-        
-    int indexUL = (int) floor(posUL.x + (posUL.y + 1) * Dims.x);
-        
-    int indexDR = (int) floor(posDR.x + 1 + posDR.y * Dims.x);
-        
-    int indexDL = (int) floor(posDL.x + posDL.y * Dims.x);
-    
-    
-
- 
-    float2 v1 = float2(id.xy - floor((id.xy) / Scale) * Scale);
-    v1 /= Scale;
-    float v1t = length(v1);
-    
-    
-    
-   // float x1 = lerp(ValueGrid[indexUL], ValueGrid[indexUR], EaseInOut(v1.x, Power));
-   // float x2 = lerp(ValueGrid[indexDL], ValueGrid[indexDR], EaseInOut(v1.x, Power));
-    //float y1 = lerp(x1, x2, 1 - EaseInOut(v1.y, Power));
-    
-    
-    
-    float output = 0;
-    float total = v1t;
-   
-    
-    return 0;
-
-}
-
-
-
-
 [numthreads(8, 8, 1)]
 
 void CSMain(uint3 id : SV_DispatchThreadID)
 {
-    
-    
-    
-    // TODO: insert actual code here!
 
     float4 color = float4(0, 0, 0, 0);
- 
-  
     
     int index = (int) floor((id.x - Scale / 2) / Scale + (id.y * Dims.x) / Scale);
     
@@ -151,9 +90,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
         
         }
     }
-    
-    
- 
+     
     color.rgb = saturate(color.rgb);
     
     color.a = PrimaryColor.w;

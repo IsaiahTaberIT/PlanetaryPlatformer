@@ -21,13 +21,6 @@ RWTexture2D<float4> DistortionTex;
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
     uint2 DistortedPosition = DistortPos(DistortionTex[id.xy], id.xy, DistortionFactor);
-    
-    
-    
-    
-    
-    // TODO: insert actual code here!
-   // Radius /= 100.0;
     Center *= Dims;
     
     float t = length(DistortedPosition - Center) / Radius;

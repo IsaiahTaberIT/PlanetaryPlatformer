@@ -10,7 +10,6 @@ public class OrbitScript : MonoBehaviour
     public bool Simulate;
     public List<Orbiter> Orbiters = new();
 
-
 #if UNITY_EDITOR
     private void OnEnable()
     {
@@ -49,28 +48,16 @@ public class OrbitScript : MonoBehaviour
                 {
                     pos = transform.TransformDirection(Quaternion.AngleAxis(angle, new Vector3(0, 1, 0)) * Vector3.right * Orbiters[i].PolarCoordinates.y) + transform.position;
 
-
                 }
                 else
                 {
                     pos = (Quaternion.Euler(Orbiters[i].ManualOrbitAxisRotation) * (Quaternion.AngleAxis(angle, new Vector3(0, 1, 0)) * Vector3.right * Orbiters[i].PolarCoordinates.y)) + transform.position;
 
                 }
-                //Debug.Log(angle + " , " + j + " , " + (j / 30f) * 360);
-                //Vector3 pos = transform.TransformDirection(Quaternion.AngleAxis(angle, new Vector3(0, 1, 0)) * Vector3.right * Orbiters[i].PolarCoordinates.y);
                 Gizmos.DrawSphere((pos),2);
             }
         }
     }
-
-
-   
-
-    [ContextMenu("Startcouroutine")]
-    public void Startcouroutine()
-    {
-    }
-
     private void OnValidate()
     {
         MovePlanets(0);
@@ -87,10 +74,6 @@ public class OrbitScript : MonoBehaviour
             orbiter.OrbitTimer.Step(timeStep);
             float revolutionAngle = orbiter.RevolutionTimer.GetRatio() * 360;
             orbiter.RevolutionTimer.Step(timeStep);
-
-
-
-
             orbiter.SetAngle(orbitAngle);
             Vector3 pos = Vector3.zero;
             if (UseObjectRotation)
@@ -105,16 +88,10 @@ public class OrbitScript : MonoBehaviour
                 orbiter.Object.transform.localRotation = Quaternion.AngleAxis(revolutionAngle, Quaternion.Euler(orbiter.ManualOrbitAxisRotation) * Vector3.up);
                 orbiter.Object.transform.localRotation *= Quaternion.Euler(orbiter.ManualOrbitAxisRotation);
             }
-           // orbiter.Object.transform.Rotate(transform.TransformDirection(Vector3.right), orbiter.ElapsedRotationTime / orbiter.RotationCompleteTime * 360);
 
-            
-            
             orbiter.Object.transform.position = pos;
-     
-          
-            
-            Orbiters[i] = orbiter;
 
+            Orbiters[i] = orbiter;
 
         }
     }
@@ -129,9 +106,6 @@ public class OrbitScript : MonoBehaviour
 
 
     }
-
-
-
 
 
     [System.Serializable]
@@ -174,14 +148,5 @@ public class OrbitScript : MonoBehaviour
         {
             PolarCoordinates.y = distance;
         }
-
-
-
-
-
-
-
     }
-
-
 }

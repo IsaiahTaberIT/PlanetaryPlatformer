@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-
 public class BackgroundScript : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
 

@@ -3,9 +3,6 @@ using UnityEngine;
 using UnityEngine.U2D;
 using UnityEditor;
 
-
-
-
 public class AdvancedCurveGenerationScript : MonoBehaviour
 {
 
@@ -19,17 +16,13 @@ public class AdvancedCurveGenerationScript : MonoBehaviour
     [SerializeField] private float _InitialRadius;
     [SerializeField] private float _SlopeStartRadius;
 
-
     [Range(0,2)] [SerializeField] private int _TanMode;
     public int SegmentCount;
     [SerializeField] private int _SpriteIndex;
     [SerializeField] private Vector2Int _EdgeSpriteIndex;
 
-    
-
     [HideInInspector]
     public int _LastSegment;
-
     public int _CurrentSegment;
 
     private SpriteShapeController ShapeController;
@@ -37,7 +30,6 @@ public class AdvancedCurveGenerationScript : MonoBehaviour
     private Spline MySpline;
     [SerializeField] private bool _IsHorizontal = true;
     [SerializeField] private int _Points = 20;
-
     [SerializeField] private float _RotationRate = 10;
     [SerializeField] private float _Radius = 20;
 
@@ -149,11 +141,6 @@ public class AdvancedCurveGenerationScript : MonoBehaviour
     }
 
 
-
-
-
-
-
     [System.Serializable]
     public class SpriteShapeSegment
     {
@@ -178,7 +165,6 @@ public class AdvancedCurveGenerationScript : MonoBehaviour
         public bool SubtractRadius;
         public bool TrueLengthMode;
         public Vector2 PolarCords;
-
         public SpriteShapeSegment(float initialRadius,float minimumRadius, Vector2 startingCords)
         {
             
@@ -190,21 +176,16 @@ public class AdvancedCurveGenerationScript : MonoBehaviour
         }
             
 
-
-          
-
         public void MyMethod()
         {
           if (myTransform != null)
           {
                 _ScaleOffset = (Mathf.Sqrt(myTransform.lossyScale.x));
-                //_ScaleOffset = 1;
           }
           else
           {
                 _ScaleOffset = 1;
           }
-            
 
             PolarCords.y = IsFirst ? MinimumRadius / _ScaleOffset : PolarCords.y;
             float half = IsFirst ? 2 : 1;
@@ -223,7 +204,6 @@ public class AdvancedCurveGenerationScript : MonoBehaviour
             }
 
             float consistantSizeModifier = (TrueLengthMode) ? ((ModifiedPolarCords.y + PolarCordsOffsetInput.y * 2) / 2) / (ModifiedPolarCords.y + InitialRadius + (PolarCordsOffsetInput.y * 2) - MinimumRadius) * 2: 1;
-            //consistantSizeModifier = IsFirst ? MinimumRadius / InitialRadius : consistantSizeModifier;
 
             PolarCordsModifier.x = 0;
             PolarCordsModifier.y = 0;
@@ -232,8 +212,6 @@ public class AdvancedCurveGenerationScript : MonoBehaviour
             {
 
                 SegmentPoints = new Vector3[PointCount];
-
-
 
                 for (int i = 0; i < SegmentPoints.Length; i++)
                 {
@@ -345,8 +323,6 @@ public class AdvancedCurveGenerationScript : MonoBehaviour
         }
     }
 
-
-
     [ContextMenu("Insert Segment")]
 
     void InsertSegment()
@@ -364,9 +340,6 @@ public class AdvancedCurveGenerationScript : MonoBehaviour
             if (_CurrentSegment == index)
             {
                 Segments[index] = new SpriteShapeSegment(_InitialRadius,_MinimumRadius  ,new Vector2(_RotationRate/60,_Radius));
-               // Segments[index].SubtractRadius = true;
-               // Segments[index].SubtractRotationRate = true;
-               // Segments[index].InitialPolarCords = Vector2.zero;
                 _LastSegment = -1;
                 i++;
             }
@@ -424,10 +397,6 @@ public class AdvancedCurveGenerationScript : MonoBehaviour
         MousePosition.y += SceneView.currentDrawingSceneView.cameraViewport.height;
 
         Repair();
-
-       // Debug.Log("Clicked");
-        //Debug.Log(SceneView.currentDrawingSceneView.camera.ScreenToWorldPoint(MousePosition));
-        //Debug.Log(MousePosition);
         float checkDistance;
         float minDistance = float.MaxValue;
         int Currenminindex = 0;
@@ -451,10 +420,6 @@ public class AdvancedCurveGenerationScript : MonoBehaviour
 
                 if (minDistance > checkDistance)
                 {
-                  //  Debug.Log("Clicked2");
-                  //  Debug.Log(checkDistance);
-                 //   Debug.Log(position + pointPosition);
-                 //   Debug.Log(worldPointPosition);
                     Currenminindex = i;
                     minDistance = checkDistance;
                 }
@@ -511,7 +476,6 @@ public class AdvancedCurveGenerationScript : MonoBehaviour
         _CurrentSegment = _CurrentSegment <= SegmentCount ? _CurrentSegment - 1 : _CurrentSegment;
         _LastSegment = _CurrentSegment + 1;
 
-        // Segments[Segments.Length - 1] = new SpriteShapeSegment(_InitialRadius, _MinimumRadius, new Vector2(_RotationRate, _Radius));
         Repair();
         
     }
@@ -553,13 +517,6 @@ public class AdvancedCurveGenerationScript : MonoBehaviour
         {
             for (int j = 0; j < Segments[i].SegmentPoints.Length; j++)
             {
-                if (i+j == 1)
-                {
-                    //MySpline.InsertPointAt(count, Segments[0].SegmentPoints[0]);
-                    //count++;
-                }
-
-
 
                 MySpline.InsertPointAt(count, Segments[i].SegmentPoints[j]);
                 MySpline.SetSpriteIndex(count, Segments[i].SpriteIndex);
@@ -581,12 +538,6 @@ public class AdvancedCurveGenerationScript : MonoBehaviour
                 Vector3 rightTan = (Segments[i].SegmentPoints.Length - 1 < j) ? Segments[i].SegmentPoints[j - 1] - Segments[i].SegmentPoints[j] : (Segments.Length - 1 < i) ? Segments[i + 1].SegmentPoints[0] - Segments[i].SegmentPoints[j] : Vector3.zero;
                 Vector3 leftTan = (0 < j) ? Segments[i].SegmentPoints[j - 1] - Segments[i].SegmentPoints[j] : (0 < i) ? Segments[i -1].SegmentPoints[Segments[i - 1].SegmentPoints.Length-1] - Segments[i].SegmentPoints[j]: Segments[Segments.Length-1].SegmentPoints[Segments[Segments.Length -1 ].SegmentPoints.Length - 1] - Segments[i].SegmentPoints[j];
                 
-                
-                //Vector3 rightTan = (Segments[i].SegmentPoints.Length - 1 < j) ? Segments[i].SegmentPoints[j - 1] - Segments[i].SegmentPoints[j] : (Segments.Length - 1 < i) ? Segments[i + 1].SegmentPoints[0] - Segments[i].SegmentPoints[j] : Vector3.zero;
-
-                //Vector3 leftTan = (0 < j) ? Segments[i].SegmentPoints[j - 1] - Segments[i].SegmentPoints[j] : (0 < i) ? Segments[i - 1].SegmentPoints[Segments[i - 1].SegmentPoints.Length - 1] - Segments[i].SegmentPoints[j] : Segments[Segments.Length - 1].SegmentPoints[Segments[Segments.Length - 1].SegmentPoints.Length - 1] - Segments[i].SegmentPoints[j];
-
-
                 Vector3 tan = (rightTan.normalized + leftTan.normalized).normalized;
                 tan = tan / 5;
 

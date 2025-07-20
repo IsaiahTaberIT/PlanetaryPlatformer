@@ -42,11 +42,6 @@ public class PlanetAlignmentScript : MonoBehaviour, Logic.IAngle
 
     }
 
-
-
-
-
-
     [OnEditorMoved]
     void GetBestAligmentTarget()
     {
@@ -118,8 +113,6 @@ public class PlanetAlignmentScript : MonoBehaviour, Logic.IAngle
         {
             _CurrentRadius = Vector2.Distance(transform.position, AlignmentTarget.transform.position);
 
-
-            //  Radius = _CurrentRadius;
             if (SnapAngle)
             {
                 Angle = Mathf.RoundToInt(Angle / (AngleSnapSize / Radius)) * (AngleSnapSize / Radius);
@@ -130,15 +123,12 @@ public class PlanetAlignmentScript : MonoBehaviour, Logic.IAngle
 
             }
 
-
             if (FixedRadius)
             {
-
                 if (_CurrentRadius == 0)
                 {
                     Radius = _CurrentRadius;
                 }
-
                
             }
             else
@@ -147,6 +137,7 @@ public class PlanetAlignmentScript : MonoBehaviour, Logic.IAngle
                 {
                     RadiusSnapSize = 0.01f;
                 }
+
                 Radius = Mathf.RoundToInt(_CurrentRadius / RadiusSnapSize) * RadiusSnapSize;
             }
 
@@ -156,19 +147,6 @@ public class PlanetAlignmentScript : MonoBehaviour, Logic.IAngle
 
         }
     }
-
-
-   // float RoundRadius()
-  //  {
-    //    if (_CurrentRadius / RadiusSnapSize)
-     //   {
-
-      //  }
-//    }
-        
-
-
-
     private void OnValidate()
     {
         AlignRadius();
@@ -193,7 +171,6 @@ public class PlanetAlignmentScript : MonoBehaviour, Logic.IAngle
 
             RaycastHit2D detectionRay = Physics2D.Raycast(transform.position, direction.normalized, SurfaceCheckDistance, SurfaceLayer);
             Rayrenderer = new Logic.RayRenderer(new Ray(transform.position, direction.normalized), 100);
-           // Debug.Log(direction);
 
 
             if (detectionRay)
@@ -216,10 +193,6 @@ public class PlanetAlignmentScript : MonoBehaviour, Logic.IAngle
 
     }
 
-
-
-
-
     [OnEditorMoved]
     public void Align()
     {
@@ -227,8 +200,6 @@ public class PlanetAlignmentScript : MonoBehaviour, Logic.IAngle
         {
             Angle = -Vector2.SignedAngle(AlignmentTarget.transform.position - transform.position, Vector2.down);
 
-          
-  
         }
         else
         {
@@ -240,6 +211,7 @@ public class PlanetAlignmentScript : MonoBehaviour, Logic.IAngle
             Vector3 currentrot = transform.eulerAngles;
             currentrot.z = Angle;
             transform.eulerAngles = currentrot;
+
         }
 
 
@@ -257,18 +229,11 @@ public class PlanetAlignmentScript : MonoBehaviour, Logic.IAngle
 
         if (spriteRenderer != null)
         {
-            if (BoundsCalculationTarget != null)
-            {
-
-            }
-            else
+            if (BoundsCalculationTarget == null)
             {
                 Size = spriteRenderer.sprite.rect.size / spriteRenderer.sprite.pixelsPerUnit * transform.lossyScale;
-
                 VerticalOffset = Size.y / 2;
             }
-                
-
         }
     }
 

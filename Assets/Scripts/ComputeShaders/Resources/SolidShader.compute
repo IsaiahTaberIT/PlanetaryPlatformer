@@ -10,16 +10,8 @@ float4 Color;
 
 [numthreads(8,8,1)]
 
+// i was barely able to comprehend the complexity of this shader, most difficult one to date
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    // TODO: insert actual code here!
- 
-  //  Result[id.xy] = UndoGamma(Result[id.xy]);
-
-
-
     Result[id.xy] = Blend(Result[id.xy], Color, Color.w, BlendMode,true);
-    
-
-
 }

@@ -3,20 +3,13 @@ using UnityEngine;
 public class ShapeGenerator : MonoBehaviour
 {
     public Shapes Shape = new(true);
-
-
     public Vector2[] UVS = new Vector2[0];
     public int[] Tris;
-
     public int SortingOrder = 10;
     public int SortingLayerID = 10;
     public string Layer;
-
     public SortingLayer layer;
- 
-
     public Mesh MyMesh;
-
     public LayerMask Layers;
     public MeshRenderer MyMeshRenderer;
     public Material StandardCLMaterial;
@@ -24,7 +17,6 @@ public class ShapeGenerator : MonoBehaviour
     [System.Serializable]
     public class Shapes
     {
-       // [Min(3)] public float ScaleRate = 1.0f;
         public float AngleOffset = 0;
         [Range(1, 360f)] public float MaxAngle = 360f;
         public float Radius = 0.5f;
@@ -54,8 +46,6 @@ public class ShapeGenerator : MonoBehaviour
         public void GenerateCirclePoints()
         {
 
-
-
             if (Points < 2)
             {
                 Points = 2;
@@ -75,19 +65,7 @@ public class ShapeGenerator : MonoBehaviour
 
             }
 
-
-
-
-
-
-
-
-
             float segmentArcLength = ((MaxAngle * Mathf.Deg2Rad) / (Points - initialIdnexOffset));
-
-          //  float startignrot = transform.eulerAngles.z * Mathf.Deg2Rad;
-
-
             float angleoffsetRadians = AngleOffset * Mathf.Deg2Rad;
 
             for (int i = 0; i < Points; i++)
@@ -134,22 +112,14 @@ public class ShapeGenerator : MonoBehaviour
         }
 
     }
-
- 
-
     private void OnDrawGizmosSelected()
     {
         GenerateMeshCircleMesh();
     }
 
-
-   
-
     [ContextMenu("Generate circle mesh")]
     public void GenerateMeshCircleMesh()
     {
-
-
         if (MyMesh == null)
         {
             MyMesh = new Mesh();
@@ -194,8 +164,6 @@ public class ShapeGenerator : MonoBehaviour
             }
             tricount += 3;
         }
-
-
 
         MyMesh.vertices = Shape.Verts;
         MyMesh.triangles = Tris;

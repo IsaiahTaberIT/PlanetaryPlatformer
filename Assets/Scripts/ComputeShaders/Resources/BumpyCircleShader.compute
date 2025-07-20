@@ -22,12 +22,9 @@ float DistortionFactor;
 RWTexture2D<float4> DistortionTex;
 
 
-
+// this is sperated not because it needs to be but because of a reverted design decision
 float4 BumpyCircle(float angle, uint2 pos, float4 startColor, float4 endColor)
 {    
-    
-    
-    
     
     uint2 DistortedPosition = DistortPos((DistortionTex[pos]), pos, DistortionFactor);
 
@@ -57,11 +54,7 @@ float4 BumpyCircle(float angle, uint2 pos, float4 startColor, float4 endColor)
 
     }
         
-   
     Runningheight /= 1;
-    
- 
-   
     
     if ((t - Runningheight) < Radius)
     {
@@ -71,19 +64,9 @@ float4 BumpyCircle(float angle, uint2 pos, float4 startColor, float4 endColor)
     {
         return Blend(Result[pos.xy], endColor, endColor.w, BlendMode, true);
     }
-    
-   
-    
 }
 
-
-
-
-
 [numthreads(8, 8, 1)]
-
-
-
 
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
@@ -96,22 +79,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     angle /= 360;
     angle *= (2 * PI);
     
-   
-
-
-
-    
-    
- 
     float4 endColor2 = float4(1.0, 0.5, 0.5, 1.0);
-    
-  //  Result[id.xy] += DiagonalGradient(id, startColor, BaseColor) / 2;
-    
+       
     Result[id.xy] = BumpyCircle(angle, id.xy, PrimaryColor, SecondaryColor);
-
-    //Result[id.xy] /= 1;
-
-    
-   
 }
 

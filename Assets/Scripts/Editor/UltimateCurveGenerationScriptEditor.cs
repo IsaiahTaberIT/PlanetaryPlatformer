@@ -11,7 +11,7 @@ public class UltimateCurveGenerationScriptEditor : Editor
 
     private UltimateCurveGenerationScript myComponent;
  
-
+    // im not gonna lie i hate doing the custom editors, so 50-75% of them were written by chat-gpt and the alted by me
     public override void OnInspectorGUI()
     {
         int counter = 0;
@@ -54,22 +54,12 @@ public class UltimateCurveGenerationScriptEditor : Editor
             }
             GUILayout.Space(10);
         }
-       
-
-
-        // The "true" here makes it always expanded, just toggle this.
-        // If you want to show the settings when folded out
-
-
-
 
         // Cache all visible properties
         List<SerializedProperty> properties = new List<SerializedProperty>();
         SerializedProperty property = serializedObject.GetIterator();
 
-
         property.NextVisible(true); // Skip m_Script
-
 
         while (property.NextVisible(false))
         {
@@ -79,11 +69,7 @@ public class UltimateCurveGenerationScriptEditor : Editor
                 properties.Add(property.Copy());
             }
             counter++;
-          //  Debug.Log(counter);
         }
-
-
-      //  Debug.Log(properties.Count);
 
         for (int i = 0; i < properties.Count; i++)
         {
@@ -102,13 +88,6 @@ public class UltimateCurveGenerationScriptEditor : Editor
 
         serializedObject.ApplyModifiedProperties();
 
-
-
-
-    
-
-
-
         EditorGUI.EndChangeCheck();
         {
             UnityEditor.SceneView.RepaintAll();
@@ -118,24 +97,10 @@ public class UltimateCurveGenerationScriptEditor : Editor
             }
 
         }
-
-
-
-
-
-
-
-
-
-
-
     }
 
     void OnSceneGUI()
     {
-
-
-
         Event e = Event.current;
 
         if (e.type == EventType.MouseDown && e.button == 0)

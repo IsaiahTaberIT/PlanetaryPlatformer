@@ -16,7 +16,6 @@ public class GameLogicScript : MonoBehaviour
     public List<CheckpointScript> Checkpoints = new List<CheckpointScript>(1);
     public GameObject GlobalVolumeObj;
     public Volume GlobalVolume;
-
     public ActivatedCheckpoints MyActivatedCheckpoints;
     private PlayerScript PlayerScript;
     public bool RequireNewGame = false;
@@ -27,14 +26,12 @@ public class GameLogicScript : MonoBehaviour
     static public List<GameObject> Planets = new List<GameObject>(0);
     static public GameObject[] PArray = new GameObject[3];
     static public Vector3[] VArray = new Vector3[3];
-    //static public float RunningGravityMagnitudes;
     public bool IsGameOver = false;
     public bool IsLevelCompleted = false;
     public bool IsPaused = false;
     public bool CanMove;
     public bool RunGame;
     public Material shaderMaterial;
-    public float testfloat;
     public TextMeshProUGUI EscapeCountdown;
     public GameObject EscapeUI;
     public LineRenderer MyLineRenderer;
@@ -77,10 +74,6 @@ public class GameLogicScript : MonoBehaviour
         }
 
     }
-
-
-
-
 
     public void SetCountDown(float value)
     {
@@ -134,8 +127,6 @@ public class GameLogicScript : MonoBehaviour
                 return;
             }
         }
-
-          
 
     }
 
@@ -198,16 +189,10 @@ public class GameLogicScript : MonoBehaviour
             StartCoroutine(PlayerScript.DeathAnimation());
 
         }
-
-      
-
-
     }
 
     void ReInitialize()
     {
-       // PlayerScript.SoftBody.GetComponent<SoftBodyScript>().LastPosition = PlayerScript.SoftBody.transform.position;
-
         IsGameOver = false;
         IsPaused = false;
         CanMove = true;
@@ -218,28 +203,16 @@ public class GameLogicScript : MonoBehaviour
 
     void Awake()
     {
-        // HighScore = PlayerPrefs.GetFloat("HIghScore");
-
-
-
         GlobalVolume = GlobalVolumeObj.GetComponent<Volume>();
         MyScreen = GameObject.FindGameObjectWithTag("Screen");
-
-
-
         NormalLighting = IntToBool(PlayerPrefs.GetInt("NormalLighting"));
-
         ToggleLighting(!NormalLighting);
-
-        
-
-
         Application.targetFrameRate = 60;
         GameObject player = GameObject.FindGameObjectWithTag("Player");
+
         if (player != null)
         {
             PlayerScript = player.GetComponent<PlayerScript>();
-
         }
         ReInitialize();
 
@@ -250,9 +223,7 @@ public class GameLogicScript : MonoBehaviour
         NormalLighting = !donormalLighting;
 
         PlayerPrefs.SetInt("NormalLighting", BoolToInt(NormalLighting));
-
         PlayerPrefs.Save();
-
         Light2D[] normalLights = FindObjectsByType<Light2D>(FindObjectsInactive.Include,FindObjectsSortMode.None);
 
         if (MyScreen == null)
@@ -287,9 +258,6 @@ public class GameLogicScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
-
-
         if (Input.GetKeyDown(KeyCode.I))
         {
             LightsBakeable2D.UseBaked = !LightsBakeable2D.UseBaked;
@@ -317,15 +285,10 @@ public class GameLogicScript : MonoBehaviour
             }
         }
 
-
-
-
         if (Input.GetKeyDown(KeyCode.G))
         {
             GodMode = !GodMode;
         }
-
-     //   shaderMaterial.SetFloat("_Smoothness", testfloat);
 
         if (Input.GetKeyDown(KeyCode.K))
         {
@@ -367,7 +330,6 @@ public class GameLogicScript : MonoBehaviour
         //PlayerPrefs.Save();
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        //RequireNewGame = false;
     }
 
     public void Quit()

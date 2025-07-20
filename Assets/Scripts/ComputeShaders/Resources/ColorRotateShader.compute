@@ -23,9 +23,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     float Dot = -dot(q, ShiftedHue);
    
     ShiftedHue.xyz = float3(Dot * -q + cosAngle * ShiftedHue + cross(ShiftedHue, -q));
-    
     ShiftedHue += Pivot;
-    
     ShiftedHue = saturate(ShiftedHue);
     
     float4 outputcolor = float4(ShiftedHue, Result[id.xy].a);

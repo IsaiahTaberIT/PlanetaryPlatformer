@@ -24,23 +24,12 @@ public class RaycastTestScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-    
-  
-
         rayhit = Physics2D.Raycast(ray.origin, ray.direction,5000);
-
-
-
-
     }
 
     private void OnDrawGizmosSelected()
     {
         Func<bool, bool, bool> func = Operator;
-
-      //  Debug.Log(func(In1, In2));
-
-
         ray.origin = transform.position;
         dir = Quaternion.AngleAxis(Angle, new Vector3(0, 0, 1)) * dir;
         ray.direction = dir;

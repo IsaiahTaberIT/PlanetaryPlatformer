@@ -4,27 +4,19 @@
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
 
-
-
 int QuantizationMode;
-
-bool QuantizeByValue;
-bool QuantizeByPosition;
-
 float2 Dims;
 RWTexture2D<float4> Result;
 float Scale;
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    // TODO: insert actual code here!
-    
-    
     float basecolors = 128;
-
-    
-    
     float4 outputcolor = float4(0,0,0,0);
+    
+    // not using switch statement here because swtich statements are for nerds, pay no attention
+    // to my other code 
+    //(its because I only really like them if i have to do it for like 5 different things)
     
     if (QuantizationMode == 0)
     {
@@ -32,12 +24,6 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         QuantizedColor = (floor(QuantizedColor / Scale) * Scale) / basecolors;
         
         outputcolor = float4(QuantizedColor, Result[id.xy].w);
-        
-        
-        
-  
-        
-        
         
     }
     else if (QuantizationMode == 1 )
@@ -49,8 +35,6 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         QuantizedValue = normalize(QuantizedValue) * mag;
 
         outputcolor = float4(QuantizedValue, Result[id.xy].w);
-      
-      
 
     }
     else
@@ -58,17 +42,9 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         
         int intscale = (int) Scale;
         uint2 quantizedpos = floor(id.xy / intscale) * intscale;
-
-     
-      
-        
-            outputcolor = Result[quantizedpos];
+        outputcolor = Result[quantizedpos];
 
     }
     
-    
     Result[id.xy] = outputcolor;
-
-
-    //Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
 }

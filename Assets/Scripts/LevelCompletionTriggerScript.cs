@@ -15,7 +15,6 @@ public class LevelCompletionTriggerScript : MonoBehaviour
     private SpriteRenderer _FilterRenderer;
     public AudioSource CompletionSound;
     public AudioSource CompletionSound2;
-
     void Start()
     {
         _GameLogicScript = GameObject.FindGameObjectWithTag("Logic").GetComponent<GameLogicScript>();
@@ -40,12 +39,10 @@ public class LevelCompletionTriggerScript : MonoBehaviour
             _GameLogicScript.LevelComplete();
         }
     }
-
     private void OnDisable()
     {
         StopAllCoroutines();
     }
-
     private IEnumerator EndLevelRoutine(GameObject Player)
     {
         float t = 0;
@@ -60,7 +57,6 @@ public class LevelCompletionTriggerScript : MonoBehaviour
         float fallRate = 2f;
         float bloomChangeRatio = 0.85f;
         
-    
         _Volume.profile.TryGet<Bloom>(out Bloom bloom);
         float initialBloomIntensity = bloom.intensity.value;
         float initialScatter= bloom.scatter.value;

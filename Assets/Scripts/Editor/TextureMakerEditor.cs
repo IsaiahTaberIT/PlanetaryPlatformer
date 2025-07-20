@@ -31,22 +31,12 @@ public class TextureMakerEditor : Editor
 
     public override void OnInspectorGUI()
     {
-      //  maker.SetFront();
-
-
-
         EditorGUI.BeginChangeCheck();
 
         serializedObject.Update();
-
-
-
         List<SerializedProperty> properties = new List<SerializedProperty>();
         SerializedProperty property = serializedObject.GetIterator();
-
-
         property.NextVisible(true); // Skip m_Script
-
 
         while (property.NextVisible(false))
         {
@@ -59,8 +49,6 @@ public class TextureMakerEditor : Editor
      
         }
 
-
-
         for (int i = 0; i < properties.Count; i++)
         {
          
@@ -70,15 +58,8 @@ public class TextureMakerEditor : Editor
 
         serializedObject.ApplyModifiedProperties();
 
-
-
-
         EditorGUILayout.Space(10);
-
-
         TextureLayerlist.DoLayoutList();
-
-
         serializedObject.ApplyModifiedProperties();
 
         if (EditorGUI.EndChangeCheck())
@@ -230,9 +211,6 @@ public class TextureMakerEditor : Editor
                 label += filterlabel;
             }
 
-
-           
-
             label.CapitalizeFirst();
             EditorGUI.PropertyField(new Rect(rect.x + 10, y, rect.width, height), element, new GUIContent(label), true);
             y += height + 4;
@@ -258,7 +236,6 @@ public class TextureMakerEditor : Editor
                     GameObject.DestroyImmediate(comp.MakerObject);
                 }
             }
-
 
             textureLayerList.serializedProperty.DeleteArrayElementAtIndex(list.index);
         };

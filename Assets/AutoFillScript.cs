@@ -9,17 +9,12 @@ public class AutoFillScript : MonoBehaviour
     public Transform MyTransform;
     public BoxCollider2D MyCollider;
 
-  
-
-
-
     [OnEditorMoved]
     public void CenterAndFill()
     {
           CenterAndFillScale();
         
     }
-
   
     [ContextMenu("CenterAndFill")]
 
@@ -38,9 +33,7 @@ public class AutoFillScript : MonoBehaviour
             RaycastHit2D left = Physics2D.Raycast(MyTransform.position, Vector2.left, CheckLength);
 
             Vector3 CurrentScale = MyTransform.localScale;
-
            
-
             if (Right.collider != null && left.collider != null)
             {
                 Vector3 CurrentPos = MyTransform.position;
@@ -51,14 +44,11 @@ public class AutoFillScript : MonoBehaviour
                 CurrentScale.x = (Right.distance + left.distance);
                 MyTransform.localScale = CurrentScale;
 
-
             }
             else
             {
 
-            //    Debug.Log(CurrentScale.x);
                 CurrentScale.x = CurrentScale.y;
-              //  Debug.Log(CurrentScale.x);
 
                 transform.localScale = CurrentScale;
             }

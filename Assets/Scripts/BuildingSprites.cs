@@ -63,10 +63,6 @@ public class BuildingSprites : ScriptableObject
             BuildingList[i] = ViewableGameobjects[i];
         }
 
-
-
-
-
         _OldIndex = _Index;
     }
 

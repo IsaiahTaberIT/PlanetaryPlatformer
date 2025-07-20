@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
-
 [ExecuteInEditMode]
 
 public class PlayerLightScript : MonoBehaviour
@@ -11,12 +10,11 @@ public class PlayerLightScript : MonoBehaviour
     public Light2D MyLight1;
     public Light2D MyLight2;
 
-
     [Min(0)] public float MaxIntensity = 1;
     [Min(0)] public float MinIntensity = 0;
     [Range(0,1f)] public float IntensityRatio = 0;
 
-
+    public Vector3[] Points;
     private void OnValidate()
     {
         if (MyLight1 != null && MyLight2 != null)
@@ -26,24 +24,9 @@ public class PlayerLightScript : MonoBehaviour
             MyLight2.intensity = MaxIntensity - intensity;
         }
      
-
     }
 
-
-    public Vector3[] Points;
  
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-       
-    }
-
     void ControlPoints()
     {
         float step = (Mathf.PI * 2) / (Verts);

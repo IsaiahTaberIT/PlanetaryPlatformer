@@ -475,9 +475,7 @@ public class LightsBakeable2D : MonoBehaviour
 
 
                 }
-                //Debug.Log(Logic.Reciprocal(transform.lossyScale));
                 pointPosition = Vector2.Scale(pointPosition, Logic.Reciprocal(transform.lossyScale));
-                // pointPosition = Vector3.Scale(pointPosition, transform.lossyScale);
             }
             else
             {
@@ -485,12 +483,6 @@ public class LightsBakeable2D : MonoBehaviour
 
                 pointPosition = direction * (Radius - Trim);
             }
-
-
-
-
-
-
 
             if (drawGizmos)
             {
@@ -516,8 +508,6 @@ public class LightsBakeable2D : MonoBehaviour
             }
             else
             {
-             //   Debug.Log("end");
-
                 Tris[tricount + 2] = 0;
             }
 
@@ -548,7 +538,6 @@ public class LightsBakeable2D : MonoBehaviour
                     Vector2 RunningPos = Vector2.zero;
                     Vector2[] colliderPoints = new Vector2[0];
 
-                    //   Debug.Log("Parent:", parent);
                     if (parent.TryGetComponent(out Collider2D parentColldier))
                     {
                         if (parentColldier is EdgeCollider2D)
@@ -597,7 +586,6 @@ public class LightsBakeable2D : MonoBehaviour
 
             }
 
-
             else
             {
                 GenerateMesh(true);
@@ -613,12 +601,6 @@ public class LightsBakeable2D : MonoBehaviour
             {
                 MyRenderTexture.Update();
 
-            }
-
-            if (MyRenderTexture != null)
-            {
-              //  EditorUtility.SetDirty(MyRenderTexture);
-             //   PrefabUtility.RecordPrefabInstancePropertyModifications(MyRenderTexture);
             }
         }
     

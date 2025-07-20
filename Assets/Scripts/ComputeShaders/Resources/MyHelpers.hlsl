@@ -6,20 +6,11 @@ static const float Sqrt3 = 1.7320508076;
 
 static const uint uintmax = 4294967295;
 
-
-
-
-
-
-
-
 float InverseLerp(float a, float b, float t)
 {
     return (t - a) / (b - a);
     // (value - start) / (end - start)
 }
-   
-
 
 void HandleMasking(bool OWM, bool OPC, inout float4 c1, inout float4 c2, float4 SITColor)
 {
@@ -38,10 +29,6 @@ void HandleMasking(bool OWM, bool OPC, inout float4 c1, inout float4 c2, float4 
     }
     
 }
-
-
-
-
 
 uint2 DistortPos(float4 DT, uint2 pos, float factor)
 {
@@ -66,8 +53,6 @@ float absPow(float x, float y)
 {
     return pow(abs(x), y);
 }
-
-
 
 float EaseIn(float t, float power)
 {
@@ -113,12 +98,7 @@ float FloatBasedRandomValue(float xdim, uint2 id, float localSeed)
     value %= 1.0;
     return value;
     
-     
-    
 }
-
-
-
 
 float RandomValue(uint2 dims, uint2 id, uint localSeed)
 {
@@ -136,18 +116,12 @@ float RandomValue(uint2 dims, uint2 id, uint localSeed)
     Uintvalue *= 31;
     Uintvalue = Uintvalue ^ 3109876532;
     Uintvalue *= id.y + dims.y * id.x;
-    
-  
-    
+
     float OutValue = (float)Uintvalue / uintmax;
 
-    
     return OutValue;
     
-     
-    
 }
-
 
 
 float3 UndoGamma(float3 val)
@@ -197,6 +171,8 @@ float4 RotLerp(float4 v1, float4 v2, float t)
     return output;
 }
 
+// not gonna lie i just asked chat-gpt for this, im a fraud!
+
 float SignedAngle2D(float2 from, float2 to)
 {
     float angle = atan2(to.y, to.x) - atan2(from.y, from.x);
@@ -231,10 +207,6 @@ float powInt(float x, int y)
 
 }
 
-
-
-
-
 float4 Solid(uint3 pos, float4 Color)
 {
   
@@ -242,15 +214,11 @@ float4 Solid(uint3 pos, float4 Color)
     
 }
 
-
-
 float4 Circle(uint3 pos, float4 startColor, float4 endColor)
 {
     float radius = 50;
     float t = distance(pos.xy, uint2(128, 128));
     
-   
-    // Linear interpolate betwe
     
     if (t < radius)
     {
@@ -279,11 +247,6 @@ float4 RadialGradient(uint3 pos, float4 startColor, float4 endColor)
         t = 1;
     }
     
-    // Start color (black)
-    
-   
-    
-    // Linear interpolate between startColor and endColor by t
     float4 color = lerp(startColor, endColor, 1 - t);
     
     return color;
@@ -317,9 +280,7 @@ float4 Blend(float4 c1, float4 c2, float t, int type, bool oldAlpha)
             if (oldAlpha)
             {
                 output.w = max(c1.w, c2.w);
-
             }
-
             break;
         case 1:
         // rotlerp
@@ -327,7 +288,6 @@ float4 Blend(float4 c1, float4 c2, float t, int type, bool oldAlpha)
             if (oldAlpha)
             {
                 output.w = max(c1.w, c2.w);
-
             }
             break;
         case  2:
@@ -336,7 +296,6 @@ float4 Blend(float4 c1, float4 c2, float t, int type, bool oldAlpha)
             if (oldAlpha)
             {
                 output.w = max(c1.w, c2.w);
-
             }
             break;
         case 3:
@@ -345,7 +304,6 @@ float4 Blend(float4 c1, float4 c2, float t, int type, bool oldAlpha)
             if (oldAlpha)
             {
                 output.w = max(c1.w, c2.w);
-
             }
             break;
         case 4:
@@ -354,7 +312,6 @@ float4 Blend(float4 c1, float4 c2, float t, int type, bool oldAlpha)
             if (oldAlpha)
             {
                 output.w = max(c1.w, c2.w);
-
             }
             break;
         
@@ -364,20 +321,16 @@ float4 Blend(float4 c1, float4 c2, float t, int type, bool oldAlpha)
             if (oldAlpha)
             {
                 output.w = max(c1.w, c2.w);
-
             }
             break;
         case 6:
         // subtract
     
             output = c1 - c2 * t;
-         
             output.w = c1.w;
-            
             break;
         case 7:
             output = c2;
-       
             break;
         case  8:
             break;
@@ -393,15 +346,10 @@ float4 Blend(float4 c1, float4 c2, float t, int type, bool oldAlpha)
 
 float DistanceToLine(float2 p, float2 v1, float2 v2)
 {
-    
-    //float slope = (v1.y - v2.y) / (v1.x - v2.x);
-    
- //   p *= 2;
-    
     float2 a = v1 - v2;
     float2 b = v1 - p;
     
-    // project
+    // project vector
     
     float abDot = dot(a, b);
     

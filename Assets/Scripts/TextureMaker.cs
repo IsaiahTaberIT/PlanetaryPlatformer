@@ -3,30 +3,35 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.UIElements;
 using static TextureMaker.LayerManager;
-
 using static TextureMaker.LayerManager.TextureLayer;
 using static UnityEngine.Mathf;
-using static UnityEngine.Rendering.ProbeAdjustmentVolume;
-
-
-
 
 [System.Serializable]
 
 public class TextureMaker : MonoBehaviour
 {
+    // TODO:
+
+    // add masking to Transparency Shader
+
+    // fix the fact that if a textureMaker References itself it causes a stack overflow
+    //(i've never done that but like... it shouldnt be possible to and it most likely is)
+
+    // Automatically delete All Texturelayer rts, when closing unity so the file size for the scene
+    // doesnt make github scream and cry
+
+    // add abilty to save textures, and potentially slowly render very large textures so unity doesnt hang.
+
+
+
     public const int BaseSize = 256;
     public Vector2Int Dimentions = new Vector2Int(BaseSize, BaseSize);
     [Min(0.01f)] public float Ratio = 1;
     private float _LastRatio;
-
     public bool LockRatio = false;
     private Vector2Int _OldDimentions = new Vector2Int(BaseSize, BaseSize);
     public Texture2D OutputTexture;
-
 
     public LayerManager Manager = new();
 
@@ -37,15 +42,11 @@ public class TextureMaker : MonoBehaviour
         return new Color((float)rng.NextDouble(), (float)rng.NextDouble(), (float)rng.NextDouble(),1);
     }
 
-
-
-   
     [ContextMenu("add new layer")]
     void AddNewLayer()
     {
         Manager.TextureLayers.Add(new SimpleGradientGpu());
     }
-
 
     [ContextMenu("Generate and Apply")]
     public void GenerateAndApply()
@@ -55,75 +56,52 @@ public class TextureMaker : MonoBehaviour
             return;
         }
 
-        Manager.Parent = gameObject;
-        //Debug.Log("applied");
-     
+        Manager.Parent = gameObject;     
 
         if (TryGetComponent(out SpriteRenderer renderer))
         {
             Ratio = Ratio > 100 ? 100 : Ratio;
 
-    
-
             if (LockRatio)
             {
                 if (_OldDimentions.x != Dimentions.x || Ratio != _LastRatio)
                 {
-               
                     Dimentions.y = (int)(Ratio * Dimentions.x);
-             
                 }
                 else if (_OldDimentions.y != Dimentions.y)
                 {
-                   
-
                      Dimentions.x = (int)(1.0f/ Ratio * Dimentions.y);
-
                 }
-
             }
             else
             {
                 Ratio = (float)Dimentions.y / (float)Dimentions.x;
             }
 
-
-
             if (Dimentions.x < 4)
             {
                 Dimentions.x = 4;
-
             }
 
             if (Dimentions.y < 4)
             {
                 Dimentions.y = 4;
-
             }
-
 
             if (_OldDimentions.x * _OldDimentions.y > MaxResolution)
             {
                 _OldDimentions = _OldDimentions / 2;
-
             }
 
             if (Dimentions.x * Dimentions.y > MaxResolution)
             {
                 Dimentions = _OldDimentions;
-
-
             }
-
             _LastRatio = Ratio;
             _OldDimentions = Dimentions;
-
-
             Manager.Dimentions = Dimentions;
             Manager.GenerateTexture(true);
-
             OutputTexture = new(Dimentions.x,Dimentions.y);
-
             OutputTexture.filterMode = FilterMode.Point;
             RenderTexture.active = Manager.texture;
             OutputTexture.ReadPixels(new Rect(0, 0, OutputTexture.width, OutputTexture.height), 0, 0);
@@ -138,20 +116,12 @@ public class TextureMaker : MonoBehaviour
             renderer.sprite = sprite;
         }
 
-
+        // this is a little wiggly for some reason like it has a delay to it when you update the inspector
+        //not a big deal but it is a little gross
         float ScaleRatio = transform.localScale.magnitude / transform.lossyScale.magnitude;
-      //  ScaleRatio -= 0.25f;
-
-
         transform.localScale = Vector3.one / new Vector2(Manager.texture.width, Manager.texture.height).magnitude * (181.02f * 1f/0.75f) * ScaleRatio;
 
-
     }
-
-
-    // public List<TextureLayer> layers = new List<TextureLayer>();
-
-
     [System.Serializable]
     public class LayerManager
     {
@@ -166,7 +136,6 @@ public class TextureMaker : MonoBehaviour
             
             TextureLayers.Add(new SimpleGradientGpu());
         }
-
         public class ContrastFilterGpu : Filter
         {
             [Range(-1f, 1f)] public float Contrast = 0;
@@ -196,31 +165,23 @@ public class TextureMaker : MonoBehaviour
 
                 return tex;
             }
-
-
         }
-
         public class QuantizationFilterGpu : Filter
         {
             public QuantizationModes QuantizationMode = 0;
 
             [Min(1)] public float QuantizeFactor = 5;
-
             public enum QuantizationModes
             {
                 ByColor = 0,
                 ByValue = 1,
                 ByPosition = 2,
             }
-
-
-
             public QuantizationFilterGpu()
             {
                 FilterType = FilterTypes.quantization;
                 LastFilterType = FilterType;
             }
-
             public override void PassValuesToShader(RenderTexture rt, int kernel)
             {
                 float floorscale = Floor(QuantizeFactor);
@@ -233,8 +194,6 @@ public class TextureMaker : MonoBehaviour
 
                 computeshader.SetInt("QuantizationMode", (int)QuantizationMode);
 
-
-
             }
             public override RenderTexture Generate()
             {
@@ -244,9 +203,7 @@ public class TextureMaker : MonoBehaviour
                     computeshader = Resources.Load<ComputeShader>("QuantizationShader");
                 }
 
-
                 RenderTexture rt = tex;
-
 
                 ApplyShaderToRT(rt);
 
@@ -283,9 +240,7 @@ public class TextureMaker : MonoBehaviour
                     computeshader = Resources.Load<ComputeShader>("TransparencyShader");
                 }
 
-
                 RenderTexture rt = tex;
-
 
                 ApplyShaderToRT(rt);
 
@@ -294,7 +249,6 @@ public class TextureMaker : MonoBehaviour
 
 
         }
-
         public class HueShiftFilterGpu : Filter
         {
      
@@ -306,7 +260,6 @@ public class TextureMaker : MonoBehaviour
                 FilterType = FilterTypes.hueshift;
                 LastFilterType = FilterType;
             }
-
             public override void PassValuesToShader(RenderTexture rt, int kernel)
             {
                 base.PassValuesToShader(rt, kernel);
@@ -314,7 +267,6 @@ public class TextureMaker : MonoBehaviour
                 computeshader.SetFloat("Shift", Abs(Shift) / 10f + 1);
                 computeshader.SetInt("BlendMode", (int)BlendMode);
             }
-
             public override RenderTexture Generate()
             {
                 if (computeshader == null)
@@ -330,7 +282,6 @@ public class TextureMaker : MonoBehaviour
 
             }
         }
-
         public class SaturationFilterGpu : Filter
         {
             public BlendModes BlendMode = BlendModes.RotLerp;
@@ -358,15 +309,12 @@ public class TextureMaker : MonoBehaviour
                     computeshader = Resources.Load<ComputeShader>("SaturationShader");
                 }
 
-
                 RenderTexture rt = tex;
-
 
                 ApplyShaderToRT(rt);
 
                 return tex;
             }
-
 
         }
 
@@ -386,16 +334,13 @@ public class TextureMaker : MonoBehaviour
                 rotatecolor = 4,
                 quantization = 5,
 
-
             }
-
             public Filter()
             {
                 Type = TextureLayerType.filter;
                 LastType = Type;
             }
         }
-
 
         [System.Serializable]
         public class CustomMaskGPU : TextureLayer , ISecondarySubMaker, IMaskSubMaker
@@ -413,7 +358,6 @@ public class TextureMaker : MonoBehaviour
             public SubMaker secondary = new("Secondary Maker");
             public SubMaker SecondarySM { get => secondary; set => secondary = value; }
 
-
             public enum MaskModes 
             {
             
@@ -421,12 +365,6 @@ public class TextureMaker : MonoBehaviour
                 byValueThreshold = 1,
                 byColor = 2,
                 byHue = 3,
-
-
-
-
-
-
             }
 
             public BlendModes BlendMode = BlendModes.RotLerp;
@@ -441,24 +379,14 @@ public class TextureMaker : MonoBehaviour
             public override void PassValuesToShader(RenderTexture rt, int kernel)
             {
                 base.PassValuesToShader(rt, kernel);
-
                 computeshader.SetFloat("Threshold", Threshold);
-
                 computeshader.SetInt("Invert", Logic.BoolToInt(Invert));
-
                 computeshader.SetInt("MaskMode", (int)MaskMode);
-
                 computeshader.SetVector("ComparisonColor", ComparisonColor);
-
-
                 mask.Dims = new(tex.width, tex.height);
                 computeshader.SetTexture(kernel, "MaskTex", mask.Generate());
-
                 secondary.Dims = new(tex.width, tex.height);
                 computeshader.SetTexture(kernel, "SecondaryInputTexture", secondary.Generate());
-
-
-
                 computeshader.SetInt("BlendMode", (int)BlendMode);
 
             }
@@ -479,26 +407,17 @@ public class TextureMaker : MonoBehaviour
             }
         }
 
-
-
-
-
-
-
         [System.Serializable]
         public class SolidGpu : TextureLayer
         {
             public BlendModes BlendMode = BlendModes.RotLerp;
             public Color Color = RandomColor();
-
             public SolidGpu()
             {
                 Type = TextureLayerType.solid;
                 LastType = Type;
-
         
             }
-
             public override void PassValuesToShader(RenderTexture rt, int kernel)
             {
                 base.PassValuesToShader(rt, kernel);
@@ -507,8 +426,10 @@ public class TextureMaker : MonoBehaviour
 
             }
 
-
-
+            // i have no idea btw if this is a good way of doing things it does make it really nice to add stuff though
+            // im refering to the roundabout logic with the parent versions of stuff to isolate only the middle 
+            //portion to be changed for every shader that being this method:  PassValuesToShader(RenderTexture rt, int kernel)
+            // i haven't yet read any books on "clean code" or stuff like that... which is most likely obvious
             public override RenderTexture Generate()
             {
 
@@ -516,34 +437,22 @@ public class TextureMaker : MonoBehaviour
                 {
                     computeshader = Resources.Load<ComputeShader>("SolidShader");
                 }
-
-          
-
+       
                 RenderTexture rt = tex;
 
-
-
                 ApplyShaderToRT(rt);
-
 
                 return tex;
 
             }
-
             
-
         }
-
 
         [System.Serializable]
         public class PolygonGpu : TextureLayer , IDistortionSubMaker, IReplaceColorSubMaker
         {
             [HideInInspector] public GameObject Parent;
             public GameObject ParentSM { get => Parent; set => Parent = value; }
-
-
-       
-
             public DistortionMaker distortion = new("Distortion Maker");
             public DistortionMaker DistortionSM { get => distortion; set => distortion = value; }
 
@@ -563,9 +472,7 @@ public class TextureMaker : MonoBehaviour
                 Type = TextureLayerType.polygon;
                 LastType = Type;
 
-
             }
-
             public override void PassValuesToShader(RenderTexture rt, int kernel)
             {
                 distortion.Parent = Parent;
@@ -600,15 +507,9 @@ public class TextureMaker : MonoBehaviour
                     ratioX = 1;
                 }
              
-
-
-                    Vector2 screenSpaceOffset = new Vector2(Offset.x * ratioX, ratioY * Offset.y);
+                Vector2 screenSpaceOffset = new Vector2(Offset.x * ratioX, ratioY * Offset.y);
 
                 Verts = shape.Verts.ToVector2(screenSpaceOffset);
-
-
-
-
                 computeshader.SetVector("Dims", new Vector2(tex.width, tex.height));
                 VertsBuffer = new ComputeBuffer(Verts.Length, sizeof(float) * 2);
                 VertsBuffer.SetData(Verts);
@@ -617,14 +518,8 @@ public class TextureMaker : MonoBehaviour
                 computeshader.SetInt("BlendMode", (int)BlendMode);
                 computeshader.SetVector("PrimaryColor", PrimaryColor);
                 computeshader.SetVector("SecondaryColor", SecondaryColor);
-
-
-
                 base.PassValuesToShader(rt, kernel);
             }
-
-
-
             public override RenderTexture Generate()
             {
 
@@ -632,22 +527,13 @@ public class TextureMaker : MonoBehaviour
                 {
                     computeshader = Resources.Load<ComputeShader>("PolygonShader");
                 }
-
-
-
                 RenderTexture rt = tex;
-
-
-
                 ApplyShaderToRT(rt);
                 VertsBuffer.Dispose();
 
                 return tex;
 
             }
-
-
-
         }
 
         [System.Serializable]
@@ -655,22 +541,15 @@ public class TextureMaker : MonoBehaviour
         {
             public bool Fuzzy;
             [Min(0.01f)] public float BlendPower = 1;
-
             [HideInInspector] public GameObject Parent;
             public GameObject ParentSM { get => Parent; set => Parent = value; }
 
-         
-
             public ReplaceColorSubMaker secondary = new("Secondary Maker");
             public DistortionMaker DistortionSM { get => distortion; set => distortion = value; }
-
             public DistortionMaker distortion = new("Distortion Maker");
-
             public ReplaceColorSubMaker ReplaceColorSM { get => secondary; set => secondary = value; }
-
             public BlendModes BlendMode = BlendModes.RotLerp;
             public BlendModes GradientBlendMode = BlendModes.RotLerp;
-
             public float Angle;
             public float Spacing = 40;
             [Min(0f)] public float Offset;
@@ -685,22 +564,18 @@ public class TextureMaker : MonoBehaviour
                 LastType = Type;
             }
 
-
             public override void PassValuesToShader(RenderTexture rt, int kernel)
             {
                 distortion.Parent = Parent;
                 distortion.Dims = new(tex.width, tex.height);
-
                 RenderTexture temp1 = distortion.Generate();
 
                 secondary.Parent = Parent;
                 secondary.Dims = new(tex.width, tex.height);
                 RenderTexture temp2 = secondary.Generate();
 
-
                 computeshader.SetTexture(kernel, "DistortionTex", temp1);
                 computeshader.SetTexture(kernel, "SecondaryInputTexture", temp2);
-
 
                 computeshader.SetInt("GradientBlendMode", (int)GradientBlendMode);
                 computeshader.SetInt("Fuzzy", Logic.BoolToInt(Fuzzy));
@@ -708,14 +583,8 @@ public class TextureMaker : MonoBehaviour
                 computeshader.SetInt("OverridePrimaryColor", Logic.BoolToInt(secondary.OverridePrimaryColor));
                 computeshader.SetFloat("BlendPower", BlendPower);
 
-
-
-
-
-
                 base.PassValuesToShader(rt, kernel);
                 Vector2 dims = new Vector2(tex.width, tex.height);
-               // float min = Mathf.Min(dims.x, dims.y);
                 float rootmagnitude = Mathf.Sqrt(dims.magnitude);
                 distortion.Influence = distortion.Maker == null ? 0 : distortion.Influence;
                 computeshader.SetFloat("DistortionFactor", distortion.Influence * rootmagnitude / BaseSize);
@@ -731,27 +600,17 @@ public class TextureMaker : MonoBehaviour
             public override RenderTexture Generate()
             {
 
-
-
                 if (computeshader == null)
                 {
                     computeshader = Resources.Load<ComputeShader>("StripesShader");
                 }
 
-
                 RenderTexture rt = tex;
-
                 ApplyShaderToRT(rt);
 
                 return tex;
-
-
             }
-
-
-
         }
-
 
         [System.Serializable]
         public class ColorRotateGpu : Filter
@@ -760,13 +619,11 @@ public class TextureMaker : MonoBehaviour
             public float Degrees;
             public Vector3 Axis = new Vector3(0, 0, 1);
             public Vector3 Pivot = Vector3.zero;
-
             public ColorRotateGpu()
             {
                 FilterType = FilterTypes.rotatecolor;
                 LastFilterType = FilterType;
             }
-
 
             public override void PassValuesToShader(RenderTexture rt, int kernel)
             {
@@ -781,24 +638,17 @@ public class TextureMaker : MonoBehaviour
             public override RenderTexture Generate()
             {
               
-
                 if (computeshader == null)
                 {
                     computeshader = Resources.Load<ComputeShader>("ColorRotateShader");
                 }
-
 
                 RenderTexture rt = tex;
 
                 ApplyShaderToRT(rt);
 
                 return tex;
-
-
             }
-
-
-
         }
 
         [System.Serializable]
@@ -834,20 +684,21 @@ public class TextureMaker : MonoBehaviour
             }
             public NoiseGpu()
             {
-                // Seed = 1;
                 BlendMode = (BlendModes)1;
                 Type = TextureLayerType.noise;
                 LastType = Type;
-
-
-
             }
-
-
 
             public override void PassValuesToShader(RenderTexture Mainrt, int kernel)
             {
-                //   Scale = (CoherentNoise && Scale <= 2) ? 2 : Scale;
+                // i spent a full day on an issue with these sub-layers/makers that was caused by
+                // wrtiting to a computeshader, then calling a function that overwites your changes to that compute shader
+                // because it used the same shader to generate a texture, which results in a partially filled shader 
+                // all i had to do was reorder a base.PassValuesToShader() call to be later, 
+                // that was a good example of shat-gpt not being able to solve a problem for you
+                // it was mystified
+                //Scale = (CoherentNoise && Scale <= 2) ? 2 : Scale;
+
                 float floorscale = 0;
 
                 if (CoherentNoise)
@@ -857,7 +708,6 @@ public class TextureMaker : MonoBehaviour
 
                     if (floorscale < 2f)
                     {
-                      //  Scale = 2.0f / Min(tex.width, tex.height);
                         floorscale = 2;
                     }
                 }
@@ -867,9 +717,8 @@ public class TextureMaker : MonoBehaviour
                     floorscale = Floor(Scale);
 
                 }
+
                 RenderTexture inputTexture;
-
-
 
                 if (FeedInSeedNoise)
                 {
@@ -878,13 +727,11 @@ public class TextureMaker : MonoBehaviour
                 }
                 else
                 {
-                   // Debug.Log((int)Floor(tex.width / floorscale));
                     Vector2Int SeednoiseDims = new Vector2Int((int)Floor(tex.width / floorscale), (int)Floor(tex.height / floorscale));
                     SeednoiseDims += Vector2Int.one;
                     inputTexture = new RenderTexture(SeednoiseDims.x, SeednoiseDims.y, 0, RenderTextureFormat.ARGBFloat);
 
                 }
-
 
                 inputTexture.enableRandomWrite = true;
                 inputTexture.Create();
@@ -894,43 +741,25 @@ public class TextureMaker : MonoBehaviour
                     NoiseGpu SeedNoise = new(Seed);
                     SeedNoise.tex = inputTexture;
                     SeedNoise.Generate();
-
-
-
                 }
                 else
                 {
-
                     Graphics.Blit(tex, inputTexture);
-
                 }
 
                 computeshader.SetTexture(kernel, "Noise", inputTexture);
                 computeshader.SetVector("Dims", new Vector2(tex.width, tex.height));
-
-
-                
                 computeshader.SetVector("SecondaryColor", SecondaryColor);
                 computeshader.SetVector("PrimaryColor", PrimaryColor);
-
                 computeshader.SetFloat("NoiseDimensions", NoiseDimensions);
                 computeshader.SetFloat("Power", SmoothingPower);
                 computeshader.SetInt("UseCoherentNoise", Logic.BoolToInt(CoherentNoise));
                 computeshader.SetFloat("Scale", floorscale);
                 computeshader.SetFloat("Alpha", Alpha);
-
-                // im offseting by 5000 because if the input value is too small the result is too 
-                //regular, horizontal banding and such, no need to make the randomizer more random 
                 computeshader.SetFloat("Seed", Seed);
-
                 computeshader.SetInt("BlendMode", (int)BlendMode);
                 computeshader.SetInt("NoiseBlendMode", (int)NoiseBlendMode);
-
-
-                
                 base.PassValuesToShader(Mainrt, kernel);
-
-
             }
             public override RenderTexture Generate()
             {
@@ -938,13 +767,10 @@ public class TextureMaker : MonoBehaviour
                 {
                     computeshader = Resources.Load<ComputeShader>("NoiseShader");
                 }
-
                 RenderTexture rt = tex;
                 rt.Create();
-
                 ApplyShaderToRT(rt);
                 return tex;
-
             }
 
         }
@@ -957,7 +783,6 @@ public class TextureMaker : MonoBehaviour
             public GameObject MakerObject;
             private TextureMaker Maker;
             [Range(0f,1f)]public float Opacity;
-            
 
             public CompositeGpu(GameObject parent, string name)
             {
@@ -976,7 +801,6 @@ public class TextureMaker : MonoBehaviour
                 inputTexture.enableRandomWrite = true;
                 Graphics.Blit(tex, inputTexture);
                 inputTexture.Create();
-
 
                 if (Maker == null)
                 {
@@ -1022,12 +846,9 @@ public class TextureMaker : MonoBehaviour
         [System.Serializable]
         public class RadialGradientGpu : TextureLayer, IDistortionSubMaker
         {
-
             [HideInInspector] public GameObject Parent;
             public GameObject ParentSM { get => Parent; set => Parent = value; }
-
             public DistortionMaker distortion = new("Distortion Maker");
-
             public DistortionMaker DistortionSM { get => distortion; set => distortion = value; }
 
             public BlendModes BlendMode = BlendModes.RotLerp;
@@ -1052,27 +873,17 @@ public class TextureMaker : MonoBehaviour
 
                 distortion.Dims = new(tex.width, tex.height);
                 distortion.Generate();
-
                 base.PassValuesToShader(Mainrt, kernel);
-
-
                 computeshader.SetTexture(kernel, "DistortionTex", distortion.SubTex);
-
                 Vector2 dims = new Vector2(tex.width, tex.height);
                 float rootmagnitude = Sqrt(dims.magnitude);
                 distortion.Influence = distortion.Maker == null ? 0 : distortion.Influence;
-
                 computeshader.SetFloat("DistortionFactor", distortion.Influence * rootmagnitude / BaseSize);
-
                 computeshader.SetFloat("Radius", Radius * dims.magnitude / BaseSize);
-
-
                 computeshader.SetVector("Dims", dims);
                 computeshader.SetInt("GradientBlendMode", (int)GradientBlendMode);
                 computeshader.SetInt("BlendMode", (int)BlendMode);
-
                 computeshader.SetFloat("BlendPower", Sqrt(Blend));
-
                 computeshader.SetVector("Dims", new Vector2(tex.width, tex.height));
                 computeshader.SetVector("Center", Center);
                 computeshader.SetVector("PrimaryColor", PrimaryColor);
@@ -1080,9 +891,6 @@ public class TextureMaker : MonoBehaviour
             }
             public override RenderTexture Generate()
             {
-
-
-
                 if (computeshader == null)
                 {
                     computeshader = Resources.Load<ComputeShader>("RadialGradientShader");
@@ -1091,13 +899,9 @@ public class TextureMaker : MonoBehaviour
                 rt.Create();
                 ApplyShaderToRT(rt);
                 return tex;
-
-
-
             }
 
         }
-
 
         [System.Serializable]
         public class SimpleGradientGpu : TextureLayer , IDistortionSubMaker
@@ -1131,7 +935,6 @@ public class TextureMaker : MonoBehaviour
                 distortion.Parent = Parent;
                 distortion.Dims = new(tex.width, tex.height);
                 distortion.Generate();
-
                 base.PassValuesToShader(Mainrt, kernel);
 
                 Vector2 dims = new Vector2(tex.width, tex.height);
@@ -1188,9 +991,7 @@ public class TextureMaker : MonoBehaviour
             
                 Type = TextureLayerType.bumpyCircle;
                 LastType = Type;
-
             }
-
         
             [System.Serializable]
             public struct Octave
@@ -1217,6 +1018,8 @@ public class TextureMaker : MonoBehaviour
 
             void ApplyOctavesAndGenerate()
             {
+     
+
                 distortion.Parent = Parent;
                 distortion.Dims = new(tex.width, tex.height);
                 distortion.Generate();
@@ -1227,11 +1030,7 @@ public class TextureMaker : MonoBehaviour
                 }
 
                 Vector2 dims = new Vector2(tex.width, tex.height);
-
-
                 RenderTexture rt = tex;
-               // Debug.Log(tex.IsCreated());
-
                 int kernel = computeshader.FindKernel("CSMain");
                 computeshader.SetTexture(kernel, "Result", rt);
 
@@ -1244,7 +1043,6 @@ public class TextureMaker : MonoBehaviour
                 float[] magnitude = new float[20];
                 float[] power = new float[20];
                 float[] spacings = new float[20];
-
                 
                 for (int i = 0; i < Octaves.Count; i++)
                 {
@@ -1258,17 +1056,15 @@ public class TextureMaker : MonoBehaviour
                     magnitude[i] = Octaves[i].magnitude * dims.magnitude / BaseSize;
                     power[i] = Octaves[i].power;
                     spacings[i] = Octaves[i].spacing;
-                    //  Debug.Log(spacings[i]);
-
                 }
-
-
-
 
                 float rootmagnitude = Sqrt(dims.magnitude);
                 distortion.Influence = distortion.Maker == null ? 0 : distortion.Influence;
                 computeshader.SetFloat("DistortionFactor", distortion.Influence * rootmagnitude / BaseSize);
                 computeshader.SetTexture(kernel, "DistortionTex", distortion.SubTex);
+
+                // this is another example of asking chat-gpt how to do something and the reusing it once you know how
+                // still really annoys me that setFloats doesnt actually set an array of floats...
 
                 // Create and set ComputeBuffers
                 ComputeBuffer offsetBuffer = new ComputeBuffer(offset.Length, sizeof(float));
@@ -1297,40 +1093,22 @@ public class TextureMaker : MonoBehaviour
                 absBuffer.SetData(absUInt);
                 computeshader.SetBuffer(kernel, "UseAbsbools", absBuffer);
 
-                // Set scalar values
-                
-
-
-
                 computeshader.SetInt("BlendMode", (int)BlendMode);
-
                 computeshader.SetVector("Center",Center * dims);
-
                 computeshader.SetVector("PrimaryColor", PrimaryColor);
                 computeshader.SetVector("SecondaryColor", SecondaryColor);
-
                 computeshader.SetInt("ArrayLength", Octaves.Count);
                 computeshader.SetFloat("Radius", Radius * dims.magnitude / BaseSize);
 
-
-
-
                 computeshader.Dispatch(kernel, threadGroupsX, threadGroupsY, 1);
-
-         
 
                 offsetBuffer.Dispose();
                 powerBuffer.Dispose();
                 magnitudeBuffer.Dispose();
-
                 absBuffer.Dispose();
                 constantBuffer.Dispose();
                 spacingBuffer.Dispose();
-
-
             }
-     
-
             public override RenderTexture Generate()
             {
                 ApplyOctavesAndGenerate();
@@ -1338,36 +1116,27 @@ public class TextureMaker : MonoBehaviour
                 return tex;
             }
         }
-
-
         public interface ISubmaker
         {
             GameObject ParentSM { get; set; }
 
         }
-
         public interface IDistortionSubMaker : ISubmaker
         {
             DistortionMaker DistortionSM { get; set; }
         }
-
         public interface IMaskSubMaker : ISubmaker
         {
             SubMaker MaskSM { get; set; }
         }
-
         public interface IReplaceColorSubMaker : ISubmaker
         {
             ReplaceColorSubMaker ReplaceColorSM { get; set; }
         }
-
-
         public interface ISecondarySubMaker : ISubmaker
         {
             SubMaker SecondarySM { get; set; }
         }
-
-
 
         [System.Serializable]
         public class ReplaceColorSubMaker : SubMaker
@@ -1383,7 +1152,6 @@ public class TextureMaker : MonoBehaviour
 
         }
 
-
         [System.Serializable]
         public class DistortionMaker : SubMaker
         {
@@ -1395,8 +1163,6 @@ public class TextureMaker : MonoBehaviour
             }
 
         }
-
-
 
         [System.Serializable]
         public class SubMaker
@@ -1466,10 +1232,7 @@ public class TextureMaker : MonoBehaviour
                         return;
                     }
 
-                   
-
                     SubTextureMaker = new(Name, new System.Type[] { typeof(SpriteRenderer), typeof(TextureMaker) });
-                   
 
                     if (SubTextureMaker.TryGetComponent(out SpriteRenderer s))
                     {
@@ -1479,9 +1242,6 @@ public class TextureMaker : MonoBehaviour
                         {
                             s.material = new(unlitShader);
                         }
-
-
-                        
                     }
 
                     SubTextureMaker.transform.SetParent(Parent.transform);
@@ -1494,8 +1254,6 @@ public class TextureMaker : MonoBehaviour
         [System.Serializable]
         public class TextureLayer
         {
-          
-
             public bool Enabled = true;
             
             public enum BlendModes
@@ -1508,7 +1266,6 @@ public class TextureMaker : MonoBehaviour
                 Addition = 5,
                 Subtraction = 6,
                 Overwrite = 7,
-
             }
             public enum TextureLayerType
             {
@@ -1522,18 +1279,11 @@ public class TextureMaker : MonoBehaviour
                 noise = 7,
                 polygon = 8,
                 customMask = 9,
-
-
-
             }
-
-
-
             public virtual void PassValuesToShader(RenderTexture rt, int kernel)
             {
                 computeshader.SetTexture(kernel, "Result", rt);
             }
-
             public void ApplyShaderToRT(RenderTexture rt)
             {
                 int threadGroupsX = CeilToInt(tex.width / 8f);
@@ -1546,9 +1296,6 @@ public class TextureMaker : MonoBehaviour
                 computeshader.Dispatch(kernel, threadGroupsX, threadGroupsY, 1);
        
             }
-
-
-
             public RenderTexture CreateRTfromTexture(Texture tex)
             {
                 RenderTexture rt = new RenderTexture(tex.width, tex.height, 0, RenderTextureFormat.ARGBFloat);
@@ -1558,20 +1305,16 @@ public class TextureMaker : MonoBehaviour
                 return rt;
             }
 
-
             [HideInInspector] public TextureLayerType LastType;
             public TextureLayerType Type;
             public ComputeShader computeshader;
             public RenderTexture tex;
             public RenderTexture OutTex => Generate();
-
-
             public virtual RenderTexture Generate()
             {
                 return tex;
             }
         }
-
         public TextureLayer ReplaceFilter(Filter.FilterTypes type)
         {
             switch (type)
@@ -1592,9 +1335,6 @@ public class TextureMaker : MonoBehaviour
                     return new SaturationFilterGpu();
             }
         }
-
-
-
         public TextureLayer ReplaceLayer(TextureLayer.TextureLayerType type)
         {
             switch (type)
@@ -1625,9 +1365,7 @@ public class TextureMaker : MonoBehaviour
             }
         }
 
-
         [ContextMenu("create Texture")]
-
 
         public void GenerateTexture(bool Reset)
         {
@@ -1651,7 +1389,6 @@ public class TextureMaker : MonoBehaviour
                 {
                     TextureLayers.RemoveAt(i);
                 }
-
 
                 if (TextureLayers[i] is ISubmaker sub)
                 {
@@ -1700,7 +1437,6 @@ public class TextureMaker : MonoBehaviour
 
                 }
                 
-
                 if (TextureLayers[i].Type != TextureLayers[i].LastType)
                 {
                     if (TextureLayers[i].LastType == TextureLayerType.composite)
@@ -1710,13 +1446,13 @@ public class TextureMaker : MonoBehaviour
                             GameObject.DestroyImmediate((TextureLayers[i] as CompositeGpu).MakerObject);
                         }
                     }
-
                     TextureLayers[i] = ReplaceLayer(TextureLayers[i].Type);
-
                 }
 
+                // this is logic to handle deletion of unused texture makers, however i may remove this feature even from
+                // the composite layers because it is annoying to keep track of references and a potential user
+                // may be annoyed in certain circumstances
                 /*
-
                     else if (TextureLayers[i] is ISubMaker && (TextureLayers[i] as ISubMaker).SM.SubTextureMaker != null)
                     {
                         if ((TextureLayers[i] as ISubMaker).SM.SubTextureMaker.TryGetComponent(out TextureMaker _))
@@ -1725,10 +1461,6 @@ public class TextureMaker : MonoBehaviour
                         }
                     }
                   */
-
-
-
-
 
                 if (TextureLayers[i] is Filter)
                 {

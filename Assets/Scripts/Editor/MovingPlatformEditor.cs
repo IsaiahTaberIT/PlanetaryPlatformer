@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -15,10 +14,6 @@ public class MovingPlatformEditor : Editor
             platform.TrySpinPlatform();
 
         }
-
-
-        // Get a reference to the target script
-
         // This will automatically toggle open/closed without needing the boolean
 
         if (platform.Spin)
@@ -35,18 +30,8 @@ public class MovingPlatformEditor : Editor
                 }
                 GUILayout.Space(10);
 
-                //    if (GUILayout.Button("Insert Segment"))
-                //   {
-                //      platform.InsertSegment();
-                //    }
-                // GUILayout.Space(10);
             }
         }
-       
-
-
         DrawDefaultInspector();
- 
-
     }
 }

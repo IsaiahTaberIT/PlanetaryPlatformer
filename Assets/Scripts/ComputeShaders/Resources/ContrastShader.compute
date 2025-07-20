@@ -17,13 +17,8 @@ float3 applycontrast(uint2 pos)
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    // TODO: insert actual code here!
-  
-   
-    
     float4 outcolor;
     outcolor.rgb = applycontrast(id.xy);
-    //outcolor.rgb = pow(abs(Result[id.xy].rgb), Contrast);
     outcolor.w = Result[id.xy].w;
     outcolor = saturate(outcolor);
     Result[id.xy] = outcolor;

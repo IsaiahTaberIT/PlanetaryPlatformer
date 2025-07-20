@@ -17,22 +17,13 @@ RWTexture2D<float4> SecondaryInputTexture; // SIT
 bool OverrideWithMask; // OWM
 bool OverridePrimaryColor; // OPC
 
-
-
-
-
-
-
 float inverseLerp(float start, float end, float value)
 {
     return (value - start) / (end - start);
 }
 
-
-
 StructuredBuffer<float2> Verts;
 int VertCount;
-
 
 float4 OutputColor(float2 pos)
 {
@@ -65,8 +56,6 @@ float4 OutputColor(float2 pos)
             {
                 if (pos.y >= min(Verts[i].y, Verts[index2].y))
                 {
-               
-                    
                     float yintersect = lerp(Verts[i].x, Verts[index2].x, inverseLerp(Verts[i].y, Verts[index2].y, pos.y));
 
                
@@ -75,10 +64,7 @@ float4 OutputColor(float2 pos)
                         count++;
 
                     }
-                    
-                    
-                    
-                    
+
                 }
 
             }
@@ -97,29 +83,13 @@ float4 OutputColor(float2 pos)
         return Blend(PrimaryColor, SecondaryColor, EaseInOut(saturate(shortest * 5.0),3), 1, false);
 ;
     }
-    
  
 }
-
-
-
-
-
-
-
-
-
 
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-
     HandleMasking(OverrideWithMask, OverridePrimaryColor, PrimaryColor, SecondaryColor, SecondaryInputTexture[id.xy]);
-
-    
-    
-    
-    // TODO: insert actual code here!
 
     uint2 DistortedPosition = DistortPos((DistortionTex[id.xy]), id.xy, DistortionFactor);
 
@@ -129,14 +99,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     
     pos /= minlength;
     
-   
-
-    
     float4 OutColor = OutputColor(pos);
     
     Result[id.xy] = Blend(Result[id.xy], OutColor, OutColor.w, BlendMode, true);
-    
-    
-    
     
 }

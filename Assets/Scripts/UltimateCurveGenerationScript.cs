@@ -16,9 +16,6 @@ public class UltimateCurveGenerationScript : MonoBehaviour
 
     [HideInInspector] public bool showGizmoSettings = false;
     [HideInInspector] public bool showButtons = false;
-    private List<int> corners = new();
-
-    //  [Min(0.01f)]public float divide;
     [HideInInspector] public float GizmoSize;
     [HideInInspector] public Color SelectedColor;
     [HideInInspector] public Color UnSelectedColor;
@@ -127,9 +124,6 @@ public class UltimateCurveGenerationScript : MonoBehaviour
                     Output = TargetObject.transform.position;
                 }
             }
-
-
-
             return Output;
 
         }
@@ -205,30 +199,23 @@ public class UltimateCurveGenerationScript : MonoBehaviour
     void ClearSpline()
     {
         ShapeController = null;
-
         ShapeController = GetComponent<SpriteShapeController>();
 
-
         MySpline = null;
-
         MySpline = ShapeController.spline;
 
     }
     void OnEnable()
     {
         MyGameLogicScript = GameObject.FindGameObjectWithTag("Logic").GetComponent<GameLogicScript>();
-
         ShapeController = GetComponent<SpriteShapeController>();
-
 
     }
 
     private void OnDrawGizmosSelected()
     {
-
         if (DrawAny)
         {
-
             if (DrawAll)
             {
                 foreach (Vector3 point in Points)
@@ -238,11 +225,9 @@ public class UltimateCurveGenerationScript : MonoBehaviour
                     Gizmos.DrawSphere(Vector3.Scale(transform.TransformDirection(point), transform.lossyScale) + TargetSettings.GetTargetPos(transform), GizmoSize);
                 }
 
-
                 Gizmos.color = Color.blue;
                 Gizmos.DrawSphere(TargetSettings.GetTargetPos(transform), GizmoSize * 2);
             }
-
 
             foreach (Vector3 point in Segments[CurrentSegment].SegmentPoints)
             {
@@ -251,13 +236,10 @@ public class UltimateCurveGenerationScript : MonoBehaviour
                 Gizmos.DrawSphere(Vector3.Scale(transform.TransformDirection(point), transform.lossyScale) + TargetSettings.GetTargetPos(transform), GizmoSize * 1.1f);
             }
 
-
         }
     }
     private void OnDrawGizmos()
     {
-
-
         if (_DisplayIcon)
         {
             Gizmos.color = Color.white;
@@ -267,12 +249,9 @@ public class UltimateCurveGenerationScript : MonoBehaviour
 
         Logic.RenderRayRenderer(RayRenderers);
 
-
     }
     private void OnValidate()
     {
-
-
         if (!Application.isPlaying)
         {
             RayRenderers.Clear();
@@ -296,8 +275,6 @@ public class UltimateCurveGenerationScript : MonoBehaviour
     {
         GeneratePolar(index);
     }
-
-
     void GenerateSegment(SegmentType segmentType, int index)
     {
         switch ((int)segmentType)
@@ -322,12 +299,8 @@ public class UltimateCurveGenerationScript : MonoBehaviour
                 GeneratePolarConstLength(index);
                 break;
             case 4:
-
-
                 break;
             case 5:
-
-
                 break;
             default:
                 break;
@@ -358,13 +331,13 @@ public class UltimateCurveGenerationScript : MonoBehaviour
                 Debug.Log("No Points at: " + (index - 1));
 
             }
-
-
         }
 
         return startPos;
     }
 
+
+    // why is this never being called?
     Vector3 GeneratePointsAutoLevel(int verts, ref CurveSegment currentSegment, float shiftX, float shiftY, float segmentArcLength, float radius, Vector2 LastPoint, Vector2 startpos, bool isOld)
     {
         Vector3 pointPosition = Vector3.zero;
@@ -411,7 +384,6 @@ public class UltimateCurveGenerationScript : MonoBehaviour
         }
 
         return pointPosition;
-
     }
     void GenerateAutoLevel(int index)
     {
@@ -483,7 +455,6 @@ public class UltimateCurveGenerationScript : MonoBehaviour
         segmentArcLength /= (verts - 1);
 
         Vector2 LastPoint = startpos;
-        //GenerateMainPoints
 
         Vector3 pointPosition = Vector3.zero;
 
@@ -496,60 +467,34 @@ public class UltimateCurveGenerationScript : MonoBehaviour
 
             float arcLength = i * segmentArcLength + shiftX;
             float radialStep = i * ((radius - currentSegment.InitHeight) / (verts - 1)) + shiftY + currentSegment.InitHeight;
-
+            //at some point this repeated logic needs to be pulled into its own method
             pointPosition = new Vector2(Mathf.Sin(arcLength), Mathf.Cos(arcLength)) * (radius + shiftY);
-
             Vector2 direction = (GameLogicScript.BasicGravityDirection(transform.TransformDirection(LastPoint + LastPoint.normalized) + transform.position, PlanetsOfInfluence, MyGameLogicScript.NormalGravity * Vector3.down));
-
-
             debugRay.origin = transform.TransformDirection(LastPoint) + (Vector3)startingPosition;
             debugRay.direction = direction;
-
             RayRenderers.Add(new Logic.RayRenderer(debugRay, 100, (Color.blue + Color.white)/2));
-
-           // Debug.Log(Vector2.Angle(direction, transform.TransformDirection(LastPoint)));
-
             Quaternion rotation = (Vector2.Angle(direction, transform.TransformDirection(LastPoint)) > 90) ? Quaternion.AngleAxis(90, new Vector3(0, 0, 1)) : Quaternion.AngleAxis(-90, new Vector3(0, 0, 1));
-
             direction = rotation * direction;
-
-
-
-
             debugRay.origin = startingPosition;
             debugRay.direction = transform.TransformDirection(pointPosition);
-
             RayRenderers.Add(new Logic.RayRenderer(debugRay, 1000, (Color.magenta + Color.red) / 2));
-
             debugRay.origin = transform.TransformDirection(LastPoint) + (Vector3)startingPosition;
             debugRay.direction = direction;
-
             RayRenderers.Add(new Logic.RayRenderer(debugRay, 1000, Color.green));
-
             pointPosition = Logic.IntersectionPoint(Vector2.zero, pointPosition, LastPoint, transform.InverseTransformDirection(direction));
-
             LastPoint = pointPosition;
 
             if (i != 0 || (startpos - (Vector2)pointPosition).sqrMagnitude > 0.5)
             {
-
-
                 currentSegment.SegmentPoints.Add(pointPosition);
-
-
             }
 
         }
 
-
-
         float startradius = Vector2.Distance(startpos, Vector2.zero);
-
         currentSegment.PolarShift.x = segmentArcLength * (verts - 1) + shiftX;
         currentSegment.PolarShift.y = startradius;
-
         Points.AddRange(currentSegment.SegmentPoints);
-
 
         if (index < Segments.Count - 1)
         {
@@ -562,12 +507,6 @@ public class UltimateCurveGenerationScript : MonoBehaviour
 
             Segments[index + 1] = nextSegment;
         }
-
-
-
-
-
-
 
         if (!currentSegment.Isolate)
         {
@@ -591,12 +530,9 @@ public class UltimateCurveGenerationScript : MonoBehaviour
                 }
             }
 
-
             currentSegment.WasIsolated = false;
             currentSegment.OldDimentions = currentSegment.Dimentions;
             currentSegment.OldPosition = currentSegment.SegmentPoints[^1];
-
-
 
         }
         else
@@ -613,12 +549,9 @@ public class UltimateCurveGenerationScript : MonoBehaviour
                 if (nextSegment.Type == SegmentType.Euclidean)
                 {
                   
-
                     //polar -> euclidean
 
                     nextSegment.IsolatedShift = currentSegment.SegmentPoints[^1] - currentSegment.OldPosition;
-
-
 
                 }
                 else if (nextSegment.Type == SegmentType.Polar || nextSegment.Type == SegmentType.SelfLeveling)
@@ -647,7 +580,6 @@ public class UltimateCurveGenerationScript : MonoBehaviour
 
     }
 
-
     void GeneratePolar(int index)
     {
 
@@ -666,20 +598,14 @@ public class UltimateCurveGenerationScript : MonoBehaviour
         currentSegment.IsolatedShift = (index == 0 || !Segments[index - 1].Isolate) ? Vector2.zero : currentSegment.IsolatedShift;
         Vector2 isolatedShift = (index == 0) ? Vector2.zero : currentSegment.IsolatedShift;
 
-
-
         Vector2 dims = Segments[index].Dimentions;
         float shiftX = 0;
         float shiftY = 0;
         float radius = dims.y - isolatedShift.y;
 
-
         int verts = Segments[index].Verts;
-
         Segments[index].SegmentPoints.Clear();
-
         float circumference = 0;
-
 
         if (lastType != SegmentType.None)
         {
@@ -706,13 +632,8 @@ public class UltimateCurveGenerationScript : MonoBehaviour
         }
 
         circumference = ((shiftY + radius) * 2 * Mathf.PI);
-
-
-
         float segmentArcLength = 0;
         float shiftedDimentions = (dims.x - isolatedShift.x);
-
-
 
         if (currentSegment.Type == SegmentType.PolarConstLength)
         {
@@ -722,7 +643,6 @@ public class UltimateCurveGenerationScript : MonoBehaviour
         else
         {
             segmentArcLength = shiftedDimentions * Mathf.PI / 180;
-
         }
 
     
@@ -738,7 +658,6 @@ public class UltimateCurveGenerationScript : MonoBehaviour
             {
                 float angle = shiftedDimentions * ((180f / (2f * Mathf.Pow(Mathf.PI, 2))) / (radius + shiftY));
                 currentSegment = CalculateVerts(currentSegment, angle * squrtRadius);
-
             }
         }
         else
@@ -749,13 +668,7 @@ public class UltimateCurveGenerationScript : MonoBehaviour
             }
         }
 
-
-
-
-
         segmentArcLength /= (verts - 1);
-
-
 
         for (int i = 0; i < verts; i++)
         {
@@ -778,7 +691,6 @@ public class UltimateCurveGenerationScript : MonoBehaviour
             {
                 currentSegment.SegmentPoints.Add(pointPosition);
             }
-
         }
 
         currentSegment.PolarShift.x = segmentArcLength * (verts - 1) + shiftX;
@@ -878,7 +790,6 @@ public class UltimateCurveGenerationScript : MonoBehaviour
                 else if (currentSegment.Type == SegmentType.Polar)
                 {
 
-
                     if (nextSegment.Type == SegmentType.Euclidean)
                     {
                         //polar -> euclidean
@@ -911,16 +822,12 @@ public class UltimateCurveGenerationScript : MonoBehaviour
     {
         CurveSegment currentSegment = Segments[index];
 
-       
-
         Vector3 startPos = GetStartingPosition(index);
 
         currentSegment.IsolatedShift = (index == 0 || !Segments[index - 1].Isolate) ? Vector2.zero : currentSegment.IsolatedShift;
         Vector2 isolatedShift = (index == 0) ? Vector2.zero : currentSegment.IsolatedShift;
 
         Vector3 shiftedPos = (Vector2)startPos - isolatedShift;
-
-
 
         currentSegment.SegmentPoints.Clear();
         Vector3[] euclideanPoints = new Vector3[2];
@@ -1018,8 +925,6 @@ public class UltimateCurveGenerationScript : MonoBehaviour
             }
         }
 
-
-
         if (currentSegment.Sloped)
         {
             euclideanPoints[0] = startPos + new Vector3(0, Logic.RoundSnap(currentSegment.InitHeight - currentSegment.IsolatedShift.y, SnapSpacing), 0);
@@ -1055,10 +960,7 @@ public class UltimateCurveGenerationScript : MonoBehaviour
             ShapeController = GetComponent<SpriteShapeController>();
             MySpline = ShapeController.spline;
 
-
         }
-
-
 
         if (MySpline != null)
         {
@@ -1080,7 +982,6 @@ public class UltimateCurveGenerationScript : MonoBehaviour
             }
         }
 
-
         if (AutoGenerateVerts)
         {
             PopulateVerts();
@@ -1090,9 +991,6 @@ public class UltimateCurveGenerationScript : MonoBehaviour
 
         Points.Clear();
 
-
-      
-
         for (int i = 0; i < Segments.Count; i++)
         {
 
@@ -1100,19 +998,11 @@ public class UltimateCurveGenerationScript : MonoBehaviour
  
         }        
 
-
-
-
-
         for (int i = 0; i < Points.Count; i++)
         {
             
             MySpline.InsertPointAt(i, Points[i] - transform.position + TargetSettings.GetTargetPos(transform));
             MySpline.SetTangentMode(i, _TangentMode);
-            //MySpline.SetLeftTangent(i, Vector3.left);
-           // MySpline.SetLeftTangent(i, Vector3.right);
-
-
         }
 
         DisplaySegmentRefresh();
@@ -1125,8 +1015,6 @@ public class UltimateCurveGenerationScript : MonoBehaviour
             // VERY IMPORTANT: Record prefab instance changes
             PrefabUtility.RecordPrefabInstancePropertyModifications(ShapeController);
         }
- 
-
     }
 #endif
 
@@ -1162,9 +1050,7 @@ public class UltimateCurveGenerationScript : MonoBehaviour
         {
             Length = dim.x;
             Height = dim.y;
-        }
-
-        
+        }        
         /*
         public CurveSegment() 
         {
@@ -1183,12 +1069,6 @@ public class UltimateCurveGenerationScript : MonoBehaviour
         MousePosition.z = 0;
         MousePosition.y *= -1;
         MousePosition.y += SceneView.currentDrawingSceneView.cameraViewport.height;
-
-        
-
-        // Debug.Log("Clicked");
-        //Debug.Log(SceneView.currentDrawingSceneView.camera.ScreenToWorldPoint(MousePosition));
-        //Debug.Log(MousePosition);
         float checkDistance;
         float minDistance = float.MaxValue;
         int Currenminindex = 0;
@@ -1198,21 +1078,14 @@ public class UltimateCurveGenerationScript : MonoBehaviour
             {
                 Vector3 position = TargetSettings.GetTargetPos(transform);
                 Vector3 pointPosition = Segments[i].SegmentPoints[j];
-
-
-
                 Vector3 worldPointPosition = SceneView.currentDrawingSceneView.camera.ScreenToWorldPoint(MousePosition);
                 position.z = 0;
                 pointPosition.z = 0;
                 worldPointPosition.z = 0;
-
-
-
                 checkDistance = Vector2.Distance(worldPointPosition, position + (Quaternion.AngleAxis(transform.rotation.eulerAngles.z, new Vector3(0, 0, 1)) * pointPosition));
 
                 if (minDistance > checkDistance)
                 {
-               
                     Currenminindex = i;
                     minDistance = checkDistance;
                 }
@@ -1225,17 +1098,14 @@ public class UltimateCurveGenerationScript : MonoBehaviour
     CurveSegment CalculateVerts(CurveSegment segment, float length)
     {
         length = Mathf.Abs(length);
-      //  Debug.Log(length + " , " + segment.Type);
         segment.Verts = Mathf.Clamp(Mathf.RoundToInt(length + 2f),2,100);
         if (!AutoGenerateVerts)
         {
-        segment.ReAssignVerts = false;
+            segment.ReAssignVerts = false;
 
         }
         return segment;
-
     }
-
 
     [ContextMenu("Populate Verts")]
     void PopulateVerts()
@@ -1256,8 +1126,5 @@ public class UltimateCurveGenerationScript : MonoBehaviour
             }
         }
     }
-
-
-
 }
 #endif

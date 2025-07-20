@@ -31,8 +31,6 @@ public class MovingPlatform : MonoBehaviour
         RevolutionTimer.EndTime *= -1;
         
     }
-
-
     private void Start()
     {
         if (ResetOnStart)
@@ -68,8 +66,6 @@ public class MovingPlatform : MonoBehaviour
     {
 
         TrySpinPlatform();
-
-
 
         if (Translate)
         {

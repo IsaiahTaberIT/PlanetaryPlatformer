@@ -7,19 +7,15 @@
 
 
 RWTexture2D<float4> SecondaryInputTexture;
-
 RWTexture2D<float4> MaskTex;
-
 RWTexture2D<float4> Result;
 
 float4 ComparisonColor;
-
 float Threshold;
 int BlendMode;
 int MaskMode;
 
 bool Invert;
-
 
 float MaskValue(float4 color)
 {
@@ -40,27 +36,14 @@ float MaskValue(float4 color)
             output = length(color.rgb - ComparisonColor.rgb) / Sqrt3;
             break;
         case 3:
-    
              // by hue
             output = dot(normalize(color.rgb), normalize(ComparisonColor.rgb)) + 1;
             output /= 2.0;
             break;
-        
-        
-        
         default:
             break;
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
- 
     if (Invert)
     {
         output = 1.0 - output;
@@ -70,7 +53,6 @@ float MaskValue(float4 color)
 
 }
 
-
 float4 AssginValueBasedOnMask(uint2 pos,float maskValue)
 {
     return Blend(Result[pos], SecondaryInputTexture[pos], maskValue, BlendMode, true);
@@ -79,7 +61,5 @@ float4 AssginValueBasedOnMask(uint2 pos,float maskValue)
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    // TODO: insert actual code here!
-
     Result[id.xy] = AssginValueBasedOnMask(id.xy, MaskValue(MaskTex[id.xy]));
 }

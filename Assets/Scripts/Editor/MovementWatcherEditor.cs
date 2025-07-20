@@ -3,18 +3,13 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-
-
 [CustomEditor(typeof(MonoBehaviour), true)]
 [CanEditMultipleObjects]
 public class MovementWaterEditor : Editor
 {
-
     private Vector3 lastPosition;
     private Vector3 lastScale;
     private Vector3 LastRotation;
-
-
     private void OnEnable()
     {
         if (target is MonoBehaviour)
@@ -53,7 +48,6 @@ public class MovementWaterEditor : Editor
         }
       
     }
-
     private void InvokeOnEditorTransformModifiedMethods(MonoBehaviour mono, Type attributeType)
     {
         var methods = mono.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);

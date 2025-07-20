@@ -9,8 +9,7 @@ public class Sticker : MonoBehaviour
     public delegate void RepairColliders();
     public static event RepairColliders ColliderRepair;
     private MovingPlatform _Platform;
-    [ContextMenu("Probaly Wont Work")]
-
+    [ContextMenu("Probaly Wont Work")] // rename at some point after evaluating what it does
     private void Start()
     {
         _ParentCanMove = transform.parent.TryGetComponent<MovingPlatform>(out _Platform);
@@ -23,8 +22,6 @@ public class Sticker : MonoBehaviour
     {
         ColliderRepair += UpdateCollider;
     }
-
-
     void OnDisable()
     {
         ColliderRepair -= UpdateCollider;
@@ -56,7 +53,6 @@ public class Sticker : MonoBehaviour
             
                     }
                       
-
                 }
                 else
                 {
@@ -79,7 +75,6 @@ public class Sticker : MonoBehaviour
                     if (normalcheckCenter && StickerInfo.StickerCooldown.GetRatio() >= 1 && WallEvaluation)
                     {
                         StickerInfo._Stickered = true;
-
 
                         // Body.AddForce(StickerInfo.StickerPull);
                          Debug.Log(sticker._ParentCanMove);
@@ -157,8 +152,6 @@ public class Sticker : MonoBehaviour
         }
     }
 
-    
-
     private void OnTriggerExit2D(Collider2D collision)
     {
         if (collision.TryGetComponent(out IStickerable target))
@@ -186,23 +179,14 @@ public class Sticker : MonoBehaviour
             }
 
         }
-
-     
-
     }
 
     void UpdateCollider()
     {
-
-
         if (transform.parent == null)
         {
             return;
         }
-
-
-
-
 
         GameObject parent = transform.parent.gameObject;
         Parentcollider = parent.GetComponent<Collider2D>();
@@ -287,7 +271,6 @@ public class Sticker : MonoBehaviour
         
     
     }
-
     private void OnValidate()
     {
         UpdateCollider();
@@ -296,6 +279,5 @@ public class Sticker : MonoBehaviour
     {
     
     }
-
 
 }
