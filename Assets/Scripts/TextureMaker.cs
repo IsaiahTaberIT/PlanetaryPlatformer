@@ -12,17 +12,14 @@ using static UnityEngine.Mathf;
 
 public class TextureMaker : MonoBehaviour
 {
-  
-
-
     // TODO:
-
     // add masking to Transparency Shader
 
+    //fix recursion stack overfloa
 
-    //figure out why my self reference detection is working?
+    // add saving
 
-    // add abilty to save textures, and potentially slowly render very large textures so unity doesnt hang.
+   
 
 
     public const int BaseSize = 256;
@@ -32,6 +29,7 @@ public class TextureMaker : MonoBehaviour
     private float _LastRatio;
     [Tooltip("Prevents aspect ratio from being changed when modifying dimensions, should be disabled when is being used as a child")]
     public bool LockRatio = false;
+
 
     private Vector2Int _OldDimensions = new Vector2Int(BaseSize, BaseSize);
     public Texture2D OutputTexture;
@@ -90,9 +88,6 @@ public class TextureMaker : MonoBehaviour
         Manager.TextureLayers.Add(new SimpleGradientGpu());
     }
 
-
-
-
     /// <summary>
     /// Generates the Output image using all TextureLayers in the LayerManager,
     /// and assigns a sprite with that image to the TextureMaker.
@@ -101,20 +96,21 @@ public class TextureMaker : MonoBehaviour
     /// </summary>
     public void GenerateAndApplySubCall(List<TextureMaker> Makers)
     {
+        Debug.Log(Makers.Count,gameObject);
 
         for (int i = 0; i < Makers.Count; i++)
         {
+
             if (Makers[i] == this)
             {
-                Debug.Log(Makers.Count);
+              // Debug.Log(Makers.Count);
                 Debug.LogWarning("Self Reference! you have a loop in your references in the inspector", gameObject);
-                Manager.CallHistory.Clear();
                 Makers.Clear();
                 return;
             }
         }
+
         Makers.Add(this);
-        Manager.CallHistory = Makers;
         GenerateAndApply();
     }
 
@@ -214,12 +210,12 @@ public class TextureMaker : MonoBehaviour
             renderer.sprite = sprite;
         }
 
-        // this is a little wiggly for some reason like it has a delay to it when you update the inspector
-        //not a big deal but it is a little gross
+        // this is a little wiggly because the children end up getting updated first resulting in them lagging behind the parent
         float ScaleRatio = transform.localScale.magnitude / transform.lossyScale.magnitude;
         transform.localScale = Vector3.one / new Vector2(Manager.texture.width, Manager.texture.height).magnitude * (181.02f) * ScaleRatio;
 
-        Manager.CallHistory.Clear();
+
+
 
     }
     [System.Serializable]
@@ -227,7 +223,6 @@ public class TextureMaker : MonoBehaviour
     {
 
         public Vector2Int Dimentions = new Vector2Int(BaseSize, BaseSize);
-        [HideInInspector] public List<TextureMaker> CallHistory = new();
         [SerializeReference] public List<TextureLayer> TextureLayers = new();
         public RenderTexture texture;
         [HideInInspector] public GameObject Parent;
@@ -486,9 +481,9 @@ public class TextureMaker : MonoBehaviour
                 computeshader.SetInt("MaskMode", (int)MaskMode);
                 computeshader.SetVector("ComparisonColor", ComparisonColor);
                 mask.Dims = new(tex.width, tex.height);
-                computeshader.SetTexture(kernel, "MaskTex", mask.Generate(ManagerRef));
+                computeshader.SetTexture(kernel, "MaskTex", mask.Generate());
                 secondary.Dims = new(tex.width, tex.height);
-                computeshader.SetTexture(kernel, "SecondaryInputTexture", secondary.Generate(ManagerRef));
+                computeshader.SetTexture(kernel, "SecondaryInputTexture", secondary.Generate());
                 computeshader.SetInt("BlendMode", (int)BlendMode);
 
             }
@@ -581,10 +576,10 @@ public class TextureMaker : MonoBehaviour
                 secondary.Parent = Parent;
 
                 distortion.Dims = new(tex.width, tex.height);
-                computeshader.SetTexture(kernel, "DistortionTex", distortion.Generate(ManagerRef));
+                computeshader.SetTexture(kernel, "DistortionTex", distortion.Generate());
 
                 secondary.Dims = new(tex.width, tex.height);
-                computeshader.SetTexture(kernel, "SecondaryInputTexture", secondary.Generate(ManagerRef));
+                computeshader.SetTexture(kernel, "SecondaryInputTexture", secondary.Generate());
 
 
                 computeshader.SetInt("OverrideWithMask", Logic.BoolToInt(secondary.OverrideWithMask));
@@ -670,11 +665,11 @@ public class TextureMaker : MonoBehaviour
             {
                 distortion.Parent = Parent;
                 distortion.Dims = new(tex.width, tex.height);
-                RenderTexture temp1 = distortion.Generate(ManagerRef);
+                RenderTexture temp1 = distortion.Generate();
 
                 secondary.Parent = Parent;
                 secondary.Dims = new(tex.width, tex.height);
-                RenderTexture temp2 = secondary.Generate(ManagerRef);
+                RenderTexture temp2 = secondary.Generate();
 
                 computeshader.SetTexture(kernel, "DistortionTex", temp1);
                 computeshader.SetTexture(kernel, "SecondaryInputTexture", temp2);
@@ -975,7 +970,7 @@ public class TextureMaker : MonoBehaviour
                 distortion.Parent = Parent;
 
                 distortion.Dims = new(tex.width, tex.height);
-                distortion.Generate(ManagerRef);
+                distortion.Generate();
                 base.PassValuesToShader(Mainrt, kernel);
                 computeshader.SetTexture(kernel, "DistortionTex", distortion.SubTex);
                 Vector2 dims = new Vector2(tex.width, tex.height);
@@ -1033,7 +1028,7 @@ public class TextureMaker : MonoBehaviour
             {
                 distortion.Parent = Parent;
                 distortion.Dims = new(tex.width, tex.height);
-                distortion.Generate(ManagerRef);
+                distortion.Generate();
                 base.PassValuesToShader(Mainrt, kernel);
 
                 Vector2 dims = new Vector2(tex.width, tex.height);
@@ -1120,7 +1115,7 @@ public class TextureMaker : MonoBehaviour
 
                 distortion.Parent = Parent;
                 distortion.Dims = new(tex.width, tex.height);
-                distortion.Generate(ManagerRef);
+                distortion.Generate();
 
                 if (computeshader == null)
                 {
@@ -1283,7 +1278,7 @@ public class TextureMaker : MonoBehaviour
                 Name = name;
             }
 
-            public RenderTexture Generate(LayerManager manager)
+            public RenderTexture Generate()
             {
                 if (SubTextureMaker == null)
                 {
@@ -1307,9 +1302,8 @@ public class TextureMaker : MonoBehaviour
                         Maker.Manager.Parent = Parent;
                     }
 
-               //     Debug.Log(Maker, Maker);
                     Maker.Dimensions = new Vector2Int(SubTex.width, SubTex.height);
-                    Maker.GenerateAndApplySubCall(manager.CallHistory);
+                    Maker.GenerateAndApply();
 
                     if (Maker.Manager != null)
                     {
@@ -1317,17 +1311,12 @@ public class TextureMaker : MonoBehaviour
                     }
                 }
 
-
-
-
                 return SubTex;
             }
             public void CreateTextureMaker()
             {
                 if (SubTextureMaker == null)
                 {
-                    //   Debug.Log("SubTextureMaker");
-
                     if (Parent == null)
                     {
                         Debug.Log("Parent");
@@ -1488,6 +1477,8 @@ public class TextureMaker : MonoBehaviour
 
             }
 
+
+
             for (int i = 0; i < TextureLayers.Count; i++)
             {
 
@@ -1495,6 +1486,9 @@ public class TextureMaker : MonoBehaviour
                 {
                     TextureLayers.RemoveAt(i);
                 }
+
+             //   TextureLayers[i].ManagerRef = this;
+
 
                 if (TextureLayers[i] is ISubmaker sub)
                 {
