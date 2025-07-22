@@ -6,6 +6,18 @@ static const float Sqrt3 = 1.7320508076;
 
 static const uint uintmax = 4294967295;
 
+bool IsBetween(float v, float a, float b)
+{
+    if (a <= b)
+    {
+        return v > a && v < b;
+    }
+    else
+    {
+        return v < a && v > b;
+    }
+}
+
 float InverseLerp(float a, float b, float t)
 {
     return (t - a) / (b - a);
@@ -51,11 +63,13 @@ uint2 DistortPos(float4 DT, uint2 pos, float factor)
 
 float absPow(float x, float y)
 {
+
     return pow(abs(x), y);
 }
 
 float EaseIn(float t, float power)
 {
+    
     return absPow(t, power);
 }
 

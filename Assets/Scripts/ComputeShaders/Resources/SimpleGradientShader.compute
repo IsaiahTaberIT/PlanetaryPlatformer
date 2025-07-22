@@ -8,7 +8,6 @@ float2 Dims;
 float2 Slope;
 float GradientBlendMode;
 float BlendMode;
-float BlendPower;
 float4 PrimaryColor;
 float4 SecondaryColor;
 
@@ -28,8 +27,21 @@ void directionalGradient(uint2 pos)
     float2 noiseoffsetpos = DistortedPosition;
     float t = (((noiseoffsetpos.x + offset.x + sqrPos.x) / Dims.x * Slope.x + (noiseoffsetpos.y + offset.y + sqrPos.y) / Dims.y * Slope.y));
     float4 newcolor;
-    newcolor = Blend(PrimaryColor, SecondaryColor, t, GradientBlendMode, false);
-    newcolor = pow(abs(newcolor), 1 / BlendPower);
+    
+    if (IsBetween(t, 0, 1))
+    {
+        newcolor = Blend(PrimaryColor, SecondaryColor, t, GradientBlendMode, false);
+       // newcolor = pow(abs(newcolor), 1 / BlendPower);
+    }
+    else if (t >= 1)
+    {
+        newcolor = SecondaryColor;
+    }
+    else
+    {
+        newcolor = PrimaryColor;
+    }
+    
     float4 color = Blend(Result[pos.xy], newcolor, newcolor.w, BlendMode, true);
     Result[pos.xy] = saturate(color);
 }

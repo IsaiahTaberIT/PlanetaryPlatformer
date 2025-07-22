@@ -228,9 +228,8 @@ public class TextureMakerEditor : Editor
             SerializedProperty element = textureLayerList.serializedProperty.GetArrayElementAtIndex(list.index);
             var obj = element.managedReferenceValue;
 
-            if (obj is CompositeGpu)
+            if (obj is CompositeGpu comp)
             {
-                CompositeGpu comp = (obj as CompositeGpu);
                 if (comp.MakerObject.TryGetComponent(out TextureMaker _))
                 {
                     GameObject.DestroyImmediate(comp.MakerObject);
