@@ -66,6 +66,7 @@
     <Compile Include="Assets\Scripts\Editor\TextureMakerEditor.cs" />
     <Compile Include="Assets\Scripts\Editor\PathsEditor.cs" />
     <Compile Include="Assets\Scripts\Editor\PlanetAlignmentScriptEditor.cs" />
+    <Compile Include="Assets\Scripts\Editor\SaveTextureMaker.cs" />
     <Compile Include="Assets\Scripts\Editor\CustomSliderEditor.cs" />
     <Compile Include="Assets\Scripts\Editor\UltimateCurveGenerationScriptEditor.cs" />
     <Compile Include="Assets\Scripts\Editor\AudioEventEditor.cs" />

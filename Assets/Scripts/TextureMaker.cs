@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.PackageManager.UI;
 using UnityEngine;
+
 using static TextureMaker.LayerManager;
 using static TextureMaker.LayerManager.TextureLayer;
 using static UnityEngine.Mathf;
-using System.IO;
 
 [System.Serializable]
 [ExecuteInEditMode]
@@ -30,8 +32,10 @@ public class TextureMaker : MonoBehaviour
     public LayerManager Manager = new();
     public bool Regenerate = true;
     public int MaxResolution = 4096 * 4096;
-
+    public float Complexity => CalculateComplexity();
     public TextureCompression CompressionLevel;
+
+
     public enum TextureCompression
     {
         Uncompressed = 0,
@@ -40,29 +44,39 @@ public class TextureMaker : MonoBehaviour
     }
 
 
+    /// <summary>
+    /// Roughly Caluclates how Intensive generating the texture will be, lower bound, based on
+    /// how many pixels will be written to at minimum to generate the texture
+    /// </summary>
+    float CalculateComplexity()
+    {
+        return Dimensions.ComponentProducts() * Manager.TextureLayers.Count;
+    }
+
+    // I'd like to have like a windows box style popup or something for the saving process but i may need to create
+    //that in the scene
+   
+
+
+
+    public delegate void BringUpWindowDelegate();
+    public static BringUpWindowDelegate OnBringUpWindow;
+
+
+
 
 
     [ContextMenu("Save As Asset")]
-    void Save()
+    public void BringUpWindow()
     {
-        if (Name == null || Name == "")
-        {
-            Debug.LogWarning("Name Is required for saving");
-            return;
-        }
-
-        byte[] bytes = OutputTexture.EncodeToPNG();
-        string folder = "Assets/TextureMakerSprites";
-        string fileName = Name + ".png";
-        Directory.CreateDirectory(folder);
-        string filePath = System.IO.Path.Combine(folder, fileName);
-        File.WriteAllBytes(filePath, bytes);
-        Debug.Log($"Saved PNG at {filePath}");
-
-#if UNITY_EDITOR
-        UnityEditor.AssetDatabase.Refresh();
-#endif
+        OnBringUpWindow.Invoke();
     }
+
+
+
+ 
+
+  
 
 
 
@@ -88,7 +102,7 @@ public class TextureMaker : MonoBehaviour
    
     void OnEnable()
     {
-        if (Dimensions.ComponentProducts() * Manager.TextureLayers.Count < 20_000_000f)
+        if (Complexity < 20_000_000f)
         {
             GenerateAndApply();
         }

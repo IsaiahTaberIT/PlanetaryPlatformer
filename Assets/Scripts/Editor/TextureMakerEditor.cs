@@ -3,8 +3,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEditorInternal;
 using static TextureMaker.LayerManager;
-using static TextureMaker;
-using static TextureMaker.LayerManager.TextureLayer;
+
 
 
 using System.Text;
@@ -31,7 +30,11 @@ public class TextureMakerEditor : Editor
 
     public override void OnInspectorGUI()
     {
-        EditorGUI.BeginChangeCheck();
+        if (GUILayout.Button("Save"))
+        {
+            maker.BringUpWindow();
+        }
+
 
         serializedObject.Update();
         List<SerializedProperty> properties = new List<SerializedProperty>();
@@ -40,24 +43,33 @@ public class TextureMakerEditor : Editor
 
         while (property.NextVisible(false))
         {
-            // Exclude CurrentSegment (we'll draw it manually with a slider)
+            //It REALLY sucked trying to edit the name and having the image regenerate repeatedly
+            //this Seperates it out
+            if(property.name == "Name")
+            {
+                EditorGUILayout.PropertyField(property,true);
+                continue;
+            }
+
+
             if (property.name != "Manager")
             {
-
                 properties.Add(property.Copy());
             }
      
         }
 
+        EditorGUI.BeginChangeCheck();
+
         for (int i = 0; i < properties.Count; i++)
         {
-         
             EditorGUILayout.PropertyField(properties[i], true);
      
         }
 
-        serializedObject.ApplyModifiedProperties();
+   
 
+        serializedObject.ApplyModifiedProperties();
         EditorGUILayout.Space(10);
         TextureLayerlist.DoLayoutList();
         serializedObject.ApplyModifiedProperties();
