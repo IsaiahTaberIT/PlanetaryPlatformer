@@ -6,22 +6,16 @@ using UnityEngine;
 using static TextureMaker.LayerManager;
 using static TextureMaker.LayerManager.TextureLayer;
 using static UnityEngine.Mathf;
+using System.IO;
 
 [System.Serializable]
 [ExecuteInEditMode]
 
 public class TextureMaker : MonoBehaviour
 {
-    // TODO:
-    // add masking to Transparency Shader
-
-    //fix recursion stack overfloa
-
-    // add saving
-
-   
-
-
+    public string Name;
+    public const int MaxRecursionDepth = 30;
+    
     public const int BaseSize = 256;
     public Vector2Int Dimensions = new Vector2Int(BaseSize, BaseSize);
     [Min(0.01f)] public float Ratio = 1;
@@ -44,6 +38,35 @@ public class TextureMaker : MonoBehaviour
         Low = 1,
         High = 2,
     }
+
+
+
+
+    [ContextMenu("Save As Asset")]
+    void Save()
+    {
+        if (Name == null || Name == "")
+        {
+            Debug.LogWarning("Name Is required for saving");
+            return;
+        }
+
+        byte[] bytes = OutputTexture.EncodeToPNG();
+        string folder = "Assets/TextureMakerSprites";
+        string fileName = Name + ".png";
+        Directory.CreateDirectory(folder);
+        string filePath = System.IO.Path.Combine(folder, fileName);
+        File.WriteAllBytes(filePath, bytes);
+        Debug.Log($"Saved PNG at {filePath}");
+
+#if UNITY_EDITOR
+        UnityEditor.AssetDatabase.Refresh();
+#endif
+    }
+
+
+
+
 
     [ContextMenu("delete")]
 
@@ -94,23 +117,14 @@ public class TextureMaker : MonoBehaviour
     /// For use when doing recursive calls where a TextureLayer contains a reference
     /// to another TextureMaker, prevents stack overflow in event of a reference loop
     /// </summary>
-    public void GenerateAndApplySubCall(List<TextureMaker> Makers)
+    public void GenerateAndApplySubCall(int depth)
     {
-        Debug.Log(Makers.Count,gameObject);
-
-        for (int i = 0; i < Makers.Count; i++)
+        if (depth > MaxRecursionDepth)
         {
-
-            if (Makers[i] == this)
-            {
-              // Debug.Log(Makers.Count);
-                Debug.LogWarning("Self Reference! you have a loop in your references in the inspector", gameObject);
-                Makers.Clear();
-                return;
-            }
+            Debug.LogWarning($"Max Recursion Depth Reached! you either have an infinite loop, or a depth of {MaxRecursionDepth}", gameObject);
+            return;
         }
-
-        Makers.Add(this);
+        Manager._Depth = depth;
         GenerateAndApply();
     }
 
@@ -198,6 +212,7 @@ public class TextureMaker : MonoBehaviour
             // removing this may have caused a memory leak... if performace issues do occur, re-add and refactor
             //Manager.texture.Release();
             OutputTexture.Apply();
+
             if ((int)CompressionLevel != 0)
             {
                 OutputTexture.Compress(Logic.IntToBool((int)CompressionLevel-1));
@@ -221,16 +236,164 @@ public class TextureMaker : MonoBehaviour
     [System.Serializable]
     public class LayerManager
     {
-
+        public int _Depth;
         public Vector2Int Dimentions = new Vector2Int(BaseSize, BaseSize);
         [SerializeReference] public List<TextureLayer> TextureLayers = new();
         public RenderTexture texture;
         [HideInInspector] public GameObject Parent;
         public void CreateNewLayer()
         {
+            //updating to create semi random layer
 
-            TextureLayers.Add(new SimpleGradientGpu());
+           
+            System.Random r = new System.Random();
+            int rand = r.Next(4);
+
+            TextureLayer layer;
+
+            switch (rand)
+            {
+                case 0:
+                    layer = new SimpleGradientGpu();
+                    break;
+                case 1:
+                    layer = new StripesGpu(Parent);
+                    break;
+                case 2:
+                    layer = new PolygonGpu();
+                    break;
+                case 3:
+                    layer = new NoiseGpu();
+                    break;
+                case 4:
+                    layer = new RadialGradientGpu();
+                    break;
+                default:
+                    layer = new SimpleGradientGpu();
+                    break;
+
+            }
+
+            TextureLayers.Add(layer);
         }
+
+        [ContextMenu("create Texture")]
+
+        public void GenerateTexture(bool Reset)
+        {
+            if (Min(Dimentions.x, Dimentions.y) < 2)
+            {
+                return;
+            }
+
+            if (texture == null || Reset)
+            {
+                if (Reset && texture != null)
+                {
+                    texture.Release();
+                }
+
+
+                texture = new RenderTexture(Dimentions.x, Dimentions.y, 0, RenderTextureFormat.ARGBFloat);
+                texture.hideFlags = HideFlags.DontSave;
+                texture.enableRandomWrite = true;
+                texture.Create();
+
+            }
+
+            for (int i = 0; i < TextureLayers.Count; i++)
+            {
+
+                if (TextureLayers[i] == null)
+                {
+                    TextureLayers.RemoveAt(i);
+                }
+
+                TextureLayers[i].depth = _Depth;
+
+
+                if (TextureLayers[i] is ISubmaker sub)
+                {
+                    if (sub.ParentSM == null)
+                    {
+                        sub.ParentSM = Parent;
+                    }
+
+
+                    if (sub is IDistortionSubMaker subdis)
+                    {
+                        if (subdis.DistortionSM.Parent == null)
+                        {
+                            (subdis).DistortionSM.Parent = Parent;
+                        }
+
+                    }
+
+                    if (sub is IReplaceColorSubMaker subreplace)
+                    {
+                        if (subreplace.ReplaceColorSM.Parent == null)
+                        {
+                            (subreplace).ReplaceColorSM.Parent = Parent;
+                        }
+
+                    }
+
+                    if (sub is ISecondarySubMaker subsec)
+                    {
+                        if (subsec.SecondarySM.Parent == null)
+                        {
+                            (subsec).SecondarySM.Parent = Parent;
+                        }
+
+                    }
+
+                    if (sub is IMaskSubMaker submask)
+                    {
+                        if (submask.MaskSM.Parent == null)
+                        {
+                            (submask).MaskSM.Parent = Parent;
+                        }
+
+                    }
+
+                }
+
+                if (TextureLayers[i].Type != TextureLayers[i].LastType)
+                {
+                    if (TextureLayers[i].LastType == TextureLayerType.composite)
+                    {
+                        if (TextureLayers[i] is CompositeGpu && (TextureLayers[i] as CompositeGpu).MakerObject.TryGetComponent(out TextureMaker _))
+                        {
+                            GameObject.DestroyImmediate((TextureLayers[i] as CompositeGpu).MakerObject);
+                        }
+                    }
+                    TextureLayers[i] = ReplaceLayer(TextureLayers[i].Type);
+                }
+
+                if (TextureLayers[i] is Filter)
+                {
+                    Filter filter = TextureLayers[i] as Filter;
+
+                    if (filter.FilterType != filter.LastFilterType)
+                    {
+                        TextureLayers[i] = ReplaceFilter(filter.FilterType);
+                    }
+
+                }
+
+                if (TextureLayers[i].Enabled)
+                {
+                    TextureLayers[i].tex = texture;
+                    texture = TextureLayers[i].OutTex;
+                }
+                else
+                {
+                    continue;
+                }
+
+            }
+        }
+
         public class ContrastFilterGpu : Filter
         {
             [Range(-1f, 1f)] public float Contrast = 0;
@@ -481,9 +644,9 @@ public class TextureMaker : MonoBehaviour
                 computeshader.SetInt("MaskMode", (int)MaskMode);
                 computeshader.SetVector("ComparisonColor", ComparisonColor);
                 mask.Dims = new(tex.width, tex.height);
-                computeshader.SetTexture(kernel, "MaskTex", mask.Generate());
+                computeshader.SetTexture(kernel, "MaskTex", mask.Generate(depth));
                 secondary.Dims = new(tex.width, tex.height);
-                computeshader.SetTexture(kernel, "SecondaryInputTexture", secondary.Generate());
+                computeshader.SetTexture(kernel, "SecondaryInputTexture", secondary.Generate(depth));
                 computeshader.SetInt("BlendMode", (int)BlendMode);
 
             }
@@ -549,6 +712,11 @@ public class TextureMaker : MonoBehaviour
         public class PolygonGpu : TextureLayer, IDistortionSubMaker, IReplaceColorSubMaker
         {
             [HideInInspector] public GameObject Parent;
+            public BlendDirections BlendDirection = BlendDirections.None;
+       
+            [Min(0.1f)] public float BlendDistance = 0.1f;
+            public float Power = 1f;
+
             public GameObject ParentSM { get => Parent; set => Parent = value; }
             public DistortionMaker distortion = new("Distortion Maker");
             public DistortionMaker DistortionSM { get => distortion; set => distortion = value; }
@@ -564,6 +732,14 @@ public class TextureMaker : MonoBehaviour
             public Color PrimaryColor = RandomColor();
             public Color SecondaryColor = RandomColor();
 
+            public enum BlendDirections
+            {
+                None = 0,
+                In = 1,
+                Out = 2,
+                Both = 3,
+            }
+
             public PolygonGpu()
             {
                 Type = TextureLayerType.polygon;
@@ -576,10 +752,10 @@ public class TextureMaker : MonoBehaviour
                 secondary.Parent = Parent;
 
                 distortion.Dims = new(tex.width, tex.height);
-                computeshader.SetTexture(kernel, "DistortionTex", distortion.Generate());
+                computeshader.SetTexture(kernel, "DistortionTex", distortion.Generate(depth));
 
                 secondary.Dims = new(tex.width, tex.height);
-                computeshader.SetTexture(kernel, "SecondaryInputTexture", secondary.Generate());
+                computeshader.SetTexture(kernel, "SecondaryInputTexture", secondary.Generate(depth));
 
 
                 computeshader.SetInt("OverrideWithMask", Logic.BoolToInt(secondary.OverrideWithMask));
@@ -589,6 +765,12 @@ public class TextureMaker : MonoBehaviour
                 float rootmagnitude = Sqrt(dims.magnitude);
                 distortion.Influence = distortion.Maker == null ? 0 : distortion.Influence;
                 computeshader.SetFloat("DistortionFactor", distortion.Influence * rootmagnitude / BaseSize);
+
+                computeshader.SetFloat("Power", Power);
+
+                computeshader.SetFloat("BlendDistance",32f / BlendDistance);
+
+                computeshader.SetInt("BlendDirection", (int)BlendDirection);
 
                 shape.GenerateCirclePoints();
                 float ratioY = (float)tex.height / (float)tex.width;
@@ -636,6 +818,7 @@ public class TextureMaker : MonoBehaviour
         [System.Serializable]
         public class StripesGpu : TextureLayer, IDistortionSubMaker, IReplaceColorSubMaker
         {
+          
             public bool Fuzzy;
             [Min(0.01f)] public float BlendPower = 1;
             [HideInInspector] public GameObject Parent;
@@ -654,6 +837,7 @@ public class TextureMaker : MonoBehaviour
             public Color PrimaryColor = RandomColor();
             public Color SecondaryColor = RandomColor();
 
+          
             public StripesGpu(GameObject parent)
             {
                 distortion.Parent = parent;
@@ -665,11 +849,11 @@ public class TextureMaker : MonoBehaviour
             {
                 distortion.Parent = Parent;
                 distortion.Dims = new(tex.width, tex.height);
-                RenderTexture temp1 = distortion.Generate();
+                RenderTexture temp1 = distortion.Generate(depth);
 
                 secondary.Parent = Parent;
                 secondary.Dims = new(tex.width, tex.height);
-                RenderTexture temp2 = secondary.Generate();
+                RenderTexture temp2 = secondary.Generate(depth);
 
                 computeshader.SetTexture(kernel, "DistortionTex", temp1);
                 computeshader.SetTexture(kernel, "SecondaryInputTexture", temp2);
@@ -970,7 +1154,7 @@ public class TextureMaker : MonoBehaviour
                 distortion.Parent = Parent;
 
                 distortion.Dims = new(tex.width, tex.height);
-                distortion.Generate();
+                distortion.Generate(depth);
                 base.PassValuesToShader(Mainrt, kernel);
                 computeshader.SetTexture(kernel, "DistortionTex", distortion.SubTex);
                 Vector2 dims = new Vector2(tex.width, tex.height);
@@ -1028,7 +1212,7 @@ public class TextureMaker : MonoBehaviour
             {
                 distortion.Parent = Parent;
                 distortion.Dims = new(tex.width, tex.height);
-                distortion.Generate();
+                distortion.Generate(depth);
                 base.PassValuesToShader(Mainrt, kernel);
 
                 Vector2 dims = new Vector2(tex.width, tex.height);
@@ -1109,13 +1293,13 @@ public class TextureMaker : MonoBehaviour
                 }
             }
 
-            void ApplyOctavesAndGenerate()
+            void ApplyOctavesAndGenerate(int depth)
             {
 
 
                 distortion.Parent = Parent;
                 distortion.Dims = new(tex.width, tex.height);
-                distortion.Generate();
+                distortion.Generate(depth);
 
                 if (computeshader == null)
                 {
@@ -1204,7 +1388,7 @@ public class TextureMaker : MonoBehaviour
             }
             public override RenderTexture Generate()
             {
-                ApplyOctavesAndGenerate();
+                ApplyOctavesAndGenerate(depth);
 
                 return tex;
             }
@@ -1278,11 +1462,16 @@ public class TextureMaker : MonoBehaviour
                 Name = name;
             }
 
-            public RenderTexture Generate()
+            public RenderTexture Generate(int depth)
             {
                 if (SubTextureMaker == null)
                 {
                     Maker = null;
+                }
+
+                if (SubTex != null)
+                {
+                    SubTex.Release();
                 }
 
                 SubTex = new RenderTexture(Dims.x, Dims.y, 0, RenderTextureFormat.ARGBFloat);
@@ -1303,7 +1492,7 @@ public class TextureMaker : MonoBehaviour
                     }
 
                     Maker.Dimensions = new Vector2Int(SubTex.width, SubTex.height);
-                    Maker.GenerateAndApply();
+                    Maker.GenerateAndApplySubCall(depth + 1);
 
                     if (Maker.Manager != null)
                     {
@@ -1347,9 +1536,14 @@ public class TextureMaker : MonoBehaviour
         [System.Serializable]
         public class TextureLayer
         {
+            [HideInInspector] public int depth;
             public bool Enabled = true;
             [HideInInspector] public LayerManager ManagerRef;
-
+            public RenderTexture OutTex => Generate();
+            [HideInInspector] public TextureLayerType LastType;
+            public TextureLayerType Type;
+            public ComputeShader computeshader;
+            public RenderTexture tex;
             public enum BlendModes
             {
                 Lerp = 0,
@@ -1399,11 +1593,7 @@ public class TextureMaker : MonoBehaviour
                 return rt;
             }
 
-            [HideInInspector] public TextureLayerType LastType;
-            public TextureLayerType Type;
-            public ComputeShader computeshader;
-            public RenderTexture tex;
-            public RenderTexture OutTex => Generate();
+     
             public virtual RenderTexture Generate()
             {
                 return tex;
@@ -1459,131 +1649,6 @@ public class TextureMaker : MonoBehaviour
             }
         }
 
-        [ContextMenu("create Texture")]
-
-        public void GenerateTexture(bool Reset)
-        {
-            if (Min(Dimentions.x, Dimentions.y) < 2)
-            {
-                return;
-            }
-
-            if (texture == null || Reset)
-            {
-                texture = new RenderTexture(Dimentions.x, Dimentions.y, 0, RenderTextureFormat.ARGBFloat);
-                texture.hideFlags = HideFlags.DontSave;
-                texture.enableRandomWrite = true;
-                texture.Create();
-
-            }
-
-
-
-            for (int i = 0; i < TextureLayers.Count; i++)
-            {
-
-                if (TextureLayers[i] == null)
-                {
-                    TextureLayers.RemoveAt(i);
-                }
-
-             //   TextureLayers[i].ManagerRef = this;
-
-
-                if (TextureLayers[i] is ISubmaker sub)
-                {
-
-                    if (sub.ParentSM == null)
-                    {
-                        sub.ParentSM = Parent;
-                    }
-
-
-                    if (sub is IDistortionSubMaker subdis)
-                    {
-                        if (subdis.DistortionSM.Parent == null)
-                        {
-                            (subdis).DistortionSM.Parent = Parent;
-                        }
-
-                    }
-
-                    if (sub is IReplaceColorSubMaker subreplace)
-                    {
-                        if (subreplace.ReplaceColorSM.Parent == null)
-                        {
-                            (subreplace).ReplaceColorSM.Parent = Parent;
-                        }
-
-                    }
-
-                    if (sub is ISecondarySubMaker subsec)
-                    {
-                        if (subsec.SecondarySM.Parent == null)
-                        {
-                            (subsec).SecondarySM.Parent = Parent;
-                        }
-
-                    }
-
-                    if (sub is IMaskSubMaker submask)
-                    {
-                        if (submask.MaskSM.Parent == null)
-                        {
-                            (submask).MaskSM.Parent = Parent;
-                        }
-
-                    }
-
-                }
-
-                if (TextureLayers[i].Type != TextureLayers[i].LastType)
-                {
-                    if (TextureLayers[i].LastType == TextureLayerType.composite)
-                    {
-                        if (TextureLayers[i] is CompositeGpu && (TextureLayers[i] as CompositeGpu).MakerObject.TryGetComponent(out TextureMaker _))
-                        {
-                            GameObject.DestroyImmediate((TextureLayers[i] as CompositeGpu).MakerObject);
-                        }
-                    }
-                    TextureLayers[i] = ReplaceLayer(TextureLayers[i].Type);
-                }
-
-                // this is logic to handle deletion of unused texture makers, however i may remove this feature even from
-                // the composite layers because it is annoying to keep track of references and a potential user
-                // may be annoyed in certain circumstances
-                /*
-                    else if (TextureLayers[i] is ISubMaker && (TextureLayers[i] as ISubMaker).SM.SubTextureMaker != null)
-                    {
-                        if ((TextureLayers[i] as ISubMaker).SM.SubTextureMaker.TryGetComponent(out TextureMaker _))
-                        {
-                            GameObject.DestroyImmediate((TextureLayers[i] as ISubMaker).SM.SubTextureMaker);
-                        }
-                    }
-                  */
-
-                if (TextureLayers[i] is Filter)
-                {
-                    Filter filter = TextureLayers[i] as Filter;
-
-                    if (filter.FilterType != filter.LastFilterType)
-                    {
-                        TextureLayers[i] = ReplaceFilter(filter.FilterType);
-                    }
-
-                }
-
-                if (TextureLayers[i].Enabled)
-                {
-                    TextureLayers[i].tex = texture;
-                    texture = TextureLayers[i].OutTex;
-                }
-                else
-                {
-                    continue;
-                }
-
-            }
-        }
+     
     }
 }

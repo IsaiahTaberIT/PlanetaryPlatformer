@@ -5,8 +5,9 @@
 
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
-
+int BlendDirection;
 int BlendMode;
+float Power;
 float2 Dims;
 float4 PrimaryColor;
 float4 SecondaryColor;
@@ -16,6 +17,7 @@ RWTexture2D<float4> DistortionTex;
 RWTexture2D<float4> SecondaryInputTexture; // SIT
 bool OverrideWithMask; // OWM
 bool OverridePrimaryColor; // OPC
+float BlendDistance;
 
 float inverseLerp(float start, float end, float value)
 {
@@ -29,14 +31,16 @@ float4 OutputColor(float2 pos)
 {
     uint count = 0;
     float shortest = -1;
+   // float average = 0;
+
     // calculating shortest distance to edge
     for (int j = 0; j < VertCount; j++)
     {
         int index2 = j + 1;
         index2 = (index2 >= VertCount) ? 0 : index2;
-        
         float currentdist = DistanceToLine(pos, Verts[j], Verts[index2]);
-       
+        
+      //  average += currentdist;
         
         if (shortest < 0 || shortest > currentdist)
         {
@@ -44,6 +48,7 @@ float4 OutputColor(float2 pos)
         }
     }
 
+   // average /= VertCount;
     
     for (int i = 0; i < VertCount; i++)
     {
@@ -76,11 +81,22 @@ float4 OutputColor(float2 pos)
     
     if (count % 2 == 1)
     {
+        if (BlendDirection == 1 || BlendDirection == 3)
+        {
+            return Blend(PrimaryColor, SecondaryColor, absPow(saturate(shortest * BlendDistance), Power), 1, false);
+
+        }
+        
         return PrimaryColor;
     }
     else
     {
-        return Blend(PrimaryColor, SecondaryColor, EaseInOut(saturate(shortest * 5.0),3), 1, false);
+        if (BlendDirection == 2 || BlendDirection == 3)
+        {
+            return Blend(PrimaryColor, SecondaryColor, absPow(saturate(shortest * BlendDistance), Power), 1, false);
+        }
+        
+        return SecondaryColor;
 ;
     }
  
