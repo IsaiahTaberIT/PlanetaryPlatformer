@@ -7,6 +7,7 @@ using UnityEditor.PackageManager.UI;
 using UnityEngine;
 
 using static TextureMaker.LayerManager;
+using static TextureMaker.LayerManager.CustomMaskGPU;
 using static TextureMaker.LayerManager.TextureLayer;
 using static UnityEngine.Mathf;
 
@@ -255,6 +256,13 @@ public class TextureMaker : MonoBehaviour
         [SerializeReference] public List<TextureLayer> TextureLayers = new();
         public RenderTexture texture;
         [HideInInspector] public GameObject Parent;
+
+      
+
+
+
+
+
         public void CreateNewLayer()
         {
             //updating to create semi random layer
@@ -486,12 +494,23 @@ public class TextureMaker : MonoBehaviour
 
         }
 
-        public class TransparencyFilterGpu : Filter
+        public class TransparencyFilterGpu : Filter, IMaskSubMaker
         {
+
+            public bool UseMask = false;
             public BlendModes BlendMode = BlendModes.RotLerp;
             public bool Additive;
             [Range(0, 1f)] public float Alpha = 0;
 
+        
+
+
+            [HideInInspector] public GameObject Parent;
+
+            public MaskSubMaker mask = new("Mask Maker");
+            public GameObject ParentSM { get => Parent; set => Parent = value; }
+
+            public MaskSubMaker MaskSM { get => mask; set => mask = value; }
             public TransparencyFilterGpu()
             {
                 FilterType = FilterTypes.transparency;
@@ -501,6 +520,14 @@ public class TextureMaker : MonoBehaviour
             public override void PassValuesToShader(RenderTexture rt, int kernel)
             {
                 base.PassValuesToShader(rt, kernel);
+
+
+                mask.Dims = new(tex.width, tex.height);
+                computeshader.SetTexture(kernel, "MaskTex", mask.Generate(depth));
+                computeshader.SetInt("UseMask", Logic.BoolToInt(UseMask));
+                computeshader.SetFloat("Threshold", mask.Threshold);
+                computeshader.SetInt("Invert", Logic.BoolToInt(mask.Invert));
+                computeshader.SetInt("MaskMode", (int)mask.MaskMode);
                 computeshader.SetInt("Additive", Logic.BoolToInt(Additive));
                 computeshader.SetFloat("Alpha", Alpha);
                 computeshader.SetInt("BlendMode", (int)BlendMode);
@@ -619,28 +646,17 @@ public class TextureMaker : MonoBehaviour
         [System.Serializable]
         public class CustomMaskGPU : TextureLayer, ISecondarySubMaker, IMaskSubMaker
         {
-            public MaskModes MaskMode;
-            public bool Invert;
-
-            [Range(0f, 1f)] public float Threshold = 0.5f;
+          
             [HideInInspector] public GameObject Parent;
             public GameObject ParentSM { get => Parent; set => Parent = value; }
 
-            public SubMaker mask = new("Mask Maker");
-            public SubMaker MaskSM { get => mask; set => mask = value; }
+            public MaskSubMaker mask = new("Mask Maker");
+            public MaskSubMaker MaskSM { get => mask; set => mask = value; }
 
             public SubMaker secondary = new("Secondary Maker");
             public SubMaker SecondarySM { get => secondary; set => secondary = value; }
 
-            public enum MaskModes
-            {
-
-                byValue = 0,
-                byValueThreshold = 1,
-                byColor = 2,
-                byHue = 3,
-            }
-
+     
             public BlendModes BlendMode = BlendModes.RotLerp;
             public Color ComparisonColor = RandomColor();
 
@@ -653,9 +669,9 @@ public class TextureMaker : MonoBehaviour
             public override void PassValuesToShader(RenderTexture rt, int kernel)
             {
                 base.PassValuesToShader(rt, kernel);
-                computeshader.SetFloat("Threshold", Threshold);
-                computeshader.SetInt("Invert", Logic.BoolToInt(Invert));
-                computeshader.SetInt("MaskMode", (int)MaskMode);
+                computeshader.SetFloat("Threshold", mask.Threshold);
+                computeshader.SetInt("Invert", Logic.BoolToInt(mask.Invert));
+                computeshader.SetInt("MaskMode", (int)mask.MaskMode);
                 computeshader.SetVector("ComparisonColor", ComparisonColor);
                 mask.Dims = new(tex.width, tex.height);
                 computeshader.SetTexture(kernel, "MaskTex", mask.Generate(depth));
@@ -1418,8 +1434,10 @@ public class TextureMaker : MonoBehaviour
         }
         public interface IMaskSubMaker : ISubmaker
         {
-            SubMaker MaskSM { get; set; }
+            MaskSubMaker MaskSM { get; set; }
         }
+
+
         public interface IReplaceColorSubMaker : ISubmaker
         {
             ReplaceColorSubMaker ReplaceColorSM { get; set; }
@@ -1428,6 +1446,34 @@ public class TextureMaker : MonoBehaviour
         {
             SubMaker SecondarySM { get; set; }
         }
+
+     
+        [System.Serializable]
+        public class MaskSubMaker : SubMaker
+        {
+
+
+            public MaskModes MaskMode;
+            public bool Invert;
+            [Range(0f, 1f)] public float Threshold = 0.5f;
+
+            public enum MaskModes
+            {
+
+                byValue = 0,
+                byValueThreshold = 1,
+                byColor = 2,
+                byHue = 3,
+            }
+
+
+            public MaskSubMaker(string name)
+            {
+                Name = name;
+            }
+        }
+
+
 
         [System.Serializable]
         public class ReplaceColorSubMaker : SubMaker
@@ -1543,6 +1589,9 @@ public class TextureMaker : MonoBehaviour
                     SubTextureMaker.transform.SetParent(Parent.transform);
                     SubTextureMaker.transform.localPosition = new Vector3(1, 0, 0);
                     Maker = SubTextureMaker.GetComponent<TextureMaker>();
+                    Maker.Manager.CreateNewLayer();
+                    Maker.GenerateAndApply();
+
                 }
             }
         }
