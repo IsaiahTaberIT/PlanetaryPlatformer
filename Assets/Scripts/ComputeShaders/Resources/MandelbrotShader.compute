@@ -1,0 +1,113 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+#include "MyHelpers.hlsl"
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+float4 InteriorColor; //Interior Crocodile Aliigator I drive a chevrolet movie Thee-ate-or
+float4 PrimaryColor;
+float4 SecondaryColor;
+float2 Dims;
+float2 Offset;
+float2 StartingPosition;
+
+float ColorFrequency;
+
+bool julia;
+
+int Iterations;
+float Zoom;
+
+float2 ComplexMult(float2 v1, float2 v2)
+{
+    // foil
+    float f = v1.x * v2.x;
+    float o = v1.x * v2.y;
+    float i = v1.y * v2.x;
+    float l = v1.y * v2.y;
+    
+    float2 output;
+    output.x = -l + f;
+    output.y = o + i;
+    
+    return output;
+}
+
+float2 ComplexSquare(float2 v1)
+{
+    return ComplexMult(v1, v1);
+}
+
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    bool thresholdReached = false;
+  
+    float4 OutputColor = float4(0, 0, 0, 0);
+    float2 c = (id.xy - Dims / 2) / Dims;
+    
+    
+    if (julia)
+    {
+        c /= Zoom;
+        c += Offset / Dims;
+
+        float2 z = c;
+    
+        for (int i = 0; i < Iterations; i++)
+        {
+            z = ComplexSquare(z) + StartingPosition;
+        
+            if (length(z) > 2)
+            {
+          
+                float t = 1 - (sin(i * ColorFrequency) + 1) / 2.0;
+            
+                t = absPow(t, 2);
+            
+                thresholdReached = true;
+                OutputColor = Blend(SecondaryColor, PrimaryColor, t, 1, false);
+                break;
+            }
+        }
+    }
+    else
+    {
+        c /= Zoom;
+        c += Offset / Dims;
+
+        float2 z = 0;
+    
+        for (int i = 0; i < Iterations; i++)
+        {
+            z = ComplexSquare(z) + c;
+        
+            if (length(z) > 2)
+            {
+          
+                float t = 1 - (sin(i * ColorFrequency) + 1) / 2.0;
+            
+                t = absPow(t, 2);
+            
+                thresholdReached = true;
+                OutputColor = Blend(SecondaryColor, PrimaryColor, t, 1, false);
+                break;
+            }
+        }
+    }
+   
+    
+    if (!thresholdReached)
+    {
+        OutputColor = InteriorColor;
+    }
+    
+    
+    
+   
+    Result[id.xy] = Blend(Result[id.xy], OutputColor, OutputColor.w, 1, false);
+  
+
+}

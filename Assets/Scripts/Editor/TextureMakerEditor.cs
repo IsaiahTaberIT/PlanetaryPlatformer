@@ -14,6 +14,9 @@ using System;
 [CustomEditor(typeof(TextureMaker))]
 public class TextureMakerEditor : Editor
 {
+    public double NextUpdateTime;
+    public double TimeDelay = 1.0;
+    public bool PendingUpdate;
     public TextureMaker maker;
     ReorderableList TextureLayerlist;
     private void OnEnable()
@@ -76,21 +79,40 @@ public class TextureMakerEditor : Editor
 
         if (EditorGUI.EndChangeCheck())
         {
-            GameObject parent = maker.transform.GetRootParent();
-
-            if (parent != null)
+            if (!PendingUpdate)
             {
-                if (parent.TryGetComponent(out TextureMaker parentmaker))
+                NextUpdateTime = EditorApplication.timeSinceStartup + TimeDelay;
+                PendingUpdate = true;
+            }
+           
+        }
+
+
+        if (PendingUpdate & NextUpdateTime <= EditorApplication.timeSinceStartup)
+        {
+            
+                GameObject parent = maker.transform.GetRootParent();
+
+                if (parent != null)
                 {
-                    parentmaker.GenerateAndApply();
+                    if (parent.TryGetComponent(out TextureMaker parentmaker))
+                    {
+                        parentmaker.GenerateAndApply();
+                    }
+
+                }
+                else
+                {
+                    maker.GenerateAndApply();
                 }
 
-            }
-            else
-            {
-                maker.GenerateAndApply();
-            }
+            NextUpdateTime = 0;
+
+
         }
+
+       
+
 
     }
 

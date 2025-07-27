@@ -80,8 +80,9 @@ public class SaveTextureMaker : EditorWindow
             if (RegenerateImage)
             {
                 target.Dimensions = MyDimensions;
+               // Debug.Log(target.Dimensions);
                 target.GenerateAndApply();
-
+               // Debug.Log(target.Dimensions);
             }
 
             target.Name = myName;

@@ -7,7 +7,6 @@ using UnityEditor.PackageManager.UI;
 using UnityEngine;
 
 using static TextureMaker.LayerManager;
-using static TextureMaker.LayerManager.CustomMaskGPU;
 using static TextureMaker.LayerManager.TextureLayer;
 using static UnityEngine.Mathf;
 
@@ -114,10 +113,10 @@ public class TextureMaker : MonoBehaviour
        
     }
 
-    public static Color RandomColor()
+    public static Color RandomColor(float max = 1)
     {
         System.Random rng = new();
-        return new Color((float)rng.NextDouble(), (float)rng.NextDouble(), (float)rng.NextDouble(), 1);
+        return new Color((float)rng.NextDouble() * max, (float)rng.NextDouble() * max, (float)rng.NextDouble() * max, 1);
     }
 
     [ContextMenu("add new layer")]
@@ -225,7 +224,7 @@ public class TextureMaker : MonoBehaviour
             OutputTexture.Apply();
             RenderTexture.active = null;
             // removing this may have caused a memory leak... if performace issues do occur, re-add and refactor
-            //Manager.texture.Release();
+          //  Manager.texture.Release();
             OutputTexture.Apply();
 
             if ((int)CompressionLevel != 0)
@@ -439,10 +438,9 @@ public class TextureMaker : MonoBehaviour
                     computeshader = Resources.Load<ComputeShader>("ContrastShader");
                 }
 
-                RenderTexture rt = tex;
+             
 
-
-                ApplyShaderToRT(rt);
+                ApplyShaderToRT();
 
                 return tex;
             }
@@ -484,9 +482,8 @@ public class TextureMaker : MonoBehaviour
                     computeshader = Resources.Load<ComputeShader>("QuantizationShader");
                 }
 
-                RenderTexture rt = tex;
 
-                ApplyShaderToRT(rt);
+                ApplyShaderToRT();
 
                 return tex;
             }
@@ -540,9 +537,9 @@ public class TextureMaker : MonoBehaviour
                     computeshader = Resources.Load<ComputeShader>("TransparencyShader");
                 }
 
-                RenderTexture rt = tex;
+              
 
-                ApplyShaderToRT(rt);
+                ApplyShaderToRT();
 
                 return tex;
             }
@@ -574,9 +571,8 @@ public class TextureMaker : MonoBehaviour
                     computeshader = Resources.Load<ComputeShader>("HueShiftShader");
                 }
 
-                RenderTexture rt = tex;
 
-                ApplyShaderToRT(rt);
+                ApplyShaderToRT();
 
                 return tex;
 
@@ -610,9 +606,8 @@ public class TextureMaker : MonoBehaviour
                     computeshader = Resources.Load<ComputeShader>("SaturationShader");
                 }
 
-                RenderTexture rt = tex;
 
-                ApplyShaderToRT(rt);
+                ApplyShaderToRT();
 
                 return tex;
             }
@@ -688,14 +683,16 @@ public class TextureMaker : MonoBehaviour
                     computeshader = Resources.Load<ComputeShader>("CustomMaskShader");
                 }
 
-                RenderTexture rt = tex;
+            
 
-                ApplyShaderToRT(rt);
+                ApplyShaderToRT();
 
                 return tex;
 
             }
         }
+
+
 
         [System.Serializable]
         public class SolidGpu : TextureLayer
@@ -728,15 +725,101 @@ public class TextureMaker : MonoBehaviour
                     computeshader = Resources.Load<ComputeShader>("SolidShader");
                 }
 
-                RenderTexture rt = tex;
+           
 
-                ApplyShaderToRT(rt);
+                ApplyShaderToRT();
+
+                return tex;
+
+            }
+
+
+        }
+
+
+        [System.Serializable]
+
+        public class MandleBrotGpu : TextureLayer
+        {
+            public BlendModes BlendMode = BlendModes.RotLerp;
+            public Color InteriorColor = RandomColor(0.5f);
+
+            public Color PrimaryColor = RandomColor();
+            public Color SecondaryColor = RandomColor();
+            [Min(1f)] public float OffsetPrecision = 1f;
+            public bool Julia = false;
+
+            public bool PreciseScrolling = true;
+            public Vector2 Offset = new(-0.5f, 0);
+            private Vector2 _LastOffset = new(-0.5f, 0);
+            public Vector2 StartingPosition = new(0, 0);
+            [Min(0.05f)] public float Zoom = 1;
+            [Min(0.05f)] public float ColorFrequency = 1;
+
+
+            [Min(1)]public int Iterations = 10;
+
+            public MandleBrotGpu()
+            {
+                Type = TextureLayerType.mandelbrot;
+                LastType = Type;
+
+            }
+            public override void PassValuesToShader(RenderTexture rt, int kernel)
+            {
+                base.PassValuesToShader(rt, kernel);
+
+               
+
+                if (PreciseScrolling & _LastOffset != Offset)
+                {
+                    Vector2 offsetdelta = Offset - _LastOffset;
+                    Offset -= offsetdelta;
+                    Offset += offsetdelta / (OffsetPrecision * Zoom);
+
+                }
+
+                _LastOffset = Offset;
+
+
+                Vector2 dims = new Vector2(tex.width, tex.height);
+
+                computeshader.SetFloat("Zoom", Zoom / 3);
+                computeshader.SetFloat("ColorFrequency", ColorFrequency / 10);
+                computeshader.SetInt("Julia", Logic.BoolToInt(Julia));
+                computeshader.SetInt("Iterations", Iterations);
+                computeshader.SetVector("Offset", new Vector2(Offset.x * dims.x, Offset.y * dims.y));
+          
+                
+                computeshader.SetVector("Dims", dims);
+                computeshader.SetVector("StartingPosition", StartingPosition) ;
+
+                computeshader.SetVector("InteriorColor", InteriorColor);
+                computeshader.SetVector("PrimaryColor", PrimaryColor);
+                computeshader.SetVector("SecondaryColor", SecondaryColor);
+
+                //  computeshader.SetInt("BlendMode", (int)BlendMode);
+                //  computeshader.SetVector("Color", Color);
+
+            }
+            public override RenderTexture Generate()
+            {
+
+                if (computeshader == null)
+                {
+                    computeshader = Resources.Load<ComputeShader>("MandelbrotShader");
+                }
+
+
+                ApplyShaderToRT();
 
                 return tex;
 
             }
 
         }
+
+
 
         [System.Serializable]
         public class PolygonGpu : TextureLayer, IDistortionSubMaker, IReplaceColorSubMaker
@@ -758,6 +841,7 @@ public class TextureMaker : MonoBehaviour
             public Vector2 Offset = new Vector2(0.5f, 0.5f);
             ComputeBuffer VertsBuffer;
             public Vector2[] Verts;
+
             public BlendModes BlendMode = BlendModes.RotLerp;
             public Color PrimaryColor = RandomColor();
             public Color SecondaryColor = RandomColor();
@@ -836,8 +920,8 @@ public class TextureMaker : MonoBehaviour
                 {
                     computeshader = Resources.Load<ComputeShader>("PolygonShader");
                 }
-                RenderTexture rt = tex;
-                ApplyShaderToRT(rt);
+               
+                ApplyShaderToRT();
                 VertsBuffer.Dispose();
 
                 return tex;
@@ -916,8 +1000,8 @@ public class TextureMaker : MonoBehaviour
                     computeshader = Resources.Load<ComputeShader>("StripesShader");
                 }
 
-                RenderTexture rt = tex;
-                ApplyShaderToRT(rt);
+               
+                ApplyShaderToRT();
 
                 return tex;
             }
@@ -929,7 +1013,7 @@ public class TextureMaker : MonoBehaviour
 
             public float Degrees;
             public Vector3 Axis = new Vector3(0, 0, 1);
-            public Vector3 Pivot = Vector3.zero;
+            public Vector3 Pivot = new Vector3(0.5f,0.5f,0);
             public ColorRotateGpu()
             {
                 FilterType = FilterTypes.rotatecolor;
@@ -954,9 +1038,9 @@ public class TextureMaker : MonoBehaviour
                     computeshader = Resources.Load<ComputeShader>("ColorRotateShader");
                 }
 
-                RenderTexture rt = tex;
+               
 
-                ApplyShaderToRT(rt);
+                ApplyShaderToRT();
 
                 return tex;
             }
@@ -1078,9 +1162,8 @@ public class TextureMaker : MonoBehaviour
                 {
                     computeshader = Resources.Load<ComputeShader>("NoiseShader");
                 }
-                RenderTexture rt = tex;
-                rt.Create();
-                ApplyShaderToRT(rt);
+              
+                ApplyShaderToRT();
                 return tex;
             }
 
@@ -1207,9 +1290,8 @@ public class TextureMaker : MonoBehaviour
                 {
                     computeshader = Resources.Load<ComputeShader>("RadialGradientShader");
                 }
-                RenderTexture rt = tex;
-                rt.Create();
-                ApplyShaderToRT(rt);
+            
+                ApplyShaderToRT();
                 return tex;
             }
 
@@ -1264,9 +1346,8 @@ public class TextureMaker : MonoBehaviour
                 {
                     computeshader = Resources.Load<ComputeShader>("SimpleGradientShader");
                 }
-                RenderTexture rt = tex;
-                rt.Create();
-                ApplyShaderToRT(rt);
+               
+                ApplyShaderToRT();
                 return tex;
 
             }
@@ -1291,8 +1372,8 @@ public class TextureMaker : MonoBehaviour
             public List<Octave> Octaves = new();
             public Vector2 Center = Vector2.one / 2f;
             public float Radius = 0.5f;
+            public Vector2 MinMaxRadius = new(0,0);
 
-            static Octave Default = new(false, 0, 0, 10, 1, 6);
             public BumpyCircleGpu()
             {
 
@@ -1301,32 +1382,41 @@ public class TextureMaker : MonoBehaviour
             }
 
             [System.Serializable]
-            public struct Octave
+            public class Octave
             {
-                [HideInInspector] public bool Initialized;
+                public bool Enabled;
                 public bool Abs;
-                public float offset;
-                [Range(-1f, 1f)] public float constant;
-                public float magnitude;
-                public float power;
-                public float spacing;
+                public float Offset;
+                [Tooltip("shifts the output range E.g: for 0 it's -1 to 1, for 1 it's 0 to 2, and for -1 it's -2 to 0")]
+                [Range(-1f, 1f)] public float VerticalShift;
+                public float Magnitude;
+                public float Power;
+                public float Spacing;
 
-                public Octave(bool _abs, float _offset, float _constant, float _magnitude, float _power, float _spacing)
+                public Octave(bool abs, float offset, float verticalShift, float magnitude, float power, float spacing)
                 {
-                    Initialized = true;
-                    Abs = _abs;
-                    offset = _offset;
-                    constant = _constant;
-                    magnitude = _magnitude;
-                    power = _power;
-                    spacing = _spacing;
+                    Enabled = true;
+                    Abs = abs;
+                    Offset = offset;
+                    VerticalShift = verticalShift;
+                    Magnitude = magnitude;
+                    Power = power;
+                    Spacing = spacing;
+                }
+                public Octave()
+                {
+                    Enabled = true;
+                    Abs = false;
+                    Offset = 0;
+                    VerticalShift = 1;
+                    Magnitude = 10;
+                    Power = 1;
+                    Spacing = 6;
                 }
             }
 
             void ApplyOctavesAndGenerate(int depth)
             {
-
-
                 distortion.Parent = Parent;
                 distortion.Dims = new(tex.width, tex.height);
                 distortion.Generate(depth);
@@ -1337,32 +1427,41 @@ public class TextureMaker : MonoBehaviour
                 }
 
                 Vector2 dims = new Vector2(tex.width, tex.height);
-                RenderTexture rt = tex;
+               
                 int kernel = computeshader.FindKernel("CSMain");
-                computeshader.SetTexture(kernel, "Result", rt);
+                computeshader.SetTexture(kernel, "Result", tex);
 
                 int threadGroupsX = CeilToInt(dims.x / 8f);
                 int threadGroupsY = CeilToInt(dims.y / 8f);
 
-                int[] abs = new int[20];
-                float[] offset = new float[20];
-                float[] constant = new float[20];
-                float[] magnitude = new float[20];
-                float[] power = new float[20];
-                float[] spacings = new float[20];
+
+                // im calculating an arraylength with a minimum of 1 here because unity doesnt like it
+                // when you try and pass in an empty
+                
+
+                int ArrayLength = (Octaves.Count > 0) ? Octaves.Count : 1;
+                uint[] abs = new uint[ArrayLength];
+                uint[] enabled = new uint[ArrayLength];
+                float[] offset = new float[ArrayLength];
+                float[] verticalshift = new float[ArrayLength];
+                float[] magnitude = new float[ArrayLength];
+                float[] power = new float[ArrayLength];
+                float[] spacings = new float[ArrayLength];
+
+
+                // i was considering doing this instead but i think it may actually be slower
+                //id like to because it looks nicer
+                // uint[] abs = Octaves.Select(o => (uint)Logic.BoolToInt(o.Abs)).ToArray();
 
                 for (int i = 0; i < Octaves.Count; i++)
                 {
-                    if (!Octaves[i].Initialized)
-                    {
-                        Octaves[i] = Default;
-                    }
-                    abs[i] = Logic.BoolToInt(Octaves[i].Abs);
-                    offset[i] = Octaves[i].offset;
-                    constant[i] = Octaves[i].constant;
-                    magnitude[i] = Octaves[i].magnitude * dims.magnitude / BaseSize;
-                    power[i] = Octaves[i].power;
-                    spacings[i] = Octaves[i].spacing;
+                    abs[i] = (uint)Logic.BoolToInt(Octaves[i].Abs);
+                    enabled[i] = (uint)Logic.BoolToInt(Octaves[i].Enabled);
+                    offset[i] = Octaves[i].Offset;
+                    verticalshift[i] = Octaves[i].VerticalShift;
+                    magnitude[i] = Octaves[i].Magnitude * dims.magnitude / BaseSize;
+                    power[i] = Octaves[i].Power;
+                    spacings[i] = Octaves[i].Spacing;
                 }
 
                 float rootmagnitude = Sqrt(dims.magnitude);
@@ -1374,6 +1473,7 @@ public class TextureMaker : MonoBehaviour
                 // still really annoys me that setFloats doesnt actually set an array of floats...
 
                 // Create and set ComputeBuffers
+
                 ComputeBuffer offsetBuffer = new ComputeBuffer(offset.Length, sizeof(float));
                 offsetBuffer.SetData(offset);
                 computeshader.SetBuffer(kernel, "Offsets", offsetBuffer);
@@ -1390,17 +1490,21 @@ public class TextureMaker : MonoBehaviour
                 spacingBuffer.SetData(spacings);
                 computeshader.SetBuffer(kernel, "Rates", spacingBuffer);
 
-                ComputeBuffer constantBuffer = new ComputeBuffer(constant.Length, sizeof(float));
-                constantBuffer.SetData(constant);
-                computeshader.SetBuffer(kernel, "Constants", constantBuffer);
+                ComputeBuffer verticalShift = new ComputeBuffer(verticalshift.Length, sizeof(float));
+                verticalShift.SetData(verticalshift);
+                computeshader.SetBuffer(kernel, "Constants", verticalShift);
 
-                // For UseAbsbools, use uints instead of bools for compatibility
-                uint[] absUInt = abs.Select(x => (uint)x).ToArray();
-                ComputeBuffer absBuffer = new ComputeBuffer(absUInt.Length, sizeof(uint));
-                absBuffer.SetData(absUInt);
+                ComputeBuffer isEnabledBuffer = new ComputeBuffer(enabled.Length, sizeof(uint));
+                isEnabledBuffer.SetData(enabled);
+                computeshader.SetBuffer(kernel, "Enabled", isEnabledBuffer);
+
+                ComputeBuffer absBuffer = new ComputeBuffer(abs.Length, sizeof(uint));
+                absBuffer.SetData(abs);
                 computeshader.SetBuffer(kernel, "UseAbsbools", absBuffer);
 
+
                 computeshader.SetInt("BlendMode", (int)BlendMode);
+                computeshader.SetVector("MinMax", MinMaxRadius  * dims.magnitude / BaseSize);
                 computeshader.SetVector("Center", Center * dims);
                 computeshader.SetVector("PrimaryColor", PrimaryColor);
                 computeshader.SetVector("SecondaryColor", SecondaryColor);
@@ -1409,11 +1513,12 @@ public class TextureMaker : MonoBehaviour
 
                 computeshader.Dispatch(kernel, threadGroupsX, threadGroupsY, 1);
 
+                isEnabledBuffer.Dispose();
                 offsetBuffer.Dispose();
                 powerBuffer.Dispose();
                 magnitudeBuffer.Dispose();
                 absBuffer.Dispose();
-                constantBuffer.Dispose();
+                verticalShift.Dispose();
                 spacingBuffer.Dispose();
             }
             public override RenderTexture Generate()
@@ -1630,19 +1735,21 @@ public class TextureMaker : MonoBehaviour
                 noise = 7,
                 polygon = 8,
                 customMask = 9,
+                mandelbrot = 10,
+
             }
             public virtual void PassValuesToShader(RenderTexture rt, int kernel)
             {
                 computeshader.SetTexture(kernel, "Result", rt);
             }
-            public void ApplyShaderToRT(RenderTexture rt)
+            public void ApplyShaderToRT()
             {
                 int threadGroupsX = CeilToInt(tex.width / 8f);
                 int threadGroupsY = CeilToInt(tex.height / 8f);
 
                 int kernel = computeshader.FindKernel("CSMain");
 
-                PassValuesToShader(rt, kernel);
+                PassValuesToShader(tex, kernel);
 
                 computeshader.Dispatch(kernel, threadGroupsX, threadGroupsY, 1);
 
@@ -1655,8 +1762,6 @@ public class TextureMaker : MonoBehaviour
                 rt.Create();
                 return rt;
             }
-
-     
             public virtual RenderTexture Generate()
             {
                 return tex;
@@ -1707,6 +1812,8 @@ public class TextureMaker : MonoBehaviour
                     return new PolygonGpu();
                 case TextureLayer.TextureLayerType.customMask:
                     return new CustomMaskGPU();
+                case TextureLayer.TextureLayerType.mandelbrot:
+                    return new MandleBrotGpu();
                 default:
                     return new SimpleGradientGpu();
             }

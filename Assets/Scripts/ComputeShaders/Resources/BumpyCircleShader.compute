@@ -4,6 +4,7 @@
 
 
 float2 Center;
+float2 MinMax;
 int BlendMode;
 float4 PrimaryColor;
 float4 SecondaryColor;
@@ -16,6 +17,8 @@ StructuredBuffer<float> Powers;
 StructuredBuffer<float> Offsets;
 StructuredBuffer<float> Constants;
 StructuredBuffer<bool> UseAbsbools;
+StructuredBuffer<bool> Enabled;
+
 
 RWTexture2D<float4> Result;
 float DistortionFactor;
@@ -29,33 +32,59 @@ float4 BumpyCircle(float angle, uint2 pos, float4 startColor, float4 endColor)
     uint2 DistortedPosition = DistortPos((DistortionTex[pos]), pos, DistortionFactor);
 
     float t = distance(DistortedPosition.xy, uint2(Center.x, Center.y));
+    
     float height = 0;
     float Runningheight = 0;
+    
+    
+    float2 localminmax = MinMax;
+    
+    float max = 0;
+    
+    
+    max = MinMax.y > 0.01 ? MinMax.y : 100000.0;
+    
+    if (true)
+    {
+        return Blend(Result[pos], startColor, startColor.w, BlendMode, true);
+    }
+    
+    if (t > max)
+    {
+        return Blend(Result[pos], endColor, endColor.w, BlendMode, true);
+    }
+
+ 
+   
 
     
     for (int i = 0; i < ArrayLength; i++)
     {
-        height = sin(angle * round(Rates[i]) + Offsets[i]);
-        
-        float angleSign = 1;
-
-        height += Constants[i];
-    
-        if (!UseAbsbools[i])
+        if (Enabled[i])
         {
-            angleSign = sign(height);
-        }
-    
-        height = pow(abs(height), Powers[i]) * angleSign;
+            height = sin(angle * round(Rates[i]) + Offsets[i]);
         
-        height *= Amplitudes[i];
-        
-        Runningheight += height;
+            float angleSign = 1;
 
-    }
-        
-    Runningheight /= 1;
+            height += Constants[i];
     
+            if (!UseAbsbools[i])
+            {
+                angleSign = sign(height);
+            }
+    
+            height = pow(abs(height), Powers[i]) * angleSign;
+        
+            height *= Amplitudes[i];
+        
+            //added this so it wont shrink the low end of circle when you make the amplitude larger
+        
+         //   height += Amplitudes[i];
+        
+            Runningheight += height;
+        }
+    }
+            
     if ((t - Runningheight) < Radius)
     {
         return Blend(Result[pos.xy], startColor, startColor.w, BlendMode, true);
@@ -71,15 +100,10 @@ float4 BumpyCircle(float angle, uint2 pos, float4 startColor, float4 endColor)
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
     // TODO: insert actual code here!
-    float4 BaseColor = float4(0.0, 0.5, 1.0, 1.0);
-    float4 startColor = float4(0.0, 0.0, 0.0, 1.0);
-    float4 nothing = float4(0.0, 0.0, 0.0, 0.0);
-    float4 endColor = float4(0.5, 1.0, 1.0, 1.0);
     float angle = degrees(SignedAngle2D(id.xy - float2(Center.x, Center.y), float2(0.0, 1.0))) + 180;
     angle /= 360;
     angle *= (2 * PI);
     
-    float4 endColor2 = float4(1.0, 0.5, 0.5, 1.0);
        
     Result[id.xy] = BumpyCircle(angle, id.xy, PrimaryColor, SecondaryColor);
 }
