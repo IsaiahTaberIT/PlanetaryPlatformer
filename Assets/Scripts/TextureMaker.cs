@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using UnityEditor;
 using UnityEditor.PackageManager.UI;
 using UnityEngine;
@@ -33,7 +34,7 @@ public class TextureMaker : MonoBehaviour
     public bool Regenerate = true;
     public int MaxResolution = 4096 * 4096;
     public float Complexity => CalculateComplexity();
-    public TextureCompression CompressionLevel;
+    //public TextureCompression CompressionLevel;
 
 
     public enum TextureCompression
@@ -215,7 +216,7 @@ public class TextureMaker : MonoBehaviour
             Vector2Int roundedDims = new Vector2Int((int)Floor(Dimensions.x / 4f), (int)Floor(Dimensions.y / 4f)) * 4;
 
             Manager.Dimentions = roundedDims;
-            Manager.GenerateTexture(true);
+            Manager.GenerateTexture();
             OutputTexture = new(roundedDims.x, roundedDims.y);
             OutputTexture.hideFlags = HideFlags.DontSave;
             OutputTexture.filterMode = FilterMode.Point;
@@ -224,18 +225,19 @@ public class TextureMaker : MonoBehaviour
             OutputTexture.Apply();
             RenderTexture.active = null;
             // removing this may have caused a memory leak... if performace issues do occur, re-add and refactor
-          //  Manager.texture.Release();
+            //Manager.texture.Release();
             OutputTexture.Apply();
 
-            if ((int)CompressionLevel != 0)
-            {
-                OutputTexture.Compress(Logic.IntToBool((int)CompressionLevel-1));
-            }
-       
             Rect rect = new Rect(new Vector2(0, 0), new Vector2(Manager.texture.width, Manager.texture.height));
             Sprite sprite = Sprite.Create(OutputTexture, rect, new Vector2(1, 1) / 2);
             sprite.name = "generated sprite";
             sprite.hideFlags = HideFlags.DontSave;
+
+            if (renderer.sprite != null)
+            {
+                renderer.sprite = null;
+            }
+
             renderer.sprite = sprite;
         }
 
@@ -244,7 +246,7 @@ public class TextureMaker : MonoBehaviour
         transform.localScale = Vector3.one / new Vector2(Manager.texture.width, Manager.texture.height).magnitude * (181.02f) * ScaleRatio;
 
 
-
+        Manager._Depth = 0;
 
     }
     [System.Serializable]
@@ -255,17 +257,9 @@ public class TextureMaker : MonoBehaviour
         [SerializeReference] public List<TextureLayer> TextureLayers = new();
         public RenderTexture texture;
         [HideInInspector] public GameObject Parent;
-
-      
-
-
-
-
-
         public void CreateNewLayer()
         {
             //updating to create semi random layer
-
            
             System.Random r = new System.Random();
             int rand = r.Next(4);
@@ -300,27 +294,23 @@ public class TextureMaker : MonoBehaviour
 
         [ContextMenu("create Texture")]
 
-        public void GenerateTexture(bool Reset)
+        public void GenerateTexture()
         {
             if (Min(Dimentions.x, Dimentions.y) < 2)
             {
                 return;
             }
 
-            if (texture == null || Reset)
+          
+            if (texture != null)
             {
-                if (Reset && texture != null)
-                {
-                    texture.Release();
-                }
-
-
-                texture = new RenderTexture(Dimentions.x, Dimentions.y, 0, RenderTextureFormat.ARGBFloat);
-                texture.hideFlags = HideFlags.DontSave;
-                texture.enableRandomWrite = true;
-                texture.Create();
-
+                texture.Release();
             }
+
+            texture = new RenderTexture(Dimentions.x, Dimentions.y, 0, RenderTextureFormat.ARGBFloat);
+            texture.hideFlags = HideFlags.DontSave;
+            texture.enableRandomWrite = true;
+            texture.Create();
 
             for (int i = 0; i < TextureLayers.Count; i++)
             {
@@ -739,10 +729,16 @@ public class TextureMaker : MonoBehaviour
 
         [System.Serializable]
 
-        public class MandleBrotGpu : TextureLayer
+        public class MandelBrotGpu : TextureLayer
         {
             public BlendModes BlendMode = BlendModes.RotLerp;
             public Color InteriorColor = RandomColor(0.5f);
+            public Color[] Colors = new Color[] { RandomColor() };
+            // ComputeBuffer GradientColorKeysBuffer;
+            // ComputeBuffer GradientAlphaKeysBuffer;
+
+             ComputeBuffer ColorBuffer;
+
 
             public Color PrimaryColor = RandomColor();
             public Color SecondaryColor = RandomColor();
@@ -753,13 +749,13 @@ public class TextureMaker : MonoBehaviour
             public Vector2 Offset = new(-0.5f, 0);
             private Vector2 _LastOffset = new(-0.5f, 0);
             public Vector2 StartingPosition = new(0, 0);
-            [Min(0.05f)] public float Zoom = 1;
+            [Min(0.5f)] public float Zoom = 1;
             [Min(0.05f)] public float ColorFrequency = 1;
 
 
             [Min(1)]public int Iterations = 10;
 
-            public MandleBrotGpu()
+            public MandelBrotGpu()
             {
                 Type = TextureLayerType.mandelbrot;
                 LastType = Type;
@@ -775,17 +771,35 @@ public class TextureMaker : MonoBehaviour
                 {
                     Vector2 offsetdelta = Offset - _LastOffset;
                     Offset -= offsetdelta;
-                    Offset += offsetdelta / (OffsetPrecision * Zoom);
+                    Offset += offsetdelta / (OffsetPrecision * Zoom * Zoom);
 
                 }
 
                 _LastOffset = Offset;
 
-
                 Vector2 dims = new Vector2(tex.width, tex.height);
 
-                computeshader.SetFloat("Zoom", Zoom / 3);
+                if (Colors.Length == 0)
+                {
+                    Colors = new Color[] { RandomColor() };
+                }
+
+                ColorBuffer = new ComputeBuffer(Colors.Length, Marshal.SizeOf<Color>());
+             
+                ColorBuffer.SetData(Colors);
+                computeshader.SetBuffer(kernel, "Colors", ColorBuffer);
+                computeshader.SetInt("ColorCount", Colors.Length);
+
+                computeshader.SetFloat("Zoom", Pow(Zoom,2) / 3);
                 computeshader.SetFloat("ColorFrequency", ColorFrequency / 10);
+
+                /*
+                int ColorKeyCount = colorKeys.Length;
+                int AlphaKeyCount = alphaKeys.Length;
+                */
+             //   computeshader.SetInt("ColorKeyCount", ColorKeyCount);
+              //  computeshader.SetInt("AlphaKeyCount", AlphaKeyCount);
+
                 computeshader.SetInt("Julia", Logic.BoolToInt(Julia));
                 computeshader.SetInt("Iterations", Iterations);
                 computeshader.SetVector("Offset", new Vector2(Offset.x * dims.x, Offset.y * dims.y));
@@ -812,7 +826,10 @@ public class TextureMaker : MonoBehaviour
 
 
                 ApplyShaderToRT();
+                ColorBuffer.Dispose();
 
+                //  GradientColorKeysBuffer.Dispose();
+                //  GradientAlphaKeysBuffer.Dispose();
                 return tex;
 
             }
@@ -1047,8 +1064,15 @@ public class TextureMaker : MonoBehaviour
         }
 
         [System.Serializable]
-        public class NoiseGpu : TextureLayer
+        public class NoiseGpu : TextureLayer , IDistortionSubMaker
         {
+
+            [HideInInspector] public GameObject Parent;
+            public GameObject ParentSM { get => Parent; set => Parent = value; }
+            public DistortionMaker distortion = new("Distortion Maker");
+            public DistortionMaker DistortionSM { get => distortion; set => distortion = value; }
+
+
             public bool FeedInSeedNoise = false;
             public bool CoherentNoise = false;
             public BlendModes BlendMode = (BlendModes)1;
@@ -1093,6 +1117,13 @@ public class TextureMaker : MonoBehaviour
                 // that was a good example of shat-gpt not being able to solve a problem for you
                 // it was mystified
                 //Scale = (CoherentNoise && Scale <= 2) ? 2 : Scale;
+                Vector2 dims = new Vector2(tex.width, tex.height);
+                float rootmagnitude = Sqrt(dims.magnitude);
+
+
+                
+
+
 
                 float floorscale = 0;
 
@@ -1114,6 +1145,8 @@ public class TextureMaker : MonoBehaviour
                 }
 
                 RenderTexture inputTexture;
+                distortion.Influence = distortion.Maker == null ? 0 : distortion.Influence;
+
 
                 if (FeedInSeedNoise)
                 {
@@ -1122,8 +1155,10 @@ public class TextureMaker : MonoBehaviour
                 }
                 else
                 {
-                    Vector2Int SeednoiseDims = new Vector2Int((int)Floor(tex.width / floorscale), (int)Floor(tex.height / floorscale));
-                    SeednoiseDims += Vector2Int.one;
+                  //  Debug.Log(tex.width);
+
+                    Vector2Int SeednoiseDims = new Vector2Int(CeilToInt(tex.width / floorscale ), CeilToInt(tex.height / floorscale ));
+                    
                     inputTexture = new RenderTexture(SeednoiseDims.x, SeednoiseDims.y, 0, RenderTextureFormat.ARGBFloat);
 
                 }
@@ -1141,6 +1176,14 @@ public class TextureMaker : MonoBehaviour
                 {
                     Graphics.Blit(tex, inputTexture);
                 }
+
+                distortion.Parent = Parent;
+                distortion.Dims = new(tex.width, tex.height);
+                distortion.Generate(depth);
+
+                computeshader.SetTexture(kernel, "DistortionTex", distortion.SubTex);
+                computeshader.SetFloat("DistortionFactor", Math.Abs(distortion.Influence * rootmagnitude / BaseSize));
+
 
                 computeshader.SetTexture(kernel, "Noise", inputTexture);
                 computeshader.SetVector("Dims", new Vector2(tex.width, tex.height));
@@ -1171,7 +1214,6 @@ public class TextureMaker : MonoBehaviour
         [System.Serializable]
         public class CompositeGpu : TextureLayer
         {
-            public bool PassInBackgound = false;
             public BlendModes BlendMode = (BlendModes)1;
             [HideInInspector] public GameObject Parent;
             public GameObject MakerObject;
@@ -1210,7 +1252,7 @@ public class TextureMaker : MonoBehaviour
                 Maker.Dimensions = Maker.Manager.Dimentions;
 
                 Maker.Manager.texture = tex;
-                Maker.Manager.GenerateTexture(!PassInBackgound);
+                Maker.GenerateAndApplySubCall(depth);
                 tex = Maker.Manager.texture;
 
                 if (computeshader == null)
@@ -1813,7 +1855,7 @@ public class TextureMaker : MonoBehaviour
                 case TextureLayer.TextureLayerType.customMask:
                     return new CustomMaskGPU();
                 case TextureLayer.TextureLayerType.mandelbrot:
-                    return new MandleBrotGpu();
+                    return new MandelBrotGpu();
                 default:
                     return new SimpleGradientGpu();
             }

@@ -2,8 +2,30 @@
 #pragma kernel CSMain
 
 #include "MyHelpers.hlsl"
-// Create a RenderTexture with enableRandomWrite flag and set it
-// with cs.SetTexture
+
+struct GradientColorKey
+{
+ 
+    float4 color;
+    
+    float time;
+
+};
+
+
+struct GradientAlphaKey
+{
+
+    float alpha;
+
+ 
+    float time;
+
+   
+};
+
+
+
 RWTexture2D<float4> Result;
 float4 InteriorColor; //Interior Crocodile Aliigator I drive a chevrolet movie Thee-ate-or
 float4 PrimaryColor;
@@ -11,10 +33,102 @@ float4 SecondaryColor;
 float2 Dims;
 float2 Offset;
 float2 StartingPosition;
+StructuredBuffer<float4> Colors;
+
+int ColorCount;
+
+
+// too expensive
+/*
+
+StructuredBuffer<GradientColorKey> GradientColorKeysBuffer;
+StructuredBuffer<GradientAlphaKey> GradientAlphaKeysBuffer;
+int ColorKeyCount;
+int AlphaKeyCount;
+
+
+
+float AlphaAtTime(int index, float t)
+{
+    int escape = 0;
+    float ivlt = 0;
+    
+    while (escape < 10)
+    {
+        if (GradientAlphaKeysBuffer[index].time <= t && index == AlphaKeyCount - 1)
+        {
+        //end bound
+           ivlt = InverseLerp(GradientAlphaKeysBuffer[index].time, GradientAlphaKeysBuffer[0].time + 1, t);
+            return lerp(GradientAlphaKeysBuffer[index].alpha, GradientAlphaKeysBuffer[0].alpha, ivlt);
+        }
+    
+        if (index == 0 && GradientAlphaKeysBuffer[index].time >= t)
+        {
+        //start bound
+            ivlt = InverseLerp(GradientAlphaKeysBuffer[index].time, GradientAlphaKeysBuffer[AlphaKeyCount - 1].time, t);
+            return lerp(GradientAlphaKeysBuffer[index].alpha, GradientAlphaKeysBuffer[AlphaKeyCount - 1].alpha, ivlt);
+        }
+    
+        if (GradientAlphaKeysBuffer[index].time <= t && GradientAlphaKeysBuffer[index + 1].time >= t)
+        {
+        //somewhere in middle
+            ivlt = InverseLerp(GradientAlphaKeysBuffer[index].time, GradientAlphaKeysBuffer[index + 1].time, t);
+            return lerp(GradientAlphaKeysBuffer[index].alpha, GradientAlphaKeysBuffer[index + 1].alpha, ivlt);
+        }
+
+        if (GradientAlphaKeysBuffer[index].time <= t && GradientAlphaKeysBuffer[index + 1].time < t)
+        {
+            index--;
+            continue;
+        }
+    
+        if (GradientAlphaKeysBuffer[index].time >= t)
+        {
+            index++;
+            continue;
+        }
+        
+        escape++;
+
+    }
+    
+ 
+    
+    return -1.0;
+    
+    
+}
+
+*/
+
+
+float4 ColorAtTime(int index, float t)
+{
+    float invlt = 0;
+    
+    if (ColorCount < 2)
+    {
+        return Colors[0];
+    }
+    
+    if (index < ColorCount - 1)
+    {
+        invlt = InverseLerp((float)index, (float)index + 1, t);
+        return Blend(Colors[index], Colors[index + 1], invlt, 1, false);
+    }
+    else
+    {
+        invlt = InverseLerp((float)index, (float)index + 1, t);
+        return Blend(Colors[index], Colors[0], invlt,1,false);
+    }
+    
+
+}
+
 
 float ColorFrequency;
 
-bool julia;
+bool Julia;
 
 int Iterations;
 float Zoom;
@@ -34,9 +148,32 @@ float2 ComplexMult(float2 v1, float2 v2)
     return output;
 }
 
+//yoinked my code for this from leetcode so i wouldnt have to rewrite it
+//apparently... my gpu cant handle working with doubles it crashes like 1 in 100 times
+   
+
+double dSqrt(double x)
+{
+    double Guess = 2;
+    double PSqrt = Guess;
+    double Sqrt = 0;
+
+    while (abs(x - (PSqrt * PSqrt)) > 0.99)
+    {
+        PSqrt = (x / PSqrt + PSqrt) / 2;
+    }
+    
+    return Sqrt = (PSqrt);
+}
+
 float2 ComplexSquare(float2 v1)
 {
     return ComplexMult(v1, v1);
+}
+
+double dLength(double2 v1)
+{
+  return dSqrt((v1.x * v1.x) + (v1.y * v1.y));
 }
 
 
@@ -48,8 +185,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float4 OutputColor = float4(0, 0, 0, 0);
     float2 c = (id.xy - Dims / 2) / Dims;
     
-    
-    if (julia)
+    if (Julia)
     {
         c /= Zoom;
         c += Offset / Dims;
@@ -65,10 +201,14 @@ void CSMain (uint3 id : SV_DispatchThreadID)
           
                 float t = 1 - (sin(i * ColorFrequency) + 1) / 2.0;
             
-                t = absPow(t, 2);
+             //   t = absPow(t, 2);
+                
+                OutputColor = ColorAtTime((int) floor((ColorCount) * t), t * ColorCount);
+
+               // t = AlphaAtTime((int)floor(AlphaKeyCount * t), t);
             
                 thresholdReached = true;
-                OutputColor = Blend(SecondaryColor, PrimaryColor, t, 1, false);
+              //  OutputColor = Blend(SecondaryColor, PrimaryColor, t, 1, false);
                 break;
             }
         }
@@ -104,8 +244,13 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         OutputColor = InteriorColor;
     }
     
+ 
+ //   OutputColor = GradientColorKeysBuffer[0].color;
+  //  OutputColor.w = GradientAlphaKeysBuffer[0].alpha;
     
-    
+   // Result[id.xy] = OutputColor;
+
+
    
     Result[id.xy] = Blend(Result[id.xy], OutputColor, OutputColor.w, 1, false);
   

@@ -3,19 +3,15 @@ using UnityEditor;
 using UnityEngine;
 using UnityEditorInternal;
 using static TextureMaker.LayerManager;
-
-
-
-using System.Text;
-using Codice.Client.Common;
-using static UnityEditor.Experimental.GraphView.GraphView;
 using System;
 
 [CustomEditor(typeof(TextureMaker))]
 public class TextureMakerEditor : Editor
 {
+
+
     public double NextUpdateTime;
-    public double TimeDelay = 1.0;
+    public double BaseTimeDelay = 0.005;
     public bool PendingUpdate;
     public TextureMaker maker;
     ReorderableList TextureLayerlist;
@@ -79,9 +75,11 @@ public class TextureMakerEditor : Editor
 
         if (EditorGUI.EndChangeCheck())
         {
+
+
             if (!PendingUpdate)
             {
-                NextUpdateTime = EditorApplication.timeSinceStartup + TimeDelay;
+                NextUpdateTime = EditorApplication.timeSinceStartup + BaseTimeDelay + Math.Log(maker.Dimensions.magnitude,2) * 0.005;
                 PendingUpdate = true;
             }
            
@@ -90,24 +88,24 @@ public class TextureMakerEditor : Editor
 
         if (PendingUpdate & NextUpdateTime <= EditorApplication.timeSinceStartup)
         {
-            
-                GameObject parent = maker.transform.GetRootParent();
 
-                if (parent != null)
-                {
-                    if (parent.TryGetComponent(out TextureMaker parentmaker))
-                    {
-                        parentmaker.GenerateAndApply();
-                    }
+            GameObject parent = maker.transform.GetRootParent();
 
-                }
-                else
+            if (parent != null)
+            {
+                if (parent.TryGetComponent(out TextureMaker parentmaker))
                 {
-                    maker.GenerateAndApply();
+                    parentmaker.GenerateAndApply();
                 }
+
+            }
+            else
+            {
+                maker.GenerateAndApply();
+            }
 
             NextUpdateTime = 0;
-
+            PendingUpdate = false;
 
         }
 
@@ -240,9 +238,13 @@ public class TextureMakerEditor : Editor
 
             if (layer.Type == TextureLayer.TextureLayerType.filter)
             {
-                string filterlabel = (layer as Filter).FilterType.ToString().CapitalizeFirst();
-                filterlabel = ": " + filterlabel;
-                label += filterlabel;
+                if (layer is Filter f)
+                {
+                    string filterlabel = f.FilterType.ToString().CapitalizeFirst();
+                    filterlabel = ": " + filterlabel;
+                    label += filterlabel;
+                }
+
             }
 
             label.CapitalizeFirst();

@@ -42,6 +42,26 @@ void HandleMasking(bool OWM, bool OPC, inout float4 c1, inout float4 c2, float4 
     
 }
 
+
+
+int2 DistortPosInt(float4 DT, uint2 pos, float factor)
+{
+   // DT = saturate(DT);    
+    DT -= 0.5;
+    DT *= 2.0;
+    
+    DT *= factor;
+    DT *= DT.w;
+
+    if (length(DT) <= 0.01)
+    {
+        DT = float4(1, 1, 1, 1) * 0.01;
+    }
+    
+    return (DT.xy + pos);
+
+}
+
 uint2 DistortPos(float4 DT, uint2 pos, float factor)
 {
    // DT = saturate(DT);    

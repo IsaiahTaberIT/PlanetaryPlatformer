@@ -3,44 +3,109 @@
 #include "MyHelpers.hlsl"
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
+float DistortionFactor;
+
+RWTexture2D<float4> DistortionTex;
+
 RWTexture2D<float4> Result;
 RWTexture2D<float4> Noise;
 int BlendMode;
 int NoiseBlendMode;
-
-float2 Dims;
+int2 Dims;
 float Seed;
 float Scale;
 float Alpha;
 float4 PrimaryColor;
 float4 SecondaryColor;
-
 int NoiseDimensions;
 float Power;
 bool UseCoherentNoise;
 
-
-float PerlinNoiseFromTex(uint2 id)
+uint2 negativeMod(int2 id, uint2 mod)
 {
-        
+    if (sign(id.x) == -1)
+    {
+        id.x = abs(id.x);
+        id.x %= mod.x;
+        id.x = mod.x - id.x;
+    }
+    else
+    {
+        id.x %= mod.x;
+    }
+    
+    if (sign(id.y) == -1)
+    {
+        id.y = abs(id.y);
+        id.y %= mod.y;
+        id.y = mod.y - id.y;
+    }
+    else
+    {
+        id.y %= mod.y;
+    }
+    
+    return id;
+    
+}
+
+
+uint2 negativeMod(int2 id, float mod)
+{
+    if (sign(id.x) == -1)
+    {
+        id.x = abs(id.x);
+        id.x %= mod;
+        id.x = mod - id.x;
+    }
+    else
+    {
+        id.x %= mod;
+    }
+    
+    if (sign(id.y) == -1)
+    {
+        id.y = abs(id.y);
+        id.y %= mod;
+        id.y = mod - id.y;
+    }
+    else
+    {
+        id.y %= mod;
+    }
+    
+    return id;
+    
+}
+
+float PerlinNoiseFromTex(int2 id)
+{
+    
     uint localScale = Scale;
-    uint2 quantizedPos = (id.xy / localScale) * localScale;
     
-    
-    uint offset =0 ;
+    uint2 DistortedPosition = DistortPos((DistortionTex[id.xy]+1)/2, id.xy, DistortionFactor);
 
-    uint2 gridPos1 = floor(id.xy / Scale) + offset;
-    uint2 gridPos2 = floor(id.xy / Scale) + uint2(1, 1) + offset;
-    uint2 gridPos3 = floor(id.xy / Scale) + uint2(1, 0) + offset;
-    uint2 gridPos4 = floor(id.xy / Scale) + uint2(0, 1) + offset;
+    uint2 gridPos1 = floor(DistortedPosition.xy / Scale) ;
+    uint2 gridPos2 = floor(DistortedPosition.xy / Scale) + uint2(1, 1) ;
+    uint2 gridPos3 = floor(DistortedPosition.xy / Scale) + uint2(1, 0) ;
+    uint2 gridPos4 = floor(DistortedPosition.xy / Scale) + uint2(0, 1) ;
    
+    gridPos1 %= Dims / localScale;
+    gridPos2 %= Dims / localScale;
+    gridPos3 %= Dims / localScale;
+    gridPos4 %=  Dims / localScale;
 
+   // gridPos1 = negativeMod(gridPos1, Dims / localScale);
+  //  gridPos2 = negativeMod(gridPos2, Dims / localScale);
+  //  gridPos3 = negativeMod(gridPos3, Dims / localScale);
+   // gridPos4 = negativeMod(gridPos4, Dims / localScale);
+    
     float2 cornerVectorDL = (Noise[gridPos1].rg * 2.0 - 1.0);
     float2 cornerVectorUR = (Noise[gridPos2].rg * 2.0 - 1.0);
     float2 cornerVectorDR = (Noise[gridPos3].rg * 2.0 - 1.0);
     float2 cornerVectorUL = (Noise[gridPos4].rg * 2.0 - 1.0);
     
-    float2 posInGridDL = (id.xy % (float) localScale) / (float) localScale;
+    float2 posInGridDL = (DistortedPosition.xy % (float)localScale) / (float)localScale;
     float2 posInGridUR = posInGridDL - float2(1, 1);
     float2 posInGridDR = posInGridDL - float2(1, 0);
     float2 posInGridUL = posInGridDL - float2(0, 1);
@@ -53,6 +118,7 @@ float PerlinNoiseFromTex(uint2 id)
     float x1 = lerp(cornerDotDL, cornerDotDR, EaseInOut(posInGridDL.x, Power)); // bottom
     float x2 = lerp(cornerDotUL, cornerDotUR, EaseInOut(posInGridDL.x, Power)); // top
     float y1 = lerp(x1, x2, EaseInOut(posInGridDL.y, Power));
+    
     
 
     return y1 + 0.5;
