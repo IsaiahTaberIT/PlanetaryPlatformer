@@ -28,14 +28,20 @@ struct GradientAlphaKey
 
 RWTexture2D<float4> Result;
 float4 InteriorColor; //Interior Crocodile Aliigator I drive a chevrolet movie Thee-ate-or
-float4 PrimaryColor;
-float4 SecondaryColor;
 float2 Dims;
 float2 Offset;
 float2 StartingPosition;
 StructuredBuffer<float4> Colors;
 
 int ColorCount;
+
+
+float DistortionFactor;
+RWTexture2D<float4> DistortionTex;
+RWTexture2D<float4> SecondaryInputTexture; // SIT
+bool OverrideWithMask; // OWM
+bool OverridePrimaryColor; // OPC
+
 
 
 // too expensive
@@ -105,6 +111,7 @@ float AlphaAtTime(int index, float t)
 float4 ColorAtTime(int index, float t)
 {
     float invlt = 0;
+    float4 outcolor;
     
     if (ColorCount < 2)
     {
@@ -114,15 +121,24 @@ float4 ColorAtTime(int index, float t)
     if (index < ColorCount - 1)
     {
         invlt = InverseLerp((float)index, (float)index + 1, t);
-        return Blend(Colors[index], Colors[index + 1], invlt, 1, false);
+        invlt = saturate(invlt);
+        outcolor = Blend(Colors[index], Colors[index + 1], invlt, 1, false);
     }
     else
     {
+        // this has a weird issue where the data seems to get corrupted when zoomed in a bunch???
         invlt = InverseLerp((float)index, (float)index + 1, t);
-        return Blend(Colors[index], Colors[0], invlt,1,false);
+        invlt = saturate(invlt);
+        outcolor = Blend(Colors[index], Colors[0], invlt, 1, false);
+       
     }
     
+    
+    return outcolor;
+   // return float4(1, 1, 1, 1);
 
+    
+    
 }
 
 
@@ -148,10 +164,13 @@ float2 ComplexMult(float2 v1, float2 v2)
     return output;
 }
 
+float2 ComplexSquare(float2 v1)
+{
+    return ComplexMult(v1, v1);
+}
 //yoinked my code for this from leetcode so i wouldnt have to rewrite it
 //apparently... my gpu cant handle working with doubles it crashes like 1 in 100 times
    
-
 double dSqrt(double x)
 {
     double Guess = 2;
@@ -166,10 +185,7 @@ double dSqrt(double x)
     return Sqrt = (PSqrt);
 }
 
-float2 ComplexSquare(float2 v1)
-{
-    return ComplexMult(v1, v1);
-}
+
 
 double dLength(double2 v1)
 {
@@ -180,43 +196,55 @@ double dLength(double2 v1)
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
+    
+    uint2 DistortedPosition = DistortPos((DistortionTex[id.xy]), id.xy, DistortionFactor);
+
     bool thresholdReached = false;
   
     float4 OutputColor = float4(0, 0, 0, 0);
-    float2 c = (id.xy - Dims / 2) / Dims;
+    float2 c = (DistortedPosition.xy - Dims / 2) / Dims;
     
     if (Julia)
     {
         c /= Zoom;
-        c += Offset / Dims;
+        c += Offset;
 
         float2 z = c;
     
         for (int i = 0; i < Iterations; i++)
         {
             z = ComplexSquare(z) + StartingPosition;
+            
         
             if (length(z) > 2)
             {
+                if ((OverrideWithMask && !OverridePrimaryColor))
+                {
+                    OutputColor = SecondaryInputTexture[id.xy];
+                    
+                }
+                else
+                {
+                    float t = 1 - (sin(i * ColorFrequency) + 1) / 2.0;
+                    // i dont know why fully but this prevents corrupted looking results at very specific 
+                    //values of t:
+                    t *= 0.99;
+                    OutputColor = ColorAtTime((int) floor((ColorCount) * t), t * ColorCount);
+                    
+                }
           
-                float t = 1 - (sin(i * ColorFrequency) + 1) / 2.0;
-            
-             //   t = absPow(t, 2);
                 
-                OutputColor = ColorAtTime((int) floor((ColorCount) * t), t * ColorCount);
-
-               // t = AlphaAtTime((int)floor(AlphaKeyCount * t), t);
-            
                 thresholdReached = true;
-              //  OutputColor = Blend(SecondaryColor, PrimaryColor, t, 1, false);
                 break;
+           
             }
+           
         }
     }
     else
     {
         c /= Zoom;
-        c += Offset / Dims;
+        c += Offset;
 
         float2 z = 0;
     
@@ -227,32 +255,41 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             if (length(z) > 2)
             {
           
-                float t = 1 - (sin(i * ColorFrequency) + 1) / 2.0;
-            
-                t = absPow(t, 2);
-            
+                if ((OverrideWithMask && !OverridePrimaryColor))
+                {
+                    OutputColor = SecondaryInputTexture[id.xy];
+                    
+                }
+                else
+                {
+                    float t = 1 - (sin(i * ColorFrequency) + 1) / 2.0;
+                    
+                    // i dont know why fully but this prevents corrupted looking results at very specific 
+                    //values of t:
+                    t *= 0.99;
+                    
+                    OutputColor = ColorAtTime((int) floor((ColorCount) * t), t * ColorCount);
+              
+                }
+          
                 thresholdReached = true;
-                OutputColor = Blend(SecondaryColor, PrimaryColor, t, 1, false);
                 break;
             }
         }
     }
    
-    
     if (!thresholdReached)
     {
-        OutputColor = InteriorColor;
+        if (OverrideWithMask && OverridePrimaryColor)
+        {
+            OutputColor = SecondaryInputTexture[id.xy];
+
+        }
+        else
+        {
+            OutputColor = InteriorColor;
+        }
     }
-    
- 
- //   OutputColor = GradientColorKeysBuffer[0].color;
-  //  OutputColor.w = GradientAlphaKeysBuffer[0].alpha;
-    
-   // Result[id.xy] = OutputColor;
 
-
-   
     Result[id.xy] = Blend(Result[id.xy], OutputColor, OutputColor.w, 1, false);
-  
-
 }

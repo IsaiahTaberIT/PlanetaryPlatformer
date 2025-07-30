@@ -311,10 +311,14 @@ float4 Blend(float4 c1, float4 c2, float t, int type, bool oldAlpha)
         case 0:
         // lerp
             output = lerp(c1, c2, t);
+        
+        
             if (oldAlpha)
             {
                 output.w = max(c1.w, c2.w);
             }
+        
+        
             break;
         case 1:
         // rotlerp

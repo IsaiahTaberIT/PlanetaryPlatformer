@@ -1,21 +1,22 @@
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
 #include "MyHelpers.hlsl"
-// Create a RenderTexture with enableRandomWrite flag and set it
-// with cs.SetTexture
+
+
+
 bool Fuzzy;
+float2 Center;
 int BlendMode;
-bool DoRotLerp;
-float2 Dims;
-float Offset;
 float4 PrimaryColor;
 float4 SecondaryColor;
+int Arms;
 float Spacing;
-float2 Slope;
-float BlendPower;
-int GradientBlendMode;
 float Ratio;
+float Power;
+float AngleOffset;
+uint2 Dims;
 RWTexture2D<float4> Result;
+
 float DistortionFactor;
 RWTexture2D<float4> DistortionTex;
 
@@ -25,13 +26,32 @@ bool OverridePrimaryColor; // OPC
 
 [numthreads(8, 8, 1)]
 
-void CSMain (uint3 id : SV_DispatchThreadID)
+//Junji Ito
+
+void CSMain(uint3 id : SV_DispatchThreadID)
 {
     HandleMasking(OverrideWithMask, OverridePrimaryColor, PrimaryColor, SecondaryColor, SecondaryInputTexture[id.xy]);
-    uint2 DistortedPosition = DistortPos((DistortionTex[id.xy] + 0.5) / 4.0, id.xy, DistortionFactor);
 
-    float mod = (((DistortedPosition.x) - Dims.x / 2.0) * Slope.x + ((DistortedPosition.y) - Dims.y / 2.0) * Slope.y + length(Dims) * 10.0 + Offset) % Spacing;
+    float angle = degrees(SignedAngle2D(id.xy - float2(Center.x, Center.y), float2(0.0, 1.0))) + 180;
+    
+    angle /= 360;
+    
     float4 endcolor = float4(1, 1, 1, 1);
+    
+    uint2 DistortedPosition = DistortPos((DistortionTex[id.xy]), id.xy, DistortionFactor);
+
+    float t = distance(DistortedPosition, uint2(Center.x, Center.y));
+    angle += AngleOffset;
+
+    angle *= Arms;
+
+    Spacing *= absPow(length(Dims), Power);
+
+    angle *= Spacing;
+    
+    float mod = ((absPow(t, Power) + angle)) % Spacing;
+
+    
     if (!Fuzzy)
     {
         if (mod >= Spacing * Ratio)
@@ -47,16 +67,15 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     }
     else
     {
-        float shiftedmod = ((mod + (Spacing * (0.75)))) % Spacing;
+        float shiftedmod = ((mod + (Spacing * 0.75))) % Spacing;
         float t = abs((shiftedmod / (Spacing * Ratio)) - 1);
-        t = EaseInOut(t, BlendPower);
+        t = EaseInOut(t, 1);
         t = saturate(t);
-        
-        
-        endcolor = Blend(PrimaryColor, SecondaryColor, t, GradientBlendMode, false);
-        
-        
+        endcolor = Blend(PrimaryColor, SecondaryColor, t, 1, false);
         Result[id.xy] = Blend(Result[id.xy], endcolor, endcolor.w, BlendMode, true);
 
     }
+    
+  //  Result[id.xy] = endcolor;
 }
+
