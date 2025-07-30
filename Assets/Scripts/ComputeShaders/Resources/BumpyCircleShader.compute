@@ -104,7 +104,35 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     angle /= 360;
     angle *= (2 * PI);
     
+    float4 endcolor = float4(1, 1, 1, 1);
+    
+    uint2 DistortedPosition = DistortPos((DistortionTex[id.xy]), id.xy, DistortionFactor);
+
+    float t = distance(DistortedPosition.xy, uint2(Center.x, Center.y));
+    
+    float Spacing = 15;
+    
+    angle /= PI;
+    angle /= 2;
+
+    angle *= Radius;
+    
+    float mod = (absPow(t,1.5) + angle) % Radius;
+
+    
+    if (mod >= Radius / 2.0)
+    {
+        endcolor = Blend(Result[id.xy], PrimaryColor, PrimaryColor.w, BlendMode, true);
+    }
+    else
+    {
+        endcolor = Blend(Result[id.xy], SecondaryColor, SecondaryColor.w, BlendMode, true);
+    }
+        
+    Result[id.xy] = endcolor;
+    
+    
        
-    Result[id.xy] = BumpyCircle(angle, id.xy, PrimaryColor, SecondaryColor);
+   // Result[id.xy] = BumpyCircle(angle, id.xy, PrimaryColor, SecondaryColor);
 }
 
