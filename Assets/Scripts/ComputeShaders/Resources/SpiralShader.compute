@@ -1,0 +1,92 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+#include "MyHelpers.hlsl"
+
+
+
+bool Fuzzy;
+float2 Center;
+int BlendMode;
+float4 PrimaryColor;
+float4 SecondaryColor;
+int Arms;
+float Spacing;
+float Ratio;
+float Power;
+float AngleOffset;
+uint2 Dims;
+RWTexture2D<float4> Result;
+
+float DistortionFactor;
+RWTexture2D<float4> DistortionTex;
+
+RWTexture2D<float4> SecondaryInputTexture; // SIT
+bool OverrideWithMask; // OWM
+bool OverridePrimaryColor; // OPC
+
+
+
+
+
+
+
+
+[numthreads(8, 8, 1)]
+
+//Junji Ito
+
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    HandleMasking(OverrideWithMask, OverridePrimaryColor, PrimaryColor, SecondaryColor, SecondaryInputTexture[id.xy]);
+
+    float angle = degrees(SignedAngle2D(id.xy - float2(Center.x, Center.y), float2(0.0, 1.0))) + 180;
+    
+    angle /= 360;
+    
+    float4 endcolor = float4(1, 1, 1, 1);
+    
+    uint2 DistortedPosition = DistortPos((DistortionTex[id.xy]), id.xy, DistortionFactor);
+
+    float t = distance(DistortedPosition, uint2(Center.x, Center.y));
+    
+    
+    absMod(AngleOffset, 60);
+    
+    angle += AngleOffset;
+
+    angle *= Arms;
+
+    Spacing *= absPow(length(Dims), Power);
+
+    angle *= Spacing;
+    
+    float mod = ((absPow(t, Power) + angle)) % Spacing;
+
+    
+    if (!Fuzzy)
+    {
+        if (mod >= Spacing * Ratio)
+        {
+            endcolor = Blend(Result[id.xy], PrimaryColor, PrimaryColor.w, BlendMode, true);
+        }
+        else
+        {
+            endcolor = Blend(Result[id.xy], SecondaryColor, SecondaryColor.w, BlendMode, true);
+        }
+        
+        Result[id.xy] = endcolor;
+    }
+    else
+    {
+        float shiftedmod = ((mod + (Spacing * 0.75))) % Spacing;
+        float t = abs((shiftedmod / (Spacing * Ratio)) - 1);
+        t = EaseInOut(t, 1);
+        t = saturate(t);
+        endcolor = Blend(PrimaryColor, SecondaryColor, t, 1, false);
+        Result[id.xy] = Blend(Result[id.xy], endcolor, endcolor.w, BlendMode, true);
+
+    }
+    
+  //  Result[id.xy] = endcolor;
+}
+

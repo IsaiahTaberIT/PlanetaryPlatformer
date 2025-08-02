@@ -12,8 +12,6 @@ public class DisableOnEnter : MonoBehaviour
         ObjToDisable.SetActive(false);
         
     }
-
-
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("Player"))
@@ -29,8 +27,6 @@ public class DisableOnEnter : MonoBehaviour
             }
         }
     }
-
-
     IEnumerator GravityFade(float initialGravity, Gravity gravity)
     {        
         for (float i = 1f; i >= 0; i -= 0.05f)

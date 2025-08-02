@@ -84,13 +84,10 @@ public class SaveData : MonoBehaviour
 
         if (CheckPointsByLevel.ContainsKey(index))
         {
-            //Debug.Log(index + " , " + value);
             CheckPointsByLevel[index] = value;
         }
         else
         {
-          //  Debug.Log(index + " , " + value);
-
             CheckPointsByLevel.Add(index, value);
         }
 

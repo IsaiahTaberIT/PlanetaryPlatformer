@@ -1,7 +1,5 @@
 
 using UnityEngine;
-
-
 public class MovementScript : MonoBehaviour
 {
     [Min(1)] public float Mult = 1;
@@ -152,11 +150,6 @@ public class MovementScript : MonoBehaviour
             {
                 return;
             }
-            if (WaitAtStart.Ratio < 1)
-            {
-                //     WaitAtStart.Step();
-                //     return;
-            }
 
             if (TranslationTimer.Ratio >= 1 || _FirstTarget)
             {
@@ -213,11 +206,7 @@ public class MovementScript : MonoBehaviour
         RaycastHit2D hit2 = Physics2D.Raycast(cachedtransform.position - distanceToBottom + Quaternion.AngleAxis(90, new Vector3(0, 0, 1)) * GravityDown.normalized * 0.2f, GravityDown, GroundCheckDistance, GroundLayer);
 
         return (hit1.collider != null || hit2.collider != null);
-
-
     }
-
-
     public bool CheckGrounded(Vector3 gravity, float distance, LayerMask layer, ref bool stickered)
     {
         int count = 0;
@@ -245,15 +234,12 @@ public class MovementScript : MonoBehaviour
 
                 if (mPlatform.ActiveAndSpinning())
                 {
-                  
-
                     float RadiusAtPoint = Mathf.Abs(Vector2.Distance(hit1.point, mPlatform.transform.position));
                  
                     Vector3 DirectionFromCenter = hit1.point - (Vector2)mPlatform.transform.position;
                     Vector2 TangentDirection = Quaternion.AngleAxis(90, new Vector3(0, 0, 1)) * DirectionFromCenter;
                     TangentialVelocityAtPoint = (TangentDirection.normalized * (Time.deltaTime * (RadiusAtPoint + 0.5f) * 2 * Mathf.PI * 50)) / mPlatform.RevolutionTimer.EndTime;
                     Debug.DrawLine(mPlatform.transform.position, hit1.point, Color.green);
-                    //Debug.Log(ArcLengthOverTimeStep);
                 }
                 
 

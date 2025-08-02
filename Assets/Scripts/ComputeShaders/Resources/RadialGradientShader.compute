@@ -5,34 +5,31 @@
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
 RWTexture2D<float4> Result;
-float Angle;
 float2 Dims;
-float2 Squish;
-float SquishPower;
 float2 Center;
 float Radius;
-float4 Color1;
-float4 Color2;
+float4 PrimaryColor;
+float4 SecondaryColor;
 int BlendMode;
 int GradientBlendMode;
 float BlendPower;
 
+float DistortionFactor;
+RWTexture2D<float4> DistortionTex;
+
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    // TODO: insert actual code here!
-    Radius /= 100.0;
+    uint2 DistortedPosition = DistortPos(DistortionTex[id.xy], id.xy, DistortionFactor);
     Center *= Dims;
-    Radius *= min(Dims.x, Dims.y);
     
-    float t = length(id.xy - Center) / Radius;
-   // t += (sin(2.0 * SignedAngle2D(normalize(id.xy - Center), normalize(Squish)))) * SquishPower;
+    float t = length(DistortedPosition - Center) / Radius;
 
     float4 newcolor;
 
     if (t < 1.0)
     {
-        newcolor = Blend(Color1, Color2, t, GradientBlendMode);
+        newcolor = Blend(PrimaryColor, SecondaryColor, t, GradientBlendMode, false);
     }
     else
     {
@@ -42,6 +39,6 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     
     newcolor = pow(abs(newcolor), 1.0 / BlendPower);
 
-    Result[id.xy] = Blend(Result[id.xy], newcolor, newcolor.w, BlendMode);
+    Result[id.xy] = Blend(Result[id.xy], newcolor, newcolor.w, BlendMode, true);
 
 }

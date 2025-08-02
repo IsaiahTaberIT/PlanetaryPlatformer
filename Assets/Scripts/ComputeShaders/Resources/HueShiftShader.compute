@@ -59,13 +59,16 @@ float coloroffset(float3 RGB)
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
 
-    
-
     // for any and all naysayers who think i didn't write this code in the age of chat-gpt, i did, trust me, it took me a combined 6-8 hours
     // to come up with this, in hindsight very simple solution. sometimes i wish i wasn't too stubborn to just google the solution
     // but i wanted to solve it myself, and if i just copy and pasted everything it would be difficult to learn to code;
     
     // ... i learned how to rotate a vector using quaternions for this and only after did i realize it would never work
+    
+    // here from a month later, what are you on past me? color rotating totally works you were just coping
+    
+    
+    
     // ... im leaving all the scrap code i didnt delete yet as evidence of the horrors
     
     // ... my original solution would have been a severe pain to implement, i was shifting the individual color channels
@@ -90,19 +93,19 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     if (selector < 1)
     {
         
-        ShiftedHue = Blend(EndBSpace, EndRSpace, t, BlendMode);
+        ShiftedHue = Blend(EndBSpace, EndRSpace, t, BlendMode, false);
 
     }
     else if (selector < 2 && selector >= 1)
     {
        
-        ShiftedHue = Blend(EndRSpace, EndGSpace, t, BlendMode);
+        ShiftedHue = Blend(EndRSpace, EndGSpace, t, BlendMode, false);
 
     }
     else if (selector >= 2)
     {
         
-        ShiftedHue = Blend(EndGSpace, EndBSpace, t, BlendMode);
+        ShiftedHue = Blend(EndGSpace, EndBSpace, t, BlendMode, false);
     }
 
 

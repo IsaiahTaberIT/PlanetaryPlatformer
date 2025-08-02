@@ -98,8 +98,6 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
         public SpriteRenderer Arrow2SpriteRenderer;
         public SpriteRenderer Arrow3SpriteRenderer;
     }
-
-
     void CheckIfEscaped()
     {
         AverageDist = 0;
@@ -138,7 +136,6 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
         if (AverageDist > _InitialThreshold)
         {
             EscapeConfidence.Time += Time.deltaTime * Mathf.Clamp(AverageDist / _InitialThreshold, 0,3);
-           // Debug.Log(EscapeConfidence.Time/EscapeConfidence.EndTime);
         }
         else
         {
@@ -170,7 +167,6 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
             {
                 MyGamelogicScript.GameOver();
             }
-
            
         }
         else
@@ -189,8 +185,6 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
         float currentSize = MyGamelogicScript.shaderMaterial.GetFloat("_Size");
         float lerpRate = (targetSize < currentSize) ? 0.1f : 0.01f;
 
-
-
         targetSize = Mathf.Lerp(currentSize, targetSize, lerpRate);
         MyGamelogicScript.shaderMaterial.SetFloat("_Size", (targetSize));
         
@@ -200,8 +194,6 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
     // Start is called before the first frame updater
     void Start()
     {
-
-
         if (MainCamera == null)
         {
             MainCamera = Camera.main.gameObject;
@@ -215,7 +207,6 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
 
     }
 
-
     // Update is called once per frame
     void FixedUpdate() 
     {
@@ -224,9 +215,6 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
             _GravityInfo = GameLogicScript.GravityDirection(_MyTransform.position, Vector3.down * MyGamelogicScript.NormalGravity);
 
         }
-
-
-
         if (MyGamelogicScript.RunGame)
         {
             if (!IsGameRunning)
@@ -384,6 +372,8 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
         isCyoteGrounded = (IsFlingered && isCyoteGrounded) ? false : isCyoteGrounded;
 
 
+        // im leaving this for now because while it is not needed anymore, it is kinda cool
+
         /*
 
         RaycastHit2D[] rays = new RaycastHit2D[_Raycount];
@@ -481,11 +471,9 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
         }
 
 
-
         if (_MovingRight ^ _MovingLeft)
         {
             
-
             if (_MovingLeft)
             {
                 Velocity = MoveLeft(runGame, canMove);
@@ -501,10 +489,6 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
             _MovingRight = false;
 
         }
-
-
-
-
 
         // Ground Drag when not trying to move, to eliminate unwanted horizontal velocity
 
@@ -530,27 +514,6 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
 
             }
         }
-
-        /*
-
-        if (_Stickered && StickerCooldown.Ratio() >= 1)
-        {
-            float dot = Vector3.Dot(Velocity, StickerPull);
-            Vector3 forceInDirection = Vector3.zero;
-            if (dot < 0)
-            {
-                forceInDirection = dot * StickerPull.normalized;
-            }
-
-            //   forceInDirection.x *= (StickerPull.x * forceInDirection.x < 0) ? 1 : 0;
-            //    forceInDirection.y *= (StickerPull.y * forceInDirection.y < 0) ? 1 : 0;
-
-
-            Velocity -= forceInDirection * 0.5f;
-
-        }
-
-        */
 
         //jump
 
@@ -585,57 +548,7 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
                 }
             }
 
-
             _TriedJump = false;
-
-            /*
-
-            if (Input.GetKey(KeyCode.Space) && _JumpCoolDown <= _jumpTimer)
-            {
-                if (StickerInfo._WasStickered && !StickerInfo._Stickered)
-                {
-                    //Debug.Log("Caught");
-                    if (IsGrounded)
-                    {
-                        _jumpTimer = 0;
-                        CyoteTime.Time = CyoteTime.EndTime + 1;
-                        Velocity = Jump(Velocity, GravityDown, JumpHeight);
-                        StickerInfo._WasStickered = false;
-                    }
-                  
-
-                }
-                else
-                {
-                    if (_TriedJump && StickerInfo._Stickered)
-                    {
-                        StickerInfo.StickerCooldown.Time = 0;
-                        StickerInfo._Stickered = false;
-                        _TriedJump = false;
-                    }
-
-                    if ((_TriedJump) || !StickerInfo._Stickered)
-                    {
-                        _jumpTimer = 0;
-                        CyoteTime.Time = CyoteTime.EndTime + 1;
-
-                        // this may not be necessary but it is to prevent extremely high gravity applied to the player from influencing the players velocity on the very first frame of a jump
-                        Body.totalForce = Vector2.zero;
-                        //
-                        _TriedJump = false;
-                        Velocity = Jump(Velocity, GravityDown, JumpHeight);
-                    }
-
-                }
-
-
-
-
-
-            }
-
-              */
-
         }
         else
         {
@@ -647,7 +560,6 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
 
     void ApplyVelocity()
     {
-
         // applying velocity changes from jumping and camera-relative horizontal movement
 
         Body.linearVelocity = Velocity;
@@ -694,8 +606,6 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
 
         MainCamera.transform.position = new Vector3(Mathf.Lerp(MainCamera.transform.position.x, _MyTransform.position.x, CameraFollowRateDistanceFactor), Mathf.Lerp(MainCamera.transform.position.y, _MyTransform.position.y, CameraFollowRateDistanceFactor), (MainCamera.transform.position.z));
 
-
-
         if (Body.linearVelocity.magnitude < 0.1f)
         {
             Body.linearVelocity = Vector2.zero;
@@ -704,7 +614,6 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
             {
                _MyTransform.position = _LastPos;
             }
-
 
         }
 
@@ -732,11 +641,7 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
                 SoftBody.Movementbobbing = Mathf.Lerp(SoftBody.Movementbobbing, 0, Time.deltaTime);
             }
 
-
         }
-
-
-
 
         // Logic.RenderRayToLineRenderer(RenderRays, MyGamelogicScript.MyLineRenderer);
 
@@ -774,6 +679,8 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
     {
         vel = base.Jump(vel, grav, jumpPower);
 
+        //this might get re-added
+
         if (_MovingLeft ^ _MovingRight)
         {
      //       vel = (Quaternion.AngleAxis(-LookRotation, new Vector3(0, 0, 1)) * vel);
@@ -783,8 +690,6 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
      //       vel = (Quaternion.AngleAxis(LookRotation, new Vector3(0, 0, 1)) * vel);
         }
 
-        //Instantiate(Particle, MyTransform.position, Quaternion.identity);
-
         return vel;
     }
 
@@ -793,14 +698,9 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
        
         PlayerRunningGravityMagnitudes = _GravityInfo.RunningGravityMagnitudes;
 
-
         float scooch = 0.5f;
-        //float arrowWidth = 4f;
-       
 
         _TargetAngle = new Vector3(-Vector2.SignedAngle(Gravity[0], Vector2.up), -Vector2.SignedAngle(Gravity[1], Vector2.up), -Vector2.SignedAngle(Gravity[2], Vector2.up));
-
-        //_LerpedAngle = Vector3.zero;
 
         float LerpRate = 0.15f;
         _LerpedAngle.x = Mathf.LerpAngle(_LerpedAngle.x, _TargetAngle.x, LerpRate);
@@ -817,9 +717,9 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
         ArrowObjects.Arrow2.transform.localScale = new Vector3(ArrowLength(Gravity[1]), ArrowLength(Gravity[1]), ArrowObjects.Arrow1.transform.localScale.z);
         ArrowObjects.Arrow2.transform.position = _MyTransform.position + Quaternion.AngleAxis(_LerpedAngle.y, new Vector3(0, 0, 1)) * new Vector3(0, 1, 0) * (ArrowLength(Gravity[1]) / 2 + scooch);
 
-
         ArrowObjects.Arrow3.transform.localScale = new Vector3(ArrowLength(Gravity[2]), ArrowLength(Gravity[2]), ArrowObjects.Arrow1.transform.localScale.z);
         ArrowObjects.Arrow3.transform.position = _MyTransform.position + Quaternion.AngleAxis(_LerpedAngle.z, new Vector3(0, 0, 1)) * new Vector3(0, 1, 0) * (ArrowLength(Gravity[2]) / 2 + scooch);
+
 
 
         float maxStickerAlpha = 0.5f;
@@ -829,11 +729,9 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
         ArrowObjects.Arrow2SpriteRenderer.color = new Color(ArrowObjects.Arrow2SpriteRenderer.color.r, ArrowObjects.Arrow2SpriteRenderer.color.g , ArrowObjects.Arrow2SpriteRenderer.color.b , ArrowAlpha(Gravity[1].magnitude, PlayerRunningGravityMagnitudes, 0.5f, 20));
         ArrowObjects.Arrow3SpriteRenderer.color = new Color(ArrowObjects.Arrow3SpriteRenderer.color.r, ArrowObjects.Arrow3SpriteRenderer.color.g, ArrowObjects.Arrow3SpriteRenderer.color.b, ArrowAlpha(Gravity[2].magnitude, PlayerRunningGravityMagnitudes, 0.5f, 35));
 
-
         ArrowObjects.Arrow1SpriteRenderer.enabled = Gravity[0].magnitude < PlayerRunningGravityMagnitudes * 1.37f || (StickerInfo.StickerCooldown.GetRatio() < 1) || StickerInfo._Stickered;
         ArrowObjects.Arrow2SpriteRenderer.enabled = Gravity[1].magnitude > PlayerRunningGravityMagnitudes / 20;
         ArrowObjects.Arrow3SpriteRenderer.enabled = Gravity[2].magnitude > PlayerRunningGravityMagnitudes / 35;
-
 
     }
     float ArrowAlpha(float ArrowMagnitude, float gravMagnitude, float maxAlpha, float ratio)
@@ -845,27 +743,18 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
         return Mathf.Pow(ArrowVector.magnitude * 1, (1f/3f));
     }
 
-     private void OnDrawGizmos()
-     {
-       
-      //  Logic.RenderRayRenderer(RenderRays);
-        Logic.RenderRayRenderer(RenderRays,Color.blue);
+    private void OnDrawGizmos()
+    {
+        Logic.RenderRayRenderer(RenderRays, Color.blue);
         Gizmos.color = Color.blue;
-       // Vector3 pos = (MyTransform.position + 5 * GravityDown.normalized);
-       // pos.z = 0;
 
         foreach (Vector2 pos in _IntersectList)
         {
-           
+
             Gizmos.DrawSphere(pos, 0.05f);
         }
         _IntersectList.Clear();
 
-       // Vector3 pos2  = (MyTransform.position + 5 * GravityDown.normalized + ((Quaternion.AngleAxis(90, new Vector3(0, 0, 1)) * GravityDown.normalized)) * 5);
-       // Debug.Log();
-
-        // Gizmos.DrawSphere(pos, 3f);
-        // Gizmos.DrawSphere(pos2, 3f);
     }
 
     private void OnDisable()
@@ -905,9 +794,6 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
                 yield return new WaitForSeconds(Time.deltaTime);
             }
 
-            
-
-
             GameObject particleobj = Instantiate(SoftBody.SquishParticle, transform.position + transform.TransformDirection(Vector3.up), Quaternion.identity);
             ParticleSystem particle = particleobj.GetComponent<ParticleSystem>();
             AudioSource audio = SoftBody.Squeltch;
@@ -927,8 +813,6 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
                 collision.maxKillSpeed = 0;
                 particle.Play();
             }
-
-
            
         }
         else
@@ -940,7 +824,6 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
 
         StartCoroutine(CallRestart(2));
     }
-
     void DisableRendering()
     {
         ArrowObjects.Arrow1SpriteRenderer.enabled = false;
@@ -949,14 +832,10 @@ public class PlayerScript : MovementScript , Sticker.IStickerable
         SoftBody.gameObject.GetComponent<MeshRenderer>().enabled = false;
 
     }
-
-
- 
     private void OnTriggerStay2D(Collider2D collision)
     {
         Sticker.IStickerable.StickerCollision(collision, ref StickerInfo, _MovingLeft, _MovingRight, transform, GroundLayer, Body);
     }
-
     public void PredictMotion()
     {
         

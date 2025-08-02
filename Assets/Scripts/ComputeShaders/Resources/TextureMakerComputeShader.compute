@@ -2,6 +2,7 @@
 #pragma kernel CSMain
 #include "MyHelpers.hlsl"
 
+//im not completely sure but im pretty sure that is has no references
 
 float2 Center;
 

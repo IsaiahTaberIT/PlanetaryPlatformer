@@ -4,12 +4,89 @@
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
 RWTexture2D<float4> Result;
+RWTexture2D<float4> MaskTex;
+
 float Alpha;
 int BlendMode;
+bool Additive;
+bool UseMask;
+
+float4 ComparisonColor;
+
+float Threshold;
+int MaskMode;
+bool Invert;
+
+
+float MaskValue(float4 color)
+{
+    float output = 0;
+
+    switch (MaskMode)
+    {
+        case 0:
+        // by value
+            output = length(color.rgb) / Sqrt3;
+            break;
+        case 1:
+        // by value threshold
+            output = (length(color.rgb) / Sqrt3 >= Threshold) ? 1 : 0;
+            break;
+        case 2:
+            // by color
+            output = length(color.rgb - ComparisonColor.rgb) / Sqrt3;
+            break;
+        case 3:
+             // by hue
+            output = dot(normalize(color.rgb), normalize(ComparisonColor.rgb)) + 1;
+            output /= 2.0;
+            break;
+        default:
+            break;
+    }
+    
+    if (Invert)
+    {
+        output = 1.0 - output;
+    }
+    
+    return output;
+
+}
+
+
+
 
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
+    float OutputTransparency = 0;
     
-    Result[id.xy] = float4(Result[id.xy].rgb, lerp(0, Result[id.xy].w, Alpha));
+  
+    
+    if (UseMask)
+    {
+        OutputTransparency = MaskValue(MaskTex[id.xy]);
+
+    }
+    else
+    {
+        if (Additive)
+        {
+            OutputTransparency = saturate(Result[id.xy].w + Alpha);
+
+        }
+        else
+        {
+            OutputTransparency = lerp(0, Result[id.xy].w, Alpha);
+
+        }
+    }
+    
+    
+    
+    
+    
+    
+    Result[id.xy] = float4(Result[id.xy].rgb, OutputTransparency);
 }

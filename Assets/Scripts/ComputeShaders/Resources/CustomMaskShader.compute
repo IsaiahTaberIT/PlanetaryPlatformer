@@ -1,0 +1,64 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+#include "MyHelpers.hlsl"
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+
+
+RWTexture2D<float4> SecondaryInputTexture;
+RWTexture2D<float4> MaskTex;
+RWTexture2D<float4> Result;
+
+float4 ComparisonColor;
+float Threshold;
+int BlendMode;
+int MaskMode;
+bool Invert;
+
+float MaskValue(float4 color)
+{
+    float output = 0;
+
+    switch (MaskMode)
+    {
+        case 0:
+        // by value
+            output = length(color.rgb) / Sqrt3;
+            break;
+        case 1:
+        // by value threshold
+            output = (length(color.rgb) / Sqrt3 >= Threshold) ? 1 : 0;
+            break;
+        case 2:
+            // by color
+            output = length(color.rgb - ComparisonColor.rgb) / Sqrt3;
+            break;
+        case 3:
+             // by hue
+            output = dot(normalize(color.rgb), normalize(ComparisonColor.rgb)) + 1;
+            output /= 2.0;
+            break;
+        default:
+            break;
+    }
+    
+    if (Invert)
+    {
+        output = 1.0 - output;
+    }
+    
+    return output;
+
+}
+
+float4 AssginValueBasedOnMask(uint2 pos,float maskValue)
+{
+    return Blend(Result[pos], SecondaryInputTexture[pos], maskValue, BlendMode, true);
+}
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    Result[id.xy] = AssginValueBasedOnMask(id.xy, MaskValue(MaskTex[id.xy]));
+}

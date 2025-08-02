@@ -4,20 +4,13 @@ using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditorInternal;
-
-
-
-
 [CustomEditor(typeof(AdvancedCurveGenerationScript))]
-
 
 public class CustomSliderEditor : Editor
 {
     
     private AdvancedCurveGenerationScript myComponent;
     private object Target;
-
-
 
     public int Max = 10;
     public override void OnInspectorGUI()
@@ -27,12 +20,7 @@ public class CustomSliderEditor : Editor
         DrawDefaultInspector();
         myComponent = (AdvancedCurveGenerationScript)target;
         Target = target;
-
-
-        // Display a slider for the "MyValue" variable
-
         myComponent._CurrentSegment = (int)EditorGUILayout.Slider("Current Segment", myComponent._CurrentSegment, 0, myComponent.SegmentCount - 1);
-
 
         if (myComponent._CurrentSegment != myComponent._LastSegment)
         myComponent.CallValidatePlease();
@@ -41,13 +29,10 @@ public class CustomSliderEditor : Editor
         {
             myComponent.Repair();
         }
-
-
     }
 
     void OnSceneGUI()
     {
-  
         Event e = Event.current;
 
         if (e.type == EventType.MouseDown && e.button == 0)

@@ -64,7 +64,7 @@ public class LightsBakeable2D : MonoBehaviour
     public delegate void ToggleLightState();
     public static event ToggleLightState Toggle;
 
-    [ContextMenu("try update")]
+    [ContextMenu("FixTexture")]
     public void FixTexture()
     {
         if (UseCrt)
@@ -405,7 +405,9 @@ public class LightsBakeable2D : MonoBehaviour
 
 
         MyMeshRenderer.material = StandardCLMaterial;
+        MyMeshRenderer.material = StandardCLMaterial;
 
+        // Debug.Log("material");
         if (!RealtimeOverride)
         {
             DestroyImmediate(MyMesh);
@@ -473,9 +475,7 @@ public class LightsBakeable2D : MonoBehaviour
 
 
                 }
-                //Debug.Log(Logic.Reciprocal(transform.lossyScale));
                 pointPosition = Vector2.Scale(pointPosition, Logic.Reciprocal(transform.lossyScale));
-                // pointPosition = Vector3.Scale(pointPosition, transform.lossyScale);
             }
             else
             {
@@ -483,12 +483,6 @@ public class LightsBakeable2D : MonoBehaviour
 
                 pointPosition = direction * (Radius - Trim);
             }
-
-
-
-
-
-
 
             if (drawGizmos)
             {
@@ -514,8 +508,6 @@ public class LightsBakeable2D : MonoBehaviour
             }
             else
             {
-             //   Debug.Log("end");
-
                 Tris[tricount + 2] = 0;
             }
 
@@ -538,40 +530,44 @@ public class LightsBakeable2D : MonoBehaviour
     {
         if (run)
         {
-            GameObject parent = transform.parent.gameObject;
-            if (parent != null)
+            if (transform.parent != null)
             {
-                Vector2 RunningPos = Vector2.zero;
-                Vector2[] colliderPoints = new Vector2[0];
-
-             //   Debug.Log("Parent:", parent);
-                if (parent.TryGetComponent( out Collider2D parentColldier))
+                GameObject parent = transform.parent.gameObject;
+                if (parent != null)
                 {
-                    if (parentColldier is EdgeCollider2D)
+                    Vector2 RunningPos = Vector2.zero;
+                    Vector2[] colliderPoints = new Vector2[0];
+
+                    if (parent.TryGetComponent(out Collider2D parentColldier))
                     {
-                       colliderPoints = (parentColldier as EdgeCollider2D).points;
-
-                    }
-
-                    if (parentColldier is PolygonCollider2D)
-                    {
-                        colliderPoints = (parentColldier as PolygonCollider2D).points;
-
-                    }
-
-                    if (colliderPoints.Length > 0)
-                    {
-                        for (int i = 0; i < colliderPoints.Length; i++)
+                        if (parentColldier is EdgeCollider2D)
                         {
-                            RunningPos += colliderPoints[i];
+                            colliderPoints = (parentColldier as EdgeCollider2D).points;
+
                         }
 
-                        RunningPos /= colliderPoints.Length;
-                        transform.localPosition = RunningPos;
-                    }
+                        if (parentColldier is PolygonCollider2D)
+                        {
+                            colliderPoints = (parentColldier as PolygonCollider2D).points;
 
+                        }
+
+                        if (colliderPoints.Length > 0)
+                        {
+                            for (int i = 0; i < colliderPoints.Length; i++)
+                            {
+                                RunningPos += colliderPoints[i];
+                            }
+
+                            RunningPos /= colliderPoints.Length;
+                            transform.localPosition = RunningPos;
+                        }
+
+                    }
                 }
+
             }
+         
 
             if (UseCrt == true)
             {
@@ -589,6 +585,7 @@ public class LightsBakeable2D : MonoBehaviour
                 }
 
             }
+
             else
             {
                 GenerateMesh(true);
@@ -604,12 +601,6 @@ public class LightsBakeable2D : MonoBehaviour
             {
                 MyRenderTexture.Update();
 
-            }
-
-            if (MyRenderTexture != null)
-            {
-              //  EditorUtility.SetDirty(MyRenderTexture);
-             //   PrefabUtility.RecordPrefabInstancePropertyModifications(MyRenderTexture);
             }
         }
     

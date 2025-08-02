@@ -4,11 +4,14 @@
 
 
 float2 Center;
+float2 MinMax;
 int BlendMode;
-float4 Color1;
-float4 Color2;
+float4 PrimaryColor;
+float4 SecondaryColor;
 int ArrayLength;
+
 float Radius;
+
 
 StructuredBuffer<float> Rates;
 StructuredBuffer<float> Amplitudes;
@@ -16,95 +19,92 @@ StructuredBuffer<float> Powers;
 StructuredBuffer<float> Offsets;
 StructuredBuffer<float> Constants;
 StructuredBuffer<bool> UseAbsbools;
+StructuredBuffer<bool> Enabled;
+
+
 
 RWTexture2D<float4> Result;
+float DistortionFactor;
+RWTexture2D<float4> DistortionTex;
 
 
-
+// this is sperated not because it needs to be but because of a reverted design decision
 float4 BumpyCircle(float angle, uint2 pos, float4 startColor, float4 endColor)
-{
-  
-    float t = distance(pos.xy, uint2(Center.x, Center.y));
+{    
+    
+    uint2 DistortedPosition = DistortPos((DistortionTex[pos]), pos, DistortionFactor);
+
+    float t = distance(DistortedPosition.xy, uint2(Center.x, Center.y));
+    
     float height = 0;
     float Runningheight = 0;
+    
+    float2 localminmax = MinMax;
+    
+    float max = 0;
+    
+    float angleSign = 1;
+
+    max = MinMax.y > 0.01 ? MinMax.y : 100000.0;
 
     
-    for (int i = 0; i < ArrayLength; i++)
+    // this weirld if else here is because it keeps giving me a warning in the unity editor
+    //about a potentially uninitialized variable being used
+    
+    if (t > max)
     {
-        height = sin(angle * round(Rates[i]) + Offsets[i]);
-        
-        float angleSign = 1;
-
-        height += Constants[i];
-    
-        if (!UseAbsbools[i])
-        {
-            angleSign = sign(height);
-        }
-    
-        height = pow(abs(height), Powers[i]) * angleSign;
-        
-        height *= Amplitudes[i];
-        
-        Runningheight += height;
-
-    }
-        
-   
-    Runningheight /= 1;
-    
- 
-   
-    
-    if ((t - Runningheight) < Radius)
-    {
-        return Blend(Result[pos.xy], startColor, startColor.w, BlendMode);
+        return Blend(Result[pos], endColor, endColor.w, BlendMode, true);
     }
     else
     {
-        return Blend(Result[pos.xy], endColor, endColor.w,BlendMode);
+        for (int i = 0; i < ArrayLength; i++)
+        {
+            if (Enabled[i])
+            {
+                height = sin(angle * round(Rates[i]) + Offsets[i]);
+        
+
+                height += Constants[i];
+    
+                if (!UseAbsbools[i])
+                {
+                    angleSign = sign(height);
+                }
+    
+                height = pow(abs(height), Powers[i]) * angleSign;
+        
+                height *= Amplitudes[i];
+        
+            //added this so it wont shrink the low end of circle when you make the amplitude larger
+        
+         //   height += Amplitudes[i];
+        
+                Runningheight += height;
+            }
+        }
+            
+        if ((t - Runningheight) < Radius)
+        {
+            return Blend(Result[pos.xy], startColor, startColor.w, BlendMode, true);
+        }
+        else
+        {
+            return Blend(Result[pos.xy], endColor, endColor.w, BlendMode, true);
+        }
     }
-    
-   
-    
+  
 }
 
-
-
-
-
 [numthreads(8, 8, 1)]
-
-
-
 
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
     // TODO: insert actual code here!
-    float4 BaseColor = float4(0.0, 0.5, 1.0, 1.0);
-    float4 startColor = float4(0.0, 0.0, 0.0, 1.0);
-    float4 nothing = float4(0.0, 0.0, 0.0, 0.0);
-    float4 endColor = float4(0.5, 1.0, 1.0, 1.0);
     float angle = degrees(SignedAngle2D(id.xy - float2(Center.x, Center.y), float2(0.0, 1.0))) + 180;
+    
     angle /= 360;
     angle *= (2 * PI);
     
-   
-
-
-
-    
-    
- 
-    float4 endColor2 = float4(1.0, 0.5, 0.5, 1.0);
-    
-  //  Result[id.xy] += DiagonalGradient(id, startColor, BaseColor) / 2;
-    
-    Result[id.xy] = BumpyCircle(angle, id.xy, Color1, Color2);
-
-    //Result[id.xy] /= 1;
-
-    
-   
+    Result[id.xy] = BumpyCircle(angle, id.xy, PrimaryColor, SecondaryColor);
 }
 

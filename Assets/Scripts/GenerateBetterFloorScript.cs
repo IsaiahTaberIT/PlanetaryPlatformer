@@ -4,35 +4,20 @@ using UnityEngine;
 
 
 
-[RequireComponent(typeof(MeshFilter))]
+// this is literally never going to be used again
 
 public class GenerateBetterFloorScript : MonoBehaviour
 {
     public PolygonCollider2D Collider;
     public SpriteRenderer Sprite;
     public int Length = 20;
-
     Vector2[] Verticies;
-    int[] Triangles;
-    Vector2[] Uvs;
-    Color[] Colors;
     public Gradient MyGradient;
-
     public Transform SelfTransform;
-    private Mesh MyMesh;
-  
-
-
     public Vector3 Pos;
     public Vector2Int GridSize = new Vector2Int(20, 20);
     public float offset1;
     public float offset2;
-
-
-
-
-
-
 
     // Start is called before the first frame update
     void Start()
@@ -40,7 +25,6 @@ public class GenerateBetterFloorScript : MonoBehaviour
         SelfTransform = GetComponent<Transform>();
         Pos = SelfTransform.position;
         Pos = new Vector3(Pos.x / (GridSize.x), 0, Pos.z / (GridSize.y));
-        MyMesh = new Mesh();
 
 
         GetComponent<PolygonCollider2D>().points = Verticies;

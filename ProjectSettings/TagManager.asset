@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 3
+  tags:
+  - Logic
+  - Star
+  - SGen
+  - Planet
+  - Basic Enemy
+  - Flinger
+  - SoftBody
+  - Sticker
+  - Screen
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - groundLayer
+  - InvisibleToEnemy
+  - InvisibleToEnemtPermeable
+  - InvisibleToEnemyPermeableToPlayer
+  - BakedLights
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: BackGround
+    uniqueID: 1098852233
+    locked: 0
+  - name: BackGroundLit
+    uniqueID: 1685639887
+    locked: 0
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: Focus
+    uniqueID: 1854484925
+    locked: 0
+  - name: ExtremeForeground
+    uniqueID: 4150205569
+    locked: 0
+  - name: MidGround
+    uniqueID: 1193811167
+    locked: 0
+  m_RenderingLayers:
+  - Default
+  - Layer 1

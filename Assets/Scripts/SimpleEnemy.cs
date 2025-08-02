@@ -17,7 +17,6 @@ public class SimpleEnemy : Enemy , Hurtful.IHurtful , Sticker.IStickerable
     private void FixedUpdate()
     {
         
-
         if (StickerInfo._Stickered)
         {
             GravityDown = StickerInfo.StickerPull.normalized;
@@ -28,7 +27,6 @@ public class SimpleEnemy : Enemy , Hurtful.IHurtful , Sticker.IStickerable
 
         }
 
-
         Velocity = Body.linearVelocity;
         Body.AddForce(GravityDown * Body.mass);
 
@@ -36,7 +34,6 @@ public class SimpleEnemy : Enemy , Hurtful.IHurtful , Sticker.IStickerable
         LookRotation = TargetAngleBasedOnGravityDirection(GravityDown);
         rot.z = LookRotation;
         transform.eulerAngles = rot;
-
         DirectionToPlayer = TargetPlayer.transform.position - transform.position;
 
         if (CanSee)
@@ -80,15 +77,8 @@ public class SimpleEnemy : Enemy , Hurtful.IHurtful , Sticker.IStickerable
             }
         }
 
-
         IsGrounded = CheckGrounded(GravityDown, GroundCheckDistance, GroundLayer);
 
         Body.linearVelocity = Velocity;
     }
-
-
-
-
-
-
 }

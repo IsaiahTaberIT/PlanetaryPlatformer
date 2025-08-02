@@ -11,23 +11,13 @@ int BlendMode;
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-   
-
     float4 DeSat;
     float3 initRGB = Result[id.xy].rgb;
-    //CBBC is "color based brightness correction" not the skyrim mod!
-  //  float CBBC = 0.15;
-    
-   // initRGB.b *= 1.0 - CBBC;
-   // initRGB.g *= 1.0 + CBBC;
-
-   
-
-    float Value = length(Gamma(initRGB)) / Sqrt3;
-    DeSat.rgb = float(1.0) * Value;
+    float Value = length((initRGB));
+    DeSat.rgb = normalize(float3(1, 1, 1)) * Value;
     DeSat.w = Result[id.xy].w;
     
-    Result[id.xy] = Blend(Result[id.xy], DeSat, 1.0 - Saturation, BlendMode);
+    Result[id.xy] = Blend(Result[id.xy], DeSat, 1.0 - Saturation, BlendMode, true);
     
    
 }

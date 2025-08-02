@@ -53,9 +53,6 @@ public class SoftBodyScript : MonoBehaviour
     public float MaxSquish;
     public Vector3 Gravity;
     public bool IsInitialized;
-
-
-
     void OnEnable ()
     {
         meshRenderer = GetComponent<MeshRenderer>();
@@ -67,14 +64,12 @@ public class SoftBodyScript : MonoBehaviour
     }
 
     [ContextMenu("Generate Shape")]
-
     void GenerateInititalShape()
     {
         PointVelocities = new Vector3[InititialVerts.Count];
         if (MyMesh != null)
         {
             MyMesh.Clear();
-
         }
         else
         {
@@ -107,15 +102,9 @@ public class SoftBodyScript : MonoBehaviour
                 {
                     TargetDistance[i, j] = Vector2.Distance(InititialVerts[i],InititialVerts[j]);
                 }
-
             }
         }
 
-
-        // StageOneVerts = InititialVerts.ToArray();
-
-
-        //  .CopyTo(StageOneVerts, 0);
         Verts = InititialVerts.ToArray();
 
         AssignVerts();
@@ -131,8 +120,6 @@ public class SoftBodyScript : MonoBehaviour
         }
 
         int vc = InititialVerts.Count;
-     
-
 
         for (int i = InititialVerts.Count; i < InititialVerts.Count * 2; i++)
         {
@@ -150,11 +137,9 @@ public class SoftBodyScript : MonoBehaviour
             tricount += 6;
         }
         
-
-
         UpdateShape();
     }
-    
+
     public void Initialize()
     {
         LastPosition = transform.position;
@@ -176,7 +161,6 @@ public class SoftBodyScript : MonoBehaviour
         StageTwoVerts.CopyTo(MeshVerts, InititialVerts.Count);
 
     }
-
     private void FixedUpdate()
     {
         
@@ -221,7 +205,6 @@ public class SoftBodyScript : MonoBehaviour
                 GameObject particleobj = Instantiate(SquishParticle, transform.position - Gravity.normalized, Quaternion.identity);
                 ParticleSystem particle = particleobj.GetComponent<ParticleSystem>();
 
-
                 var main = particle.main;
                 var speed = particle.main.startSpeed;
                 var emission = particle.emission;
@@ -236,10 +219,7 @@ public class SoftBodyScript : MonoBehaviour
                 volume = UnityEngine.Random.Range(0.95f, 1f) * Mathf.Pow(volume,1.5f);
          
                 SqueltchEvent.Play(Squeltch, volume);
-
-         
             }
-
         }
         else
         {
@@ -292,7 +272,6 @@ public class SoftBodyScript : MonoBehaviour
             }
         }
 
-
         for (int i = 0; i < Verts.Length; i++)
         {
             Verts[i] += (Vector2)PointVelocities[i] / (100 / RestoringForce);
@@ -343,8 +322,6 @@ public class SoftBodyScript : MonoBehaviour
             {
                SingleTris[i] = Tris[i + TriIndex * 3];
             }
-           // SingleTris = new int[] { Tris[3], Tris[4], Tris[5]};
-
 
             Debug.Log(SingleTris[0] + " , " + SingleTris[1] + " , " + SingleTris[2]);
             MyMesh.triangles = SingleTris;
@@ -354,17 +331,11 @@ public class SoftBodyScript : MonoBehaviour
             MyMesh.triangles = Tris;
         }
 
-
-          
-
-
         MyMesh.RecalculateBounds();
         MyMesh.RecalculateNormals();
 
         GetComponent<MeshFilter>().mesh = MyMesh;
     }
-
-
 
     [ContextMenu("Wiggle")]
 
@@ -383,20 +354,12 @@ public class SoftBodyScript : MonoBehaviour
         {
             Vector2 ranWiggle = new Vector2(UnityEngine.Random.Range(1 / wigFactor, wigFactor), UnityEngine.Random.Range(1 / wigFactor, wigFactor));
 
-
-
             Verts[i] = Vector2.Scale(Verts[i],ranWiggle);
         }
 
     }
 
-
-
-
     [ContextMenu("Add Vertex")]
-
-
-
     void AddVertex()
     {
         InititialVerts.Add(Vector2.zero);
@@ -427,11 +390,12 @@ public class SoftBodyScript : MonoBehaviour
             InititialVerts[VertViewingIndex] = CurrentVertex;
         }
     }
-
-
-
     private void OnTriggerStay2D(Collider2D collision)
     {
+        // hey so can't be sure yet, but maybe you were looking for "continue", which you didnt know existed
+        // probably can simplify this do so at your earliest convenience, but since i will forget about this
+        // the moment i finish this comment here is the time and date for posterity:
+        // 6:38 PM, 7/20/2025
         if (collision && collision.gameObject.layer == 6)
         {
             for (int i = 0; i < Verts.Length; i++)
@@ -476,23 +440,15 @@ public class SoftBodyScript : MonoBehaviour
                         PointVelocities[i] = ray.direction.normalized * 0.1f;
                     }
 
-
-                    //PointVelocities[i] = ray.direction.normalized * (Vector2.Distance(CurrentCOM, Verts[i]) - hit.distance) * RestoringForce * -2000;
                     ray.direction = ray.direction.normalized * hit.distance;
                     
-
                     Rays.Add(ray);
-
                 }
-
-
             }
         }
     }
 
-
     [ContextMenu("Generate Circle")]
-
     void GenerateCircle()
     {
         InititialVerts.Clear();
@@ -502,11 +458,9 @@ public class SoftBodyScript : MonoBehaviour
         }
         GenerateInititalShape();
     }
-
-
     private void OnDrawGizmosSelected()
     {
-        
+        // replace this with a setting in the inspector you goober!
         if (true)
         {
             Gizmos.color = Color.yellow;
@@ -522,8 +476,6 @@ public class SoftBodyScript : MonoBehaviour
             {
                 Gizmos.DrawRay(ray.origin, ray.direction * 100);
             }
-
-
 
             foreach (Vector3 point in Verts)
             {

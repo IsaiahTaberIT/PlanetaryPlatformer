@@ -1,101 +1,168 @@
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
-
 #include "MyHelpers.hlsl"
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
+float DistortionFactor;
+
+RWTexture2D<float4> DistortionTex;
+
 RWTexture2D<float4> Result;
+RWTexture2D<float4> Noise;
 int BlendMode;
-float2 Dims;
+int NoiseBlendMode;
+int2 Dims;
 float Seed;
 float Scale;
 float Alpha;
+float4 PrimaryColor;
+float4 SecondaryColor;
+int NoiseDimensions;
+float Power;
+bool UseCoherentNoise;
 
-float4 WhiteNoise(uint2 id)
+uint2 negativeMod(int2 id, uint2 mod)
+{
+    if (sign(id.x) == -1)
+    {
+        id.x = abs(id.x);
+        id.x %= mod.x;
+        id.x = mod.x - id.x;
+    }
+    else
+    {
+        id.x %= mod.x;
+    }
+    
+    if (sign(id.y) == -1)
+    {
+        id.y = abs(id.y);
+        id.y %= mod.y;
+        id.y = mod.y - id.y;
+    }
+    else
+    {
+        id.y %= mod.y;
+    }
+    
+    return id;
+    
+}
+
+
+uint2 negativeMod(int2 id, float mod)
+{
+    if (sign(id.x) == -1)
+    {
+        id.x = abs(id.x);
+        id.x %= mod;
+        id.x = mod - id.x;
+    }
+    else
+    {
+        id.x %= mod;
+    }
+    
+    if (sign(id.y) == -1)
+    {
+        id.y = abs(id.y);
+        id.y %= mod;
+        id.y = mod - id.y;
+    }
+    else
+    {
+        id.y %= mod;
+    }
+    
+    return id;
+    
+}
+
+float PerlinNoiseFromTex(int2 id)
 {
     
+    uint localScale = Scale;
+    
+    uint2 DistortedPosition = DistortPos((DistortionTex[id.xy]+1)/2, id.xy, DistortionFactor);
+
+    uint2 gridPos1 = floor(DistortedPosition.xy / Scale) ;
+    uint2 gridPos2 = floor(DistortedPosition.xy / Scale) + uint2(1, 1) ;
+    uint2 gridPos3 = floor(DistortedPosition.xy / Scale) + uint2(1, 0) ;
+    uint2 gridPos4 = floor(DistortedPosition.xy / Scale) + uint2(0, 1) ;
    
-    float value = id.y * Dims.x + id.x;
-    value *= Seed;
-    value += Seed;
-    value /= 100.1;
-    value = (sin(value * 153.7342 + 57.2) + 1) * 99.76;
-    value += 57.31;
-    value *= 19.37;
-    value = (cos(value * 314.1592) + 1) * 31.7;
-    value += 69.31;
-    value *= 15.92;
-    value = (sin(value * 1589.2415) + 1) * 103.7;
+    gridPos1 %= Dims / localScale;
+    gridPos2 %= Dims / localScale;
+    gridPos3 %= Dims / localScale;
+    gridPos4 %=  Dims / localScale;
+
+   // gridPos1 = negativeMod(gridPos1, Dims / localScale);
+  //  gridPos2 = negativeMod(gridPos2, Dims / localScale);
+  //  gridPos3 = negativeMod(gridPos3, Dims / localScale);
+   // gridPos4 = negativeMod(gridPos4, Dims / localScale);
     
-    value %= 1.0;
-    return float4(1.0, 1.0, 1.0, 1.0) * value;
+    float2 cornerVectorDL = (Noise[gridPos1].rg * 2.0 - 1.0);
+    float2 cornerVectorUR = (Noise[gridPos2].rg * 2.0 - 1.0);
+    float2 cornerVectorDR = (Noise[gridPos3].rg * 2.0 - 1.0);
+    float2 cornerVectorUL = (Noise[gridPos4].rg * 2.0 - 1.0);
     
+    float2 posInGridDL = (DistortedPosition.xy % (float)localScale) / (float)localScale;
+    float2 posInGridUR = posInGridDL - float2(1, 1);
+    float2 posInGridDR = posInGridDL - float2(1, 0);
+    float2 posInGridUL = posInGridDL - float2(0, 1);
+
+    float cornerDotDL = dot((posInGridDL), normalize(cornerVectorDL));
+    float cornerDotUR = dot((posInGridUR), normalize(cornerVectorUR));
+    float cornerDotDR = dot((posInGridDR), normalize(cornerVectorDR));
+    float cornerDotUL = dot((posInGridUL), normalize(cornerVectorUL));
+    
+    float x1 = lerp(cornerDotDL, cornerDotDR, EaseInOut(posInGridDL.x, Power)); // bottom
+    float x2 = lerp(cornerDotUL, cornerDotUR, EaseInOut(posInGridDL.x, Power)); // top
+    float y1 = lerp(x1, x2, EaseInOut(posInGridDL.y, Power));
+    
+    
+
+    return y1 + 0.5;
+}
+
+[numthreads(8, 8, 1)]
+
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+
+    float4 color = float4(0, 0, 0, 0);
+    
+    int index = (int) floor((id.x - Scale / 2) / Scale + (id.y * Dims.x) / Scale);
+    
+    if (UseCoherentNoise == true)
+    {
+        color = Blend(PrimaryColor, SecondaryColor, PerlinNoiseFromTex(id.xy), NoiseBlendMode, false);
+    }
+    else
+    {
+        uint2 quantizedpos = floor(id.xy / Scale) * Scale;
+        if (NoiseDimensions == 1)
+        {
+            color = SecondaryColor * RandomValue(Dims, quantizedpos, Seed);
+        
+        }
+        else if (NoiseDimensions == 2)
+        {
+            color = float4(SecondaryColor.r * RandomValue(Dims, quantizedpos, Seed), SecondaryColor.g * RandomValue(Dims, quantizedpos, Seed + 1), 0, 0);
+        
+        }
+        else if (NoiseDimensions == 3)
+        {
+            color = float4(SecondaryColor.r * RandomValue(Dims, quantizedpos, Seed), SecondaryColor.g * RandomValue(Dims, quantizedpos, Seed + 1), SecondaryColor.b * RandomValue(Dims, quantizedpos, Seed + 2), 0);
+        
+        }
+    }
      
+    color.rgb = saturate(color.rgb);
     
+    color.a = PrimaryColor.w;
+    
+    Result[id.xy] = saturate(Blend(Result[id.xy], color, Alpha, BlendMode, true));
 }
 
-float4 CoherentNoise(uint2 id)
-{
-    float value = 0;
-    float totalmag = 0;
-    float mag;
-    float distortion1 = 0;
-    float distortion2 = 0;
-  //  Seed *= 10000;
-    
-    /*
-    for (int i = 0; i < 200; i++)
-    {
-        mag = (sin((i + 1) * Seed * 4563.141592) + 1.0) * 100.0;
-        totalmag += mag;
-        distortion1 = sin((i + 1) * Seed * 8553.141592 + 2.231 * 6.8754) * 2;
-        distortion2 = sin((i + 1) * Seed * 3452.141592 + 4.231 * 1.8754) * 2;
 
-        
-        value += (sin((id.y * distortion2 + id.x * distortion1) * (1 / Scale)) + 1.0) * mag;
-        
-    }
-*/
-       
-    for (int i = 0; i < 10; i++)
-    {
-        mag = (sin((i + 1) * Seed * 4563.141592) + 1.0) * 100.0;
-        totalmag += mag;
-        distortion1 = sin((i + 1) * Seed * 8553.141592 + 2.231 * 6.8754) * 20;
-        distortion2 = sin((i + 1) * Seed * 3452.141592 + 4.231 * 1.8754) * 20;
-       
-        
-        value += ((sin(id.x * (1 / (distortion1 * Scale))) + 1) / 2.0 + (sin(id.y * (1 / (distortion2 * Scale))) + 1.0)) * mag;
-        
-    }
 
-    
-    
-    
-
-    
-   
-    value /= totalmag;
-    value /= 2.0;
-
-    
-    return float4(1.0, 1.0, 1.0, 1.0) * value;
-    
-}
-
-[numthreads(8,8,1)]
-void CSMain (uint3 id : SV_DispatchThreadID)
-{
-    
-    // TODO: insert actual code here!
-    uint2 quantizedpos = floor(id.xy / Scale) * Scale;
-    
-    float4 color = WhiteNoise(quantizedpos);
-   // float4 color = WhiteNoise(id.xy);
-
-    
-   
-    color.a = Alpha;
-
-    Result[id.xy] = Blend(Result[id.xy], color, Alpha, BlendMode);
-}

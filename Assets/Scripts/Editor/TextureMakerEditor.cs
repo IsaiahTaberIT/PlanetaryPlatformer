@@ -3,18 +3,16 @@ using UnityEditor;
 using UnityEngine;
 using UnityEditorInternal;
 using static TextureMaker.LayerManager;
-using static TextureMaker;
-using static TextureMaker.LayerManager.TextureLayer;
-
-
-using System.Text;
-using Codice.Client.Common;
-using static UnityEditor.Experimental.GraphView.GraphView;
 using System;
 
 [CustomEditor(typeof(TextureMaker))]
 public class TextureMakerEditor : Editor
 {
+
+
+    public double NextUpdateTime;
+    public double BaseTimeDelay = 0.005;
+    public bool PendingUpdate;
     public TextureMaker maker;
     ReorderableList TextureLayerlist;
     private void OnEnable()
@@ -31,52 +29,66 @@ public class TextureMakerEditor : Editor
 
     public override void OnInspectorGUI()
     {
-        EditorGUI.BeginChangeCheck();
+        if (GUILayout.Button("Save"))
+        {
+            maker.BringUpWindow();
+        }
+
 
         serializedObject.Update();
-
         List<SerializedProperty> properties = new List<SerializedProperty>();
         SerializedProperty property = serializedObject.GetIterator();
-
-
         property.NextVisible(true); // Skip m_Script
-
 
         while (property.NextVisible(false))
         {
-            // Exclude CurrentSegment (we'll draw it manually with a slider)
+            //It REALLY sucked trying to edit the name and having the image regenerate repeatedly
+            //this Seperates it out
+            if(property.name == "Name")
+            {
+                EditorGUILayout.PropertyField(property,true);
+                continue;
+            }
+
+
             if (property.name != "Manager")
             {
-
                 properties.Add(property.Copy());
             }
      
         }
 
-
+        EditorGUI.BeginChangeCheck();
 
         for (int i = 0; i < properties.Count; i++)
         {
-         
             EditorGUILayout.PropertyField(properties[i], true);
      
         }
 
+   
+
         serializedObject.ApplyModifiedProperties();
-
-
-
-
         EditorGUILayout.Space(10);
-
-
         TextureLayerlist.DoLayoutList();
-
-
         serializedObject.ApplyModifiedProperties();
 
         if (EditorGUI.EndChangeCheck())
         {
+
+
+            if (!PendingUpdate)
+            {
+                NextUpdateTime = EditorApplication.timeSinceStartup + BaseTimeDelay + Math.Log(maker.Dimensions.magnitude,2) * 0.005;
+                PendingUpdate = true;
+            }
+           
+        }
+
+
+        if (PendingUpdate & NextUpdateTime <= EditorApplication.timeSinceStartup)
+        {
+
             GameObject parent = maker.transform.GetRootParent();
 
             if (parent != null)
@@ -91,7 +103,14 @@ public class TextureMakerEditor : Editor
             {
                 maker.GenerateAndApply();
             }
+
+            NextUpdateTime = 0;
+            PendingUpdate = false;
+
         }
+
+       
+
 
     }
 
@@ -155,11 +174,28 @@ public class TextureMakerEditor : Editor
              
         var layer = maker.Manager.TextureLayers[textureLayerList.index];
 
-        if (layer is DistortableLayer)
+        if (layer is IDistortionSubMaker disSM)
         {
-            menu.AddItem(new GUIContent("hi!"), false, () => (layer as DistortableLayer).CreateTextureMaker("DistortionMaker"));
-
+            menu.AddItem(new GUIContent("Create Distortion Maker"), false, () => disSM.DistortionSM.CreateTextureMaker());
         }
+
+        if (layer is IReplaceColorSubMaker rcSM)
+        {
+            menu.AddItem(new GUIContent("Create Secondary Maker"), false, () =>  rcSM.ReplaceColorSM.CreateTextureMaker());
+        }
+
+        if (layer is IMaskSubMaker maskSM)
+        {
+            menu.AddItem(new GUIContent("Create Mask Maker"), false, () => maskSM.MaskSM.CreateTextureMaker());
+        }
+
+        if (layer is ISecondarySubMaker secSM)
+        {
+            menu.AddItem(new GUIContent("Create Secondary Maker"), false, () => secSM.SecondarySM.CreateTextureMaker());
+        }
+
+
+
         menu.ShowAsContext();
     }
     ReorderableList CreateFromLayers(SerializedProperty layersProp)
@@ -202,13 +238,14 @@ public class TextureMakerEditor : Editor
 
             if (layer.Type == TextureLayer.TextureLayerType.filter)
             {
-                string filterlabel = (layer as Filter).FilterType.ToString().CapitalizeFirst();
-                filterlabel = ": " + filterlabel;
-                label += filterlabel;
+                if (layer is Filter f)
+                {
+                    string filterlabel = f.FilterType.ToString().CapitalizeFirst();
+                    filterlabel = ": " + filterlabel;
+                    label += filterlabel;
+                }
+
             }
-
-
-           
 
             label.CapitalizeFirst();
             EditorGUI.PropertyField(new Rect(rect.x + 10, y, rect.width, height), element, new GUIContent(label), true);
@@ -227,15 +264,13 @@ public class TextureMakerEditor : Editor
             SerializedProperty element = textureLayerList.serializedProperty.GetArrayElementAtIndex(list.index);
             var obj = element.managedReferenceValue;
 
-            if (obj is CompositeGpu)
+            if (obj is CompositeGpu comp)
             {
-                CompositeGpu comp = (obj as CompositeGpu);
                 if (comp.MakerObject.TryGetComponent(out TextureMaker _))
                 {
                     GameObject.DestroyImmediate(comp.MakerObject);
                 }
             }
-
 
             textureLayerList.serializedProperty.DeleteArrayElementAtIndex(list.index);
         };

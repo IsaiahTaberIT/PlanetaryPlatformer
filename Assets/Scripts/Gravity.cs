@@ -22,7 +22,6 @@ public class Gravity : MonoBehaviour
     {
         Vector3 output;
 
-
         //finding the direction of the gravity from the object checking to the specified planet
 
         Vector3 RelativeDirection = new Vector3(transform.position.x - ObjectPosition.x, transform.position.y - ObjectPosition.y).normalized;

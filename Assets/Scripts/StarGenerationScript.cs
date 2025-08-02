@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
+// its crazy i wrote this so long ago and I still know how it works
 public class StarGenerationScript : MonoBehaviour
 {
     [ExecuteInEditMode]
@@ -13,18 +15,11 @@ public class StarGenerationScript : MonoBehaviour
     public float MinimumDepth;
     public float Density;
     public int MaxObjects;
-    
 
-    //private GameObject[] _Stars;
     private List<GameObject> Stars = new List<GameObject>();
-
-    
-
-
     [ContextMenu("Kill Stars")]
     void KillStars()
     {
-        //_Stars = GameObject.FindGameObjectsWithTag("Star");
         Stars.Clear();
         AddDescendantsWithTag(transform, "Star", Stars);
         
@@ -59,10 +54,6 @@ public class StarGenerationScript : MonoBehaviour
             randomPos.y = Random.Range(-(Range.y + depthOffset), Range.y + depthOffset);
 
             GameObject temp = Instantiate(ChooseObject(GalaxyOdds), randomPos + transform.position, new Quaternion(0, 0, 0, 0), transform);
-
-            
-            //Vector3Int colors = new Vector3Int(200 + Random.Range(0, 55), 200 + Random.Range(0, 55), 200 + Random.Range(0, 55));
-
             Vector3Int colors = CreateStarColors(Random.Range(1, 10));
 
             colors = Redshift(colors, Range.z, randomPos.z, MinimumDepth);
@@ -78,6 +69,9 @@ public class StarGenerationScript : MonoBehaviour
         }
 
     }
+
+    // this should be defined in Logic not here
+    // got this from stack overflow this comment was written over a year after this code was put here
     void AddDescendantsWithTag(Transform parent, string tag, List<GameObject> list)
     {
         foreach (Transform child in parent)

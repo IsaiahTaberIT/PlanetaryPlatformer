@@ -1,0 +1,172 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+#include "MyHelpers.hlsl"
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+
+
+
+float2 Dims;
+float4 PrimaryColor;
+float4 SecondaryColor;
+StructuredBuffer<float2> Points;
+
+RWTexture2D<float4> Result;
+int BlendMode;
+int Iterations;
+
+//int GradientBlendMode;
+
+
+float DistortionFactor;
+RWTexture2D<float4> DistortionTex;
+RWTexture2D<float4> SecondaryInputTexture; // SIT
+bool OverrideWithMask; // OWM
+bool OverridePrimaryColor; // OPC
+
+bool outsideTriangle(float2 pos)
+{
+    uint count = 0;
+    for (int i = 0; i < 3; i++)
+    {
+        int index2 = i + 1;
+        index2 = (index2 >= 3) ? 0 : index2;
+        
+        if (pos.x < max(Points[i].x, Points[index2].x))
+        {
+            if (pos.y < max(Points[i].y, Points[index2].y))
+            {
+                if (pos.y >= min(Points[i].y, Points[index2].y))
+                {
+                    float yintersect = lerp(Points[i].x, Points[index2].x, InverseLerp(Points[i].y, Points[index2].y, pos.y));
+               
+                    if (pos.x <= yintersect)
+                    {
+                        count++;
+
+                    }
+
+                }
+
+            }
+
+        }
+        
+    }
+    
+    if (count % 2 == 1)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+
+    }
+}
+
+
+
+[numthreads(8, 8, 1)]
+
+// i was barely able to comprehend the complexity of this shader, most difficult one to date
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    uint2 DistortedPosition = DistortPos(DistortionTex[id.xy], id.xy, DistortionFactor);
+    HandleMasking(OverrideWithMask, OverridePrimaryColor, PrimaryColor, SecondaryColor, SecondaryInputTexture[id.xy]);
+
+    
+    float2 pos = DistortedPosition.xy / Dims;
+    
+    float thresholdDistance = sqrt(0.75) * distance(Points[0], Points[1]);
+    float2 left = Points[0];
+    float2 top = Points[1];
+    float2 right = Points[2];
+    
+    float TriDist;
+    float t;
+    
+    if (outsideTriangle(pos))
+    {
+        Result[id.xy] = Blend(Result[id.xy], PrimaryColor, PrimaryColor.w, BlendMode, true);
+
+
+        return;
+    }
+    
+  
+ 
+    for (int i = 0; i < Iterations; i++)
+    {
+        if (i == Iterations-1)
+        {
+            Result[id.xy] = Blend(Result[id.xy], SecondaryColor, SecondaryColor.w, BlendMode, true);
+        }
+     
+        thresholdDistance /= 2.0;
+
+        TriDist = DistanceToLine(pos, left, right);
+
+        if (TriDist >= thresholdDistance)
+        {
+            left -= top;
+            right -= top;
+            left /= 2.0;
+            right /= 2.0;
+            left += top;
+            right += top;
+            continue;
+        }
+        else 
+        {
+            /*
+            t = (TriDist - thresholdDistance);
+            
+            if (t > -Thickness)
+            {
+                     
+                Result[id.xy] = float4(1, 0, 1, 1);
+                break;
+            }
+*/
+        }
+     
+ 
+        TriDist = DistanceToLine(pos, top, right);
+
+        if (TriDist >= thresholdDistance)
+        {
+            top -= left;
+            right -= left;
+            top /= 2.0;
+            right /= 2.0;
+            top += left;
+            right += left;
+         
+            continue;
+        }
+   
+        TriDist = DistanceToLine(pos, left, top);
+
+     
+        if (TriDist >= thresholdDistance)
+        {
+            left -= right;
+            top -= right;
+            left /= 2.0;
+            top /= 2.0;
+            left += right;
+            top += right;
+         
+            continue;
+        }
+       
+     
+     
+        Result[id.xy] = Blend(Result[id.xy], PrimaryColor, PrimaryColor.w, BlendMode, true);
+        break;
+
+    }
+    
+}

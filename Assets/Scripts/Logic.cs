@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Vector4 = UnityEngine.Vector4;
 public static class Logic
 {
     public static string CapitalizeFirst(this string str)
@@ -27,6 +26,18 @@ public static class Logic
         }
     }
 
+
+    public static Vector2[] ToVector2(this Vector3[] points, Vector2 Offset = default)
+    {
+        Vector2[] outpoints = new Vector2[points.Length];
+
+        for (int i = 0; i < points.Length; i++)
+        {
+            outpoints[i] = points[i] + (Vector3)Offset;
+        }
+
+        return outpoints;
+    }
     public static GameObject GetRootParent(this Transform obj)
     {
         if (obj.parent == null)
@@ -446,7 +457,7 @@ public static class Logic
     {
         if (snap > 0.01f)
         {
-            return Mathf.RoundToInt(value / snap) * snap;
+            return Mathf.Floor(value / snap) * snap;
         }
         else
         {
@@ -580,6 +591,54 @@ public static class Logic
     static public Vector2 Reciprocal(Vector2 vector)
     {
         return new Vector2(1 / vector.x, 1 / vector.y);
+    }
+    /// <returns>The product of the components of the vector</returns>
+    static public float ComponentProducts(this Vector2 vector)
+    {
+        return vector.x * vector.y;
+    }
+    /// <returns>The product of the components of the vector</returns>
+
+    static public float ComponentProducts(this Vector3 vector)
+    {
+        return vector.x * vector.y * vector.z;
+    }
+    /// <returns>The product of the components of the vector</returns>
+
+    static public float ComponentProducts(this Vector4 vector)
+    {
+        return vector.x * vector.y * vector.z * vector.w;
+    }
+    /// <returns>The product of the components of the vector</returns>
+
+    static public float ComponentProducts(this Vector2Int vector)
+    {
+        return vector.x * vector.y;
+    }
+    /// <returns>The product of the components of the vector</returns>
+
+    static public float ComponentProducts(this Vector3Int vector)
+    {
+        return vector.x * vector.y * vector.z;
+    }
+    /// <returns>The product of the components of the color</returns>
+
+    static public float ComponentProducts(this Color color)
+    {
+        return ComponentProducts((Vector4)color);
+    }
+
+  
+    /// <returns>The product of the components (in this case the image size).</returns>
+    static public float ComponentProducts(this RenderTexture rt)
+    {
+        if (rt == null)
+        {
+            Debug.LogWarning("RenderTexture is null");
+            return 0;
+
+        }
+        return rt.width * rt.height;
     }
 
 }
