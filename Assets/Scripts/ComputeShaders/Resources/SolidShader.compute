@@ -13,5 +13,5 @@ float4 Color;
 // i was barely able to comprehend the complexity of this shader, most difficult one to date
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    Result[id.xy] = Blend(Result[id.xy], Color, Color.w, BlendMode,true);
+  Result[id.xy] = Blend(Result[id.xy], Color, Color.w, BlendMode,true);
 }

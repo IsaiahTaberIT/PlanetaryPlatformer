@@ -707,6 +707,96 @@ public class TextureMaker : MonoBehaviour
         }
 
         [System.Serializable]
+        public class SierpinskiGPU : TextureLayer ,IDistortionSubMaker, IReplaceColorSubMaker 
+        {
+            [HideInInspector] public GameObject Parent;
+            public GameObject ParentSM { get => Parent; set => Parent = value; }
+            public DistortionMaker distortion = new("Distortion Maker");
+            public DistortionMaker DistortionSM { get => distortion; set => distortion = value; }
+
+            public ReplaceColorSubMaker secondary = new("Secondary Maker");
+            public ReplaceColorSubMaker ReplaceColorSM { get => secondary; set => secondary = value; }
+
+            ComputeBuffer pointBuffer;
+            public float AngleOffset;
+            public Vector2 Offset = Vector2.one/2;
+            public float Radius = 0.5f;
+            [Min(1)]public int Iterations = 1;
+            public BlendModes BlendMode = BlendModes.RotLerp;
+            public Color PrimaryColor = RandomColor();
+            public Color SecondaryColor = RandomColor();
+            public SierpinskiGPU()
+            {
+                Type = TextureLayerType.sierpinski;
+                LastType = Type;
+
+            }
+            public override void PassValuesToShader(RenderTexture rt, int kernel)
+            {
+                Vector2 dims = new Vector2(tex.width, tex.height);
+                distortion.Parent = Parent;
+                secondary.Parent = Parent;
+
+                distortion.Dims = new(tex.width, tex.height);
+                computeshader.SetTexture(kernel, "DistortionTex", distortion.Generate(depth));
+
+                secondary.Dims = new(tex.width, tex.height);
+                computeshader.SetTexture(kernel, "SecondaryInputTexture", secondary.Generate(depth));
+
+
+                computeshader.SetInt("OverrideWithMask", Logic.BoolToInt(secondary.OverrideWithMask));
+                computeshader.SetInt("OverridePrimaryColor", Logic.BoolToInt(secondary.OverridePrimaryColor));
+
+
+                float rootmagnitude = Sqrt(dims.magnitude);
+                distortion.Influence = distortion.Maker == null ? 0 : distortion.Influence;
+                computeshader.SetFloat("DistortionFactor", distortion.Influence * rootmagnitude / BaseSize);
+
+                base.PassValuesToShader(rt, kernel);
+
+                //Iterations = (int)Min(Iterations, Log(Math.Max(tex.width, tex.height), 2)-1);
+
+
+
+                ShapeGenerator.Shapes triangle = new(3, AngleOffset,Radius,false);
+                triangle.GenerateCirclePoints();
+
+                Vector2[] points = triangle.Verts.ToVector2(Offset);
+
+                computeshader.SetVector("Dims", new Vector2(tex.width, tex.height));
+
+
+                pointBuffer = new ComputeBuffer(3, sizeof(float) * 2);
+                pointBuffer.SetData(points);
+                computeshader.SetBuffer(kernel, "Points", pointBuffer);
+                computeshader.SetInt("BlendMode", (int)BlendMode);
+                computeshader.SetInt("Iterations", Iterations);
+
+                computeshader.SetVector("PrimaryColor", PrimaryColor);
+                computeshader.SetVector("SecondaryColor", SecondaryColor);
+
+            }
+
+            public override RenderTexture Generate()
+            {
+
+                if (computeshader == null)
+                {
+                    computeshader = Resources.Load<ComputeShader>("SierpinskiShader");
+                }
+
+
+
+                ApplyShaderToRT();
+                pointBuffer.Dispose();
+                return tex;
+
+            }
+
+
+        }
+
+        [System.Serializable]
         public class SpiralGpu : TextureLayer, IDistortionSubMaker, IReplaceColorSubMaker
         {
             [HideInInspector] public GameObject Parent;
@@ -1857,6 +1947,8 @@ public class TextureMaker : MonoBehaviour
                 customMask = 9,
                 mandelbrot = 10,
                 spiral = 11,
+                sierpinski = 12,
+
 
             }
             public virtual void PassValuesToShader(RenderTexture rt, int kernel)
@@ -1937,6 +2029,8 @@ public class TextureMaker : MonoBehaviour
                     return new MandelBrotGpu();
                 case TextureLayer.TextureLayerType.spiral:
                     return new SpiralGpu();
+                case TextureLayer.TextureLayerType.sierpinski:
+                    return new SierpinskiGPU();
                 default:
                     return new SimpleGradientGpu();
             }

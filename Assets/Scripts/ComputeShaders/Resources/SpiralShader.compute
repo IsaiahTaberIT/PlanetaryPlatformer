@@ -24,6 +24,13 @@ RWTexture2D<float4> SecondaryInputTexture; // SIT
 bool OverrideWithMask; // OWM
 bool OverridePrimaryColor; // OPC
 
+
+
+
+
+
+
+
 [numthreads(8, 8, 1)]
 
 //Junji Ito
@@ -41,6 +48,10 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     uint2 DistortedPosition = DistortPos((DistortionTex[id.xy]), id.xy, DistortionFactor);
 
     float t = distance(DistortedPosition, uint2(Center.x, Center.y));
+    
+    
+    absMod(AngleOffset, 60);
+    
     angle += AngleOffset;
 
     angle *= Arms;

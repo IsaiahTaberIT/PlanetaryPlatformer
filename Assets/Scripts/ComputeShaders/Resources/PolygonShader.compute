@@ -40,7 +40,6 @@ float4 OutputColor(float2 pos)
         index2 = (index2 >= VertCount) ? 0 : index2;
         float currentdist = DistanceToLine(pos, Verts[j], Verts[index2]);
         
-      //  average += currentdist;
         
         if (shortest < 0 || shortest > currentdist)
         {
@@ -48,7 +47,6 @@ float4 OutputColor(float2 pos)
         }
     }
 
-   // average /= VertCount;
     
     for (int i = 0; i < VertCount; i++)
     {

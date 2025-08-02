@@ -37,6 +37,15 @@ public class ShapeGenerator : MonoBehaviour
         {
             Index0AtCenter = IndexAtcenter;
         }
+        public Shapes(int pointcount,float angleOffset, float radius,bool IndexAtcenter)
+        {
+            Radius = radius;
+           AngleOffset = angleOffset;
+           Points = Mathf.Max(3, pointcount);
+           Index0AtCenter = IndexAtcenter;
+        }
+
+
         public enum ShapeType
         {
             RegularNGon = 0,

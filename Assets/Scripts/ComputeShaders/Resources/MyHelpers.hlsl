@@ -6,6 +6,23 @@ static const float Sqrt3 = 1.7320508076;
 
 static const uint uintmax = 4294967295;
 
+void absMod(inout float value, float mod)
+{
+    // this makes negative values get handled when mod is applied so that direction is preserved when crossing zero, with no artifacts
+    if (sign(value) == -1)
+    {
+        value %= mod;
+        value += mod;
+    }
+    else
+    {
+        value %= mod;
+    }
+    
+}
+
+
+
 bool IsBetween(float v, float a, float b)
 {
     if (a <= b)
