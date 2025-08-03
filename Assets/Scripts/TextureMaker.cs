@@ -635,7 +635,7 @@ public class TextureMaker : MonoBehaviour
 
             public override void PassValuesToShader(RenderTexture rt, int kernel)
             {
-                base.PassValuesToShader(rt, kernel);
+              
                 computeshader.SetFloat("Threshold", mask.Threshold);
                 computeshader.SetInt("Invert", Logic.BoolToInt(mask.Invert));
                 computeshader.SetInt("MaskMode", (int)mask.MaskMode);
@@ -645,7 +645,7 @@ public class TextureMaker : MonoBehaviour
                 secondary.Dims = new(tex.width, tex.height);
                 computeshader.SetTexture(kernel, "SecondaryInputTexture", secondary.Generate(depth));
                 computeshader.SetInt("BlendMode", (int)BlendMode);
-
+                base.PassValuesToShader(rt, kernel);
             }
 
             public override RenderTexture Generate()
@@ -1591,14 +1591,14 @@ public class TextureMaker : MonoBehaviour
             [System.Serializable]
             public class Octave
             {
-                public bool Enabled;
-                public bool Abs;
-                public float Offset;
+                public bool Enabled = true;
+                public bool Abs = false;
+                public float Offset = 0;
                 [Tooltip("shifts the output range E.g: for 0 it's -1 to 1, for 1 it's 0 to 2, and for -1 it's -2 to 0")]
-                [Range(-1f, 1f)] public float VerticalShift;
-                public float Magnitude;
-                public float Power;
-                public float Spacing;
+                [Range(-1f, 1f)] public float VerticalShift = 0.5f;
+                public float Magnitude = 10;
+                public float Power = 1;
+                public float Spacing = 5;
 
                 public Octave(bool abs, float offset, float verticalShift, float magnitude, float power, float spacing)
                 {

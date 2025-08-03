@@ -39,21 +39,22 @@ float4 BumpyCircle(float angle, uint2 pos, float4 startColor, float4 endColor)
     float height = 0;
     float Runningheight = 0;
     
-    float2 localminmax = MinMax;
-    
-    float max = 0;
-    
     float angleSign = 1;
-
-    max = MinMax.y > 0.01 ? MinMax.y : 100000.0;
-
     
-    // this weirld if else here is because it keeps giving me a warning in the unity editor
-    //about a potentially uninitialized variable being used
     
-    if (t > max)
+    float4 output = float4(1,1,1,1);
+ 
+    
+   
+    if (t < MinMax.x)
     {
-        return Blend(Result[pos], endColor, endColor.w, BlendMode, true);
+        output = Blend(Result[pos], startColor, startColor.w, BlendMode, true);
+            
+    }
+    else if (t > ((MinMax.y > 0.01) ? MinMax.y : 100000.0))
+    {
+        output = Blend(Result[pos], endColor, endColor.w, BlendMode, true);
+
     }
     else
     {
@@ -75,23 +76,23 @@ float4 BumpyCircle(float angle, uint2 pos, float4 startColor, float4 endColor)
         
                 height *= Amplitudes[i];
         
-            //added this so it wont shrink the low end of circle when you make the amplitude larger
-        
-         //   height += Amplitudes[i];
-        
                 Runningheight += height;
             }
         }
             
         if ((t - Runningheight) < Radius)
         {
-            return Blend(Result[pos.xy], startColor, startColor.w, BlendMode, true);
+            output = Blend(Result[pos.xy], startColor, startColor.w, BlendMode, true);
         }
         else
         {
-            return Blend(Result[pos.xy], endColor, endColor.w, BlendMode, true);
+            output = Blend(Result[pos.xy], endColor, endColor.w, BlendMode, true);
         }
+    
     }
+
+
+    return output;
   
 }
 

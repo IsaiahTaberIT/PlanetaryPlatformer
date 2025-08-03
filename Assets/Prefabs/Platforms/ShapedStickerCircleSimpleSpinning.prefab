@@ -214,6 +214,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Shape:
+    AngleOffset: 0
     MaxAngle: 360
     Radius: 6
     Points: 20
@@ -240,6 +241,7 @@ MonoBehaviour:
     - {x: -3.6852756, y: 4.7348437, z: 0}
     - {x: -1.9481971, y: 5.6749034, z: 0}
     - {x: -0.0000018119497, y: 6, z: 0}
+    Index0AtCenter: 1
   UVS:
   - {x: 0.5, y: 0.5}
   - {x: 0.5, y: 1.0034331}
@@ -372,6 +374,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Shape:
+    AngleOffset: 0
     MaxAngle: 360
     Radius: 1
     Points: 26
@@ -404,6 +407,7 @@ MonoBehaviour:
     - {x: -0.48175412, y: 0.8763064, z: 0}
     - {x: -0.24869028, y: 0.96858305, z: 0}
     - {x: -0.0000003019916, y: 1, z: 0}
+    Index0AtCenter: 1
   UVS:
   - {x: 0.5, y: 0.5}
   - {x: 0.5, y: 1.0019791}
@@ -471,7 +475,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 4.5, y: 4.5, z: 0}
+  m_LocalScale: {x: 7.3999996, y: 7.3999996, z: 0}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 6082788211518171262}
@@ -542,6 +546,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Shape:
+    AngleOffset: 0
     MaxAngle: 360
     Radius: 1
     Points: 15
@@ -563,6 +568,7 @@ MonoBehaviour:
     - {x: -0.7818313, y: 0.62349004, z: 0}
     - {x: -0.43388376, y: 0.90096885, z: 0}
     - {x: 0.00000017484555, y: 1, z: 0}
+    Index0AtCenter: 1
   UVS:
   - {x: 0.5, y: 0.5}
   - {x: 0.5, y: 1}
